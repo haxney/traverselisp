@@ -298,7 +298,7 @@ as string"
                regexp))
   (setq traverse-count-occurences -1))
     
-(provide 'traversepurelisp)
+(provide 'traverselisp)
 
 ;;; end of file
 
