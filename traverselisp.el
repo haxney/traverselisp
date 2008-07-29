@@ -268,7 +268,8 @@ with MUSE"
                             'action #'(lambda (button)
                                         (let* ((list-line (split-string (thing-at-point 'line)))
                                                (nline (nth 1 list-line))
-                                               (regex))
+                                               (regex)
+                                               (fname (button-label (button-at (point)))))
                                           (save-excursion
                                             (goto-char (point-min))
                                             (when (re-search-forward "^Found ")
@@ -276,7 +277,9 @@ with MUSE"
                                               (beginning-of-sexp)
                                               (setq regex (thing-at-point 'sexp))))
                                           (save-excursion
-                                            (find-file-other-window (thing-at-point 'filename))
+                                            (setq fname (replace-regexp-in-string "\\[" "" fname))
+                                            (setq fname (replace-regexp-in-string "\\]" "" fname))
+                                            (find-file-other-window fname) 
                                             (goto-line (string-to-number nline))
                                             (setq case-fold-search t)
                                             (beginning-of-line)
