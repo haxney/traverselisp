@@ -108,6 +108,7 @@ Special commands:
 
 ;;; Main backend functions
 
+;;;###autoload
 (defun tv-list-directory (dirname &optional abs)
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path.
@@ -123,6 +124,7 @@ This to avoid infinite loop in walk"
                     x))
             clean-dir)))
 
+
 (defun file-compressed-p (fname)
   (let ((ext (file-name-extension fname)))
     (cond ((equal ext "gz")
@@ -133,6 +135,8 @@ This to avoid infinite loop in walk"
            t)
           (t nil))))
 
+
+;;;###autoload
 (defun tv-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
@@ -160,8 +164,9 @@ on each file found.
                         (funcall file-fn name))
                       (funcall file-fn name))))))
       (walk (expand-file-name dirname))))
-      ;;(garbage-collect)))
 
+
+;;;###autoload
 (defmacro tv-readlines (file &optional delete-empty-lines)
   "Return a list where elements are the lines of a file
 \\(emulate object.readlines() of python)"
@@ -175,7 +180,7 @@ on each file found.
            (delete i my-read-list))))
      my-read-list))
 
-;; TODO: find-all-regex==>Fix: position in file is wrong. 
+
 ;;;###autoload
 (defun tv-find-all-regex-in-file (regex file)
   "Return a list with elemnts of the form :
@@ -204,6 +209,7 @@ Example:
                                          1
                                          (+ 1 (length i))))))
     outfile-list))
+
 
 ;;;###autoload
 (defun tv-find-first-regex-in-file (regex file)
@@ -258,8 +264,11 @@ with MUSE"
       (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
 
+
+;;;###autoload
 (defun traverse-tv-file-process (regex fname)
-  "Default function to format and insert matched line in files"
+  "Default function to process files  and insert matched lines
+in *traverse-lisp* buffer"
   (let ((matched-lines (tv-find-all-regex-in-file regex fname))
         (form-line))
     (when matched-lines
@@ -300,40 +309,36 @@ with MUSE"
                                                                    0
                                                                    traverse-length-line)
                                                         (first i)))
-                             ;(first i)
                              "\n"))))
       (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
 
+
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
+  "Main function that call walk, if only is omitted it
+will be set as nil and search will be proceeded on all files
+except on files that are in `traverse-ignore-files'"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
   (set-buffer (get-buffer-create "*traverse-lisp*"))
   (erase-buffer)
   (hi-lock-mode)
   (goto-char (point-min))
   (traversedir-mode)
-  (insert "* Traverse-lisp-output\n\n\n")
-  ;(insert "*To have the full path you can prefix command with C-u*\n\n")
-  (highlight-regexp "* Traverse-lisp-output" "hi-pink")
+  (insert " *Traverse-lisp-output*\n\n\n")
+  (highlight-regexp " \\*Traverse-lisp-output\\*$" "hi-pink")
   (display-buffer "*traverse-lisp*")
-  (insert  "Wait Lisp searching...\n")
+  (insert  "Wait Lisp searching...\n\n")
   (sit-for 1)
   (tv-walk-directory tree
                      #'(lambda (y)
                          (if (equal only "")
                              (setq only nil))
-                         (if current-prefix-arg
-                             (if only
-                                 (when (equal (file-name-extension y t)
-                                              only)
-                                   (funcall traverse-file-function regexp y t))
-                                 (funcall traverse-file-function regexp y t))
-                             (if only
-                                 (when (equal (file-name-extension y t)
-                                              only)
-                                   (funcall traverse-file-function regexp y))
-                                 (funcall traverse-file-function regexp y)))
+                         (if only
+                             (when (equal (file-name-extension y t)
+                                          only)
+                               (funcall traverse-file-function regexp y))
+                             (funcall traverse-file-function regexp y))
                          (message "%s [Matches] for %s in [%s]"
                                   (if (>= traverse-count-occurences 1)
                                       traverse-count-occurences
