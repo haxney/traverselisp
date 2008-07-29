@@ -258,15 +258,58 @@ with MUSE"
       (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
 
+(defun traverse-tv-file-process (regex fname)
+  "Function to format and insert matched line in files in accord
+with MUSE"
+  (let ((matched-lines (tv-find-all-regex-in-file regex fname))
+        (form-line))
+    (when matched-lines
+      (dolist (i matched-lines)
+        (and (insert-button (format "[%s]" fname)
+                            'action #'(lambda (button)
+                                        (let* ((list-line (split-string (thing-at-point 'line)))
+                                               (nline (nth 4 list-line))
+                                               (regex (nth 2 list-line)))
+                                          (save-excursion
+                                            (find-file-other-window (thing-at-point 'filename))
+                                            (goto-line (string-to-number nline))
+                                            (setq case-fold-search t)
+                                            (beginning-of-line)
+                                            (when (re-search-forward regex nil nil)
+                                              (beginning-of-sexp) 
+                                              (highlight-regexp (thing-at-point 'sexp))
+                                              (sit-for 1)
+                                              (unhighlight-regexp (thing-at-point 'sexp))))))
+                            'face "hi-green")
+             (insert (concat " Found: "
+                             regex
+                             " : "
+                             (int-to-string (third i))
+                             " :"
+                             (replace-regexp-in-string "^ *" ""
+                                                       (if
+                                                        (> (length (first i))
+                                                           traverse-length-line)
+                                                        (substring (first i)
+                                                                   0
+                                                                   traverse-length-line)
+                                                        (first i)))
+                             ;(first i)
+                             "\n"))))
+      (setq traverse-count-occurences (+ traverse-count-occurences
+                                           (length matched-lines))))))
+
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
   (set-buffer (get-buffer-create "*traverse-lisp*"))
   (erase-buffer)
+  (hi-lock-mode)
   (goto-char (point-min))
-  (traversedir-mode)
+  ;(traversedir-mode)
   (insert "* Traverse-lisp-output\n\n\n")
-  (insert "*To have the full path you can prefix command with C-u*\n\n")
+  ;(insert "*To have the full path you can prefix command with C-u*\n\n")
+  (highlight-regexp "* Traverse-lisp-output" "hi-pink")
   (display-buffer "*traverse-lisp*")
   (insert  "Wait Lisp searching...\n")
   (sit-for 1)
@@ -299,12 +342,13 @@ with MUSE"
       (when (re-search-forward "^Wait")
         (beginning-of-line)
         (kill-line)
-        (insert (format "=Found %s occurences for %s:=\n"
+        (insert (format "Found %s occurences for %s:\n"
                         traverse-count-occurences
                         regexp)))
       (message "%s Occurences found for %s"
                traverse-count-occurences
                regexp))
+  (highlight-regexp regexp) 
   (setq traverse-count-occurences -1))
     
 (provide 'traverselisp)
