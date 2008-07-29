@@ -1,4 +1,4 @@
-;;; traverse-directory.el -- elisp implementation of rgrep.
+;;; traverse-lisp.el -- elisp implementations of rgrep, grep-find, grep, etc...
 
 ;; Author: Thierry Volpiatto
 
@@ -93,6 +93,12 @@ Special commands:
   "Length of the line displayed"
   :group 'traversedir
   :type 'integer)
+
+(defcustom traverse-file-function
+  'traverse-muse-file-process
+  "Default function to use to process files"
+  :group 'traversedir
+  :type 'symbol)
 
 (defvar traverse-version "0.1")
 
@@ -214,10 +220,13 @@ as string"
 ;; (defun traverse-find-in-file (regexp file)
 ;;   (interactive "sRegexp: \nfFileName: "))
 
+
 ;; TODO if permission is denied do the right thing
 (defvar traverse-count-occurences -1)
 ;;;###autoload
-(defun traverse-file-process (regex fname &optional full-path)
+(defun traverse-muse-file-process (regex fname &optional full-path)
+  "Function to format and insert matched line in files in accord
+with MUSE"
   (let ((matched-lines (tv-find-all-regex-in-file regex fname))
         (form-line))
     (when matched-lines
@@ -269,13 +278,13 @@ as string"
                              (if only
                                  (when (equal (file-name-extension y t)
                                               only)
-                                   (traverse-file-process regexp y t))
-                                 (traverse-file-process regexp y t))
+                                   (funcall traverse-file-function regexp y t))
+                                 (funcall traverse-file-function regexp y t))
                              (if only
                                  (when (equal (file-name-extension y t)
                                               only)
-                                   (traverse-file-process regexp y))
-                                 (traverse-file-process regexp y)))
+                                   (funcall traverse-file-function regexp y))
+                                 (funcall traverse-file-function regexp y)))
                          (message "%s [Matches] for %s in [%s]"
                                   (if (>= traverse-count-occurences 1)
                                       traverse-count-occurences
