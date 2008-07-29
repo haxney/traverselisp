@@ -28,7 +28,7 @@
 ;; stable, use the python implementation (see README)
 
 ;; However, it's actually working fine, if you want to test it,
-;; you need only this file and emacs-muse.
+;; you need only this file.
 
 ;; Install:
 ;; =======
@@ -45,7 +45,7 @@
 (require 'derived)
 (eval-when-compile (require 'cl))
 
-(define-derived-mode traversedir-mode muse-mode "traversedir"
+(define-derived-mode traversedir-mode text-mode "traversedir"
   "Major mode to search regexp in files recursively.
 
 Special commands:
@@ -59,7 +59,7 @@ Special commands:
 (defgroup traversedir nil
   "Mode to search recursively regex like grep-find"
   :prefix "traversedir"
-  :group 'muse)
+  :group 'text)
 
 (defcustom traverse-ignore-files
   '(".elc" ".pyc"
@@ -95,7 +95,7 @@ Special commands:
   :type 'integer)
 
 (defcustom traverse-file-function
-  'traverse-muse-file-process
+  'traverse-tv-file-process
   "Default function to use to process files"
   :group 'traversedir
   :type 'symbol)
@@ -259,8 +259,7 @@ with MUSE"
                                            (length matched-lines))))))
 
 (defun traverse-tv-file-process (regex fname)
-  "Function to format and insert matched line in files in accord
-with MUSE"
+  "Default function to format and insert matched line in files"
   (let ((matched-lines (tv-find-all-regex-in-file regex fname))
         (form-line))
     (when matched-lines
@@ -268,8 +267,14 @@ with MUSE"
         (and (insert-button (format "[%s]" fname)
                             'action #'(lambda (button)
                                         (let* ((list-line (split-string (thing-at-point 'line)))
-                                               (nline (nth 4 list-line))
-                                               (regex (nth 2 list-line)))
+                                               (nline (nth 1 list-line))
+                                               (regex))
+                                          (save-excursion
+                                            (goto-char (point-min))
+                                            (when (re-search-forward "^Found ")
+                                              (end-of-line)
+                                              (beginning-of-sexp)
+                                              (setq regex (thing-at-point 'sexp))))
                                           (save-excursion
                                             (find-file-other-window (thing-at-point 'filename))
                                             (goto-line (string-to-number nline))
@@ -278,12 +283,10 @@ with MUSE"
                                             (when (re-search-forward regex nil nil)
                                               (beginning-of-sexp) 
                                               (highlight-regexp (thing-at-point 'sexp))
-                                              (sit-for 1)
+                                              (sit-for 2)
                                               (unhighlight-regexp (thing-at-point 'sexp))))))
                             'face "hi-green")
-             (insert (concat " Found: "
-                             regex
-                             " : "
+             (insert (concat " "
                              (int-to-string (third i))
                              " :"
                              (replace-regexp-in-string "^ *" ""
@@ -306,7 +309,7 @@ with MUSE"
   (erase-buffer)
   (hi-lock-mode)
   (goto-char (point-min))
-  ;(traversedir-mode)
+  (traversedir-mode)
   (insert "* Traverse-lisp-output\n\n\n")
   ;(insert "*To have the full path you can prefix command with C-u*\n\n")
   (highlight-regexp "* Traverse-lisp-output" "hi-pink")
@@ -337,7 +340,7 @@ with MUSE"
                      traverse-ignore-files
                      traverse-ignore-dirs)
   (if (eq traverse-count-occurences 0)
-      (insert "Ho!No! Nothing found!")
+      (insert "Oh!No! Nothing found!")
       (goto-char (point-min))
       (when (re-search-forward "^Wait")
         (beginning-of-line)
