@@ -354,19 +354,27 @@ except on files that are in `traverse-ignore-files'"
                                     y))
                        traverse-ignore-files
                        traverse-ignore-dirs)
+    (setq traverse-count-occurences (if (< traverse-count-occurences 0)
+                                        0
+                                        traverse-count-occurences))
     (if (eq traverse-count-occurences 0)
-        (insert "Oh!No! Nothing found!")
+        (progn
+          (goto-char (point-min))
+          (when (re-search-forward "^Wait")
+            (beginning-of-line)
+            (kill-line)
+            (insert "Oh!No! Nothing found!")))
         (goto-char (point-min))
         (when (re-search-forward "^Wait")
           (beginning-of-line)
           (kill-line)
           (insert (format "Found %s occurences for %s:\n"
                           traverse-count-occurences
-                          regexp)))
-        (message "%s Occurences found for %s in %s seconds"
-                 traverse-count-occurences
-                 regexp
-                 (- (cadr (current-time)) init-time))))
+                          regexp))))
+    (message "%s Occurences found for %s in %s seconds"
+             traverse-count-occurences
+             regexp
+             (- (cadr (current-time)) init-time)))
   (highlight-regexp regexp) 
   (setq traverse-count-occurences -1))
     
