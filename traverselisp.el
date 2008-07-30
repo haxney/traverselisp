@@ -45,17 +45,18 @@
 (require 'derived)
 (eval-when-compile (require 'cl))
 
+(defvar traversedir-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [?q] 'traverse-quit)
+    map)
+  "Keymap used for traversedir commands.")
+
 (define-derived-mode traversedir-mode text-mode "traversedir"
   "Major mode to search regexp in files recursively.
 
 Special commands:
 \\{traversedir-mode-map}")
 
-(defvar traversedir-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map [?q] 'traverse-quit)
-    map)
-  "Keymap used for traversedir commands.")
 
 (defun traverse-quit ()
   "Quit and kill traverse buffer"
