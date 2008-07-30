@@ -330,37 +330,40 @@ except on files that are in `traverse-ignore-files'"
   (display-buffer "*traverse-lisp*")
   (insert  "Wait Lisp searching...\n\n")
   (sit-for 1)
-  (tv-walk-directory tree
-                     #'(lambda (y)
-                         (if (equal only "")
-                             (setq only nil))
-                         (if only
-                             (when (equal (file-name-extension y t)
-                                          only)
+  (let ((init-time (cadr (current-time))))
+    (tv-walk-directory tree
+                       #'(lambda (y)
+                           (if (equal only "")
+                               (setq only nil))
+                           (if only
+                               (when (equal (file-name-extension y t)
+                                            only)
+                                 (funcall traverse-file-function regexp y))
                                (funcall traverse-file-function regexp y))
-                             (funcall traverse-file-function regexp y))
-                         (message "%s [Matches] for %s in [%s]"
-                                  (if (>= traverse-count-occurences 1)
-                                      traverse-count-occurences
-                                      0)
-                                  regexp
-                                  y))
-                     traverse-ignore-files
-                     traverse-ignore-dirs)
-  (if (eq traverse-count-occurences 0)
-      (insert "Oh!No! Nothing found!")
-      (goto-char (point-min))
-      (when (re-search-forward "^Wait")
-        (beginning-of-line)
-        (kill-line)
-        (insert (format "Found %s occurences for %s:\n"
-                        traverse-count-occurences
-                        regexp)))
-      (message "%s Occurences found for %s"
-               traverse-count-occurences
-               regexp))
+                           (message "%s [Matches] for %s in [%s]"
+                                    (if (>= traverse-count-occurences 1)
+                                        traverse-count-occurences
+                                        0)
+                                    regexp
+                                    y))
+                       traverse-ignore-files
+                       traverse-ignore-dirs)
+    (if (eq traverse-count-occurences 0)
+        (insert "Oh!No! Nothing found!")
+        (goto-char (point-min))
+        (when (re-search-forward "^Wait")
+          (beginning-of-line)
+          (kill-line)
+          (insert (format "Found %s occurences for %s:\n"
+                          traverse-count-occurences
+                          regexp)))
+        (message "%s Occurences found for %s in %s seconds"
+                 traverse-count-occurences
+                 regexp
+                 (- (cadr (current-time)) init-time))))
   (highlight-regexp regexp) 
   (setq traverse-count-occurences -1))
+    
     
 (provide 'traverselisp)
 
