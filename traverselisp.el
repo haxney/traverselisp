@@ -49,12 +49,18 @@
   "Major mode to search regexp in files recursively.
 
 Special commands:
-\\{traversedir-mode-map}
-\\{traversedir-mode-hook}")
+\\{traversedir-mode-map}")
 
-(define-key traversedir-mode-map (kbd "q") #'(lambda ()
-                                          (interactive)
-                                          (quit-window t)))
+(defvar traversedir-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [?q] 'traverse-quit)
+    map)
+  "Keymap used for traversedir commands.")
+
+(defun traverse-quit ()
+  "Quit and kill traverse buffer"
+  (interactive)
+  (quit-window t))
 
 (defgroup traversedir nil
   "Mode to search recursively regex like grep-find"
