@@ -123,6 +123,22 @@ Special commands:
 ;;; Main backend functions
 
 ;;;###autoload
+(defmacro tv-list-directory (dirname &optional abs)
+  "Use directory-files without these \".\" \"..\".
+If abs is non-nil use absolute path.
+Check a second time with mapcar if we have no \".\" or \"..\"
+in case we have a directory with crappy files.
+This to avoid infinite loop in walk"
+  `(let ((clean-dir (cddr (directory-files ,dirname ,abs))))
+    (mapcar #'(lambda (x)
+                (if (and (not (equal (file-name-nondirectory x)
+                                     "."))
+                         (not (equal (file-name-nondirectory x)
+                                     "..")))
+                    x))
+            clean-dir)))
+
+;;;###autoload
 (defun tv-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
@@ -162,7 +178,7 @@ on each file found.
 
 (defvar traverse-table (make-hash-table))
 ;;;###autoload
-(defun hash-readlines (file table)
+(defsubst hash-readlines (file table)
   "Record all lines of file in lines-table.
 Keys of table are the number of lines
 starting at line 0"
@@ -180,7 +196,7 @@ starting at line 0"
         (forward-line 1)))))
 
 ;;;###autoload
-(defun tv-find-all-regex-in-hash (regex table)
+(defsubst tv-find-all-regex-in-hash (regex table)
   "Return a list of all lines that match regex
 founded in the hash-table created by `hash-readlines'
 Each element of the list is a list of the form '(key value)"
