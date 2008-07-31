@@ -123,34 +123,6 @@ Special commands:
 ;;; Main backend functions
 
 ;;;###autoload
-(defmacro tv-list-directory (dirname &optional abs)
-  "Use directory-files without these \".\" \"..\".
-If abs is non-nil use absolute path.
-Check a second time with mapcar if we have no \".\" or \"..\"
-in case we have a directory with crappy files.
-This to avoid infinite loop in walk"
-  `(let ((clean-dir (cddr (directory-files ,dirname ,abs))))
-    (mapcar #'(lambda (x)
-                (if (and (not (equal (file-name-nondirectory x)
-                                     "."))
-                         (not (equal (file-name-nondirectory x)
-                                     "..")))
-                    x))
-            clean-dir)))
-
-
-(defun file-compressed-p (fname)
-  (let ((ext (file-name-extension fname)))
-    (cond ((equal ext "gz")
-           t)
-          ((equal ext "bz2")
-           t)
-          ((equal ext "zip")
-           t)
-          (t nil))))
-
-
-;;;###autoload
 (defun tv-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
@@ -180,118 +152,102 @@ on each file found.
       (walk (expand-file-name dirname))))
 
 
-;;;###autoload
-(defmacro tv-readlines (file &optional delete-empty-lines)
-  "Return a list where elements are the lines of a file
-\\(emulate object.readlines() of python)"
-  `(let* ((my-string (with-temp-buffer
-                       (insert-file-contents ,file)
-                       (buffer-string)))
-          (my-read-list (split-string my-string "\n")))
-     (when ,delete-empty-lines
-       (dolist (i my-read-list)
-         (when (equal i "")
-           (delete i my-read-list))))
-     my-read-list))
-
-
-;;;###autoload
-(defmacro tv-find-all-regex-in-file (regex file)
-  "Return a list with elements of the form :
-'(matched-line char-pos line-pos)
-Example:
-,----
-| ELISP> (tv-find-all-regex-in-file \"ligne\" \"~/toto\")
-| ((\"avec une premiere ligne\" 62 2)
-|  (\"une deuxieme ligne\" 93 3)
-|  (\"une troisieme ligne\" 126 4))
-`----
-"
-  `(let ((infile-list (tv-readlines ,file))
-        (outfile-list nil)
-        (count-line 0)
-        (count-char 0)
-        (pos-match)
-        (tmp-count-char 0))
-    (dolist (i infile-list)
-      (setq count-line (+ count-line 1))
-      (setq pos-match (string-match ,regex i)) 
-      (when pos-match
-        (setq tmp-count-char (+ count-char (- (+ 1 (length i)) pos-match)))
-        (add-to-list 'outfile-list `(,i ,tmp-count-char ,count-line) t))
-      (setq count-char (+ count-char (if (equal i "")
-                                         1
-                                         (+ 1 (length i))))))
-    outfile-list))
-
-
-;;;###autoload
-(defun tv-find-first-regex-in-file (regex file)
-  "Stop at the first match of regex and return line
-as string"
-  (let ((file-list (tv-readlines file)))
-    (catch 'break
-      (dolist (i file-list)
-        (when (string-match regex i)
-          (throw 'break
-            i))))))
-
-
+;;TODO : make a find-regex-in-file func
+;;+it should be called from the same function than deep-find
 ;; (defun traverse-find-in-file (regexp file)
 ;;   (interactive "sRegexp: \nfFileName: "))
 
 
-;; TODO if permission is denied do the right thing
 (defvar traverse-count-occurences -1)
+
+(defvar traverse-table (make-hash-table))
+;;;###autoload
+(defun hash-readlines (file table)
+  "Record all lines of file in lines-table.
+Keys of table are the number of lines
+starting at line 0"
+  (let ((count 0)
+        (end))
+    ;(clrhash table)
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (setq end (point-max))
+      (while (< (line-end-position) end)
+        (puthash count (thing-at-point 'line) table)
+        (setq count (+ count 1))
+        ;;(goto-line count)))))
+        (forward-line 1)))))
+
+;;;###autoload
+(defun tv-find-all-regex-in-hash (regex table)
+  "Return a list of all lines that match regex
+founded in the hash-table created by `hash-readlines'
+Each element of the list is a list of the form '(key value)"
+  (let ((match-list nil))
+    (maphash #'(lambda (x y)
+                 (when (string-match regex y)
+                    (push (list x
+                                (replace-regexp-in-string "\n"
+                                                          ""
+                                                          y))
+                          match-list)))
+             table)
+    (setq match-list (reverse match-list))
+    match-list))
+
+;;;###autoload
+(defun traverse-button-func (button)
+  "The function called by buttons in traverse buffer"
+  (let* ((list-line (split-string (thing-at-point 'line)))
+         (nline (nth 1 list-line))
+         (regex)
+         (fname (button-label (button-at (point)))))
+    (save-excursion
+      (goto-char (point-min))
+      (when (re-search-forward "^Found ")
+        (end-of-line)
+        (beginning-of-sexp)
+        (setq regex (thing-at-point 'sexp))))
+    (save-excursion
+      (setq fname (replace-regexp-in-string "\\[" "" fname))
+      (setq fname (replace-regexp-in-string "\\]" "" fname))
+      (find-file-other-window fname) 
+      (goto-line (string-to-number nline))
+      (setq case-fold-search t)
+      (beginning-of-line)
+      (when (re-search-forward regex nil nil)
+        (beginning-of-sexp) 
+        (highlight-regexp (thing-at-point 'sexp))
+        (sit-for 2)
+        (unhighlight-regexp (thing-at-point 'sexp))))))
 
 ;;;###autoload
 (defun traverse-tv-file-process (regex fname)
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
-  (let ((matched-lines (tv-find-all-regex-in-file regex fname))
-        (form-line))
-    (when matched-lines
-      (dolist (i matched-lines)
+  (clrhash traverse-table)
+  (hash-readlines fname traverse-table)
+  (let ((matched-lines (tv-find-all-regex-in-hash regex traverse-table)))
+    (when matched-lines 
+      (dolist (i matched-lines) ;; each element is of the form '(key value)
         (and (insert-button (format "[%s]" fname)
-                            'action #'(lambda (button)
-                                        (let* ((list-line (split-string (thing-at-point 'line)))
-                                               (nline (nth 1 list-line))
-                                               (regex)
-                                               (fname (button-label (button-at (point)))))
-                                          (save-excursion
-                                            (goto-char (point-min))
-                                            (when (re-search-forward "^Found ")
-                                              (end-of-line)
-                                              (beginning-of-sexp)
-                                              (setq regex (thing-at-point 'sexp))))
-                                          (save-excursion
-                                            (setq fname (replace-regexp-in-string "\\[" "" fname))
-                                            (setq fname (replace-regexp-in-string "\\]" "" fname))
-                                            (find-file-other-window fname) 
-                                            (goto-line (string-to-number nline))
-                                            (setq case-fold-search t)
-                                            (beginning-of-line)
-                                            (when (re-search-forward regex nil nil)
-                                              (beginning-of-sexp) 
-                                              (highlight-regexp (thing-at-point 'sexp))
-                                              (sit-for 2)
-                                              (unhighlight-regexp (thing-at-point 'sexp))))))
+                            'action 'traverse-button-func
                             'face "hi-green")
              (insert (concat " "
-                             (int-to-string (third i))
+                             (int-to-string (+ (first i) 1))
                              " :"
                              (replace-regexp-in-string "^ *" ""
                                                        (if
-                                                        (> (length (first i))
+                                                        (> (length (second i))
                                                            traverse-length-line)
-                                                        (substring (first i)
+                                                        (substring (second i)
                                                                    0
                                                                    traverse-length-line)
-                                                        (first i)))
+                                                        (second i)))
                              "\n"))))
       (setq traverse-count-occurences (+ traverse-count-occurences
                                          (length matched-lines))))))
-
 
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
@@ -301,7 +257,7 @@ except on files that are in `traverse-ignore-files'"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
   (set-buffer (get-buffer-create "*traverse-lisp*"))
   (erase-buffer)
-  (hi-lock-mode)
+  (hi-lock-mode 1)
   (goto-char (point-min))
   (traversedir-mode)
   (insert " *Traverse-lisp-output*\n\n\n")
