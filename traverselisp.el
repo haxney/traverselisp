@@ -80,7 +80,8 @@ Special commands:
     ".xls" ".ppt"
     ".mdb" ".adp"
     "TAGS" ".tiff"
-    ".pdf" ".dvi")
+    ".pdf" ".dvi"
+    ".xbm")
   "Files we want to ignore (extensions)"
   :group 'traversedir
   :type '(repeat string))
@@ -116,13 +117,13 @@ Special commands:
 ;;; Main backend functions
 
 ;;;###autoload
-(defun tv-list-directory (dirname &optional abs)
+(defmacro tv-list-directory (dirname &optional abs)
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path.
 Check a second time with mapcar if we have no \".\" or \"..\"
 in case we have a directory with crappy files.
 This to avoid infinite loop in walk"
-  (let ((clean-dir (cddr (directory-files dirname abs))))
+  `(let ((clean-dir (cddr (directory-files ,dirname ,abs))))
     (mapcar #'(lambda (x)
                 (if (and (not (equal (file-name-nondirectory x)
                                      "."))
@@ -189,8 +190,8 @@ on each file found.
 
 
 ;;;###autoload
-(defun tv-find-all-regex-in-file (regex file)
-  "Return a list with elemnts of the form :
+(defmacro tv-find-all-regex-in-file (regex file)
+  "Return a list with elements of the form :
 '(matched-line char-pos line-pos)
 Example:
 ,----
@@ -200,7 +201,7 @@ Example:
 |  (\"une troisieme ligne\" 126 4))
 `----
 "
-  (let ((infile-list (tv-readlines file))
+  `(let ((infile-list (tv-readlines ,file))
         (outfile-list nil)
         (count-line 0)
         (count-char 0)
@@ -208,7 +209,7 @@ Example:
         (tmp-count-char 0))
     (dolist (i infile-list)
       (setq count-line (+ count-line 1))
-      (setq pos-match (string-match regex i)) 
+      (setq pos-match (string-match ,regex i)) 
       (when pos-match
         (setq tmp-count-char (+ count-char (- (+ 1 (length i)) pos-match)))
         (add-to-list 'outfile-list `(,i ,tmp-count-char ,count-line) t))
@@ -236,41 +237,6 @@ as string"
 
 ;; TODO if permission is denied do the right thing
 (defvar traverse-count-occurences -1)
-;;;###autoload
-(defun traverse-muse-file-process (regex fname &optional full-path)
-  "Function to format and insert matched line in files in accord
-with MUSE"
-  (let ((matched-lines (tv-find-all-regex-in-file regex fname))
-        (form-line))
-    (when matched-lines
-      (dolist (i matched-lines)
-        (setq form-line (concat
-                         "[[pos://"
-                         fname ;; file name
-                         "#"
-                         (int-to-string (second i)) ;; char position
-                         "]["
-                         (if full-path
-                             fname ;; full path
-                             (file-name-nondirectory fname)) ;; file relative name
-                         "]]"
-                         " |"
-                         (int-to-string (third i)) ;; line position
-                         ":<"
-                         (replace-regexp-in-string "^ *" ""
-                                                   (if
-                                                    (> (length (first i))
-                                                       traverse-length-line)
-                                                    (substring (first i)
-                                                               0
-                                                               traverse-length-line)
-                                                    (first i)))
-                         ">"
-                         "\n"))
-        (insert form-line))
-      (setq traverse-count-occurences (+ traverse-count-occurences
-                                           (length matched-lines))))))
-
 
 ;;;###autoload
 (defun traverse-tv-file-process (regex fname)
@@ -318,7 +284,7 @@ in *traverse-lisp* buffer"
                                                         (first i)))
                              "\n"))))
       (setq traverse-count-occurences (+ traverse-count-occurences
-                                           (length matched-lines))))))
+                                         (length matched-lines))))))
 
 
 ;;;###autoload
@@ -338,46 +304,47 @@ except on files that are in `traverse-ignore-files'"
   (insert  "Wait Lisp searching...\n\n")
   (sit-for 1)
   (let ((init-time (cadr (current-time))))
-    (tv-walk-directory tree
-                       #'(lambda (y)
-                           (if (equal only "")
-                               (setq only nil))
-                           (if only
-                               (when (equal (file-name-extension y t)
-                                            only)
-                                 (funcall traverse-file-function regexp y))
-                               (funcall traverse-file-function regexp y))
-                           (message "%s [Matches] for %s in [%s]"
-                                    (if (>= traverse-count-occurences 1)
-                                        traverse-count-occurences
-                                        0)
-                                    regexp
-                                    y))
-                       traverse-ignore-files
-                       traverse-ignore-dirs)
-    (setq traverse-count-occurences (if (< traverse-count-occurences 0)
-                                        0
-                                        traverse-count-occurences))
-    (if (eq traverse-count-occurences 0)
-        (progn
+    (unwind-protect
+         (tv-walk-directory tree
+                            #'(lambda (y)
+                                (if (equal only "")
+                                    (setq only nil))
+                                (if only
+                                    (when (equal (file-name-extension y t)
+                                                 only)
+                                      (funcall traverse-file-function regexp y))
+                                    (funcall traverse-file-function regexp y))
+                                (message "%s [Matches] for %s in [%s]"
+                                         (if (>= traverse-count-occurences 1)
+                                             traverse-count-occurences
+                                             0)
+                                         regexp
+                                         y))
+                            traverse-ignore-files
+                            traverse-ignore-dirs)
+      (setq traverse-count-occurences (if (< traverse-count-occurences 0)
+                                          0
+                                          traverse-count-occurences))
+      (if (eq traverse-count-occurences 0)
+          (progn
+            (goto-char (point-min))
+            (when (re-search-forward "^Wait")
+              (beginning-of-line)
+              (kill-line)
+              (insert "Oh!No! Nothing found!")))
           (goto-char (point-min))
           (when (re-search-forward "^Wait")
             (beginning-of-line)
             (kill-line)
-            (insert "Oh!No! Nothing found!")))
-        (goto-char (point-min))
-        (when (re-search-forward "^Wait")
-          (beginning-of-line)
-          (kill-line)
-          (insert (format "Found %s occurences for %s:\n"
-                          traverse-count-occurences
-                          regexp))))
-    (message "%s Occurences found for %s in %s seconds"
-             traverse-count-occurences
-             regexp
-             (- (cadr (current-time)) init-time)))
-  (highlight-regexp regexp) 
-  (setq traverse-count-occurences -1))
+            (insert (format "Found %s occurences for %s:\n"
+                            traverse-count-occurences
+                            regexp))))
+      (message "%s Occurences found for %s in %s seconds"
+               traverse-count-occurences
+               regexp
+               (- (cadr (current-time)) init-time))
+    (highlight-regexp regexp) 
+    (setq traverse-count-occurences -1))))
     
     
 (provide 'traverselisp)
