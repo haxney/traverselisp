@@ -22,6 +22,12 @@
 ;; Boston, MA 02110-1301 USA
 
 
+;; Contact:
+;; =======
+;; thierry dot volpiatto hat gmail dot com
+;; You can get the developpement version of the file here with hg:
+;; hg clone http://freehg.org/u/thiedlecques/traverselisp/
+
 ;; Comments:
 ;; ========
 ;; This code is EXPERIMENTAL and NOT FINISHED, if you want something
@@ -336,6 +342,8 @@ except on files that are in `traverse-ignore-files'"
           (when (re-search-forward "^Wait")
             (beginning-of-line)
             (kill-line)
+            (insert (format "Search performed in %s seconds\n\n"
+                            (- (cadr (current-time)) init-time)))
             (insert (format "Found %s occurences for %s:\n"
                             traverse-count-occurences
                             regexp))))
