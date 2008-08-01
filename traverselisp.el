@@ -114,7 +114,7 @@ Special commands:
   :group 'traversedir
   :type 'symbol)
 
-(defvar traverse-version "0.1")
+(defvar traverse-version "hash-0.1")
 
 (defun traverse-lisp-version ()
   (interactive)
@@ -122,23 +122,13 @@ Special commands:
 
 ;;; Main backend functions
 
-;;;###autoload
-(defmacro tv-list-directory (dirname &optional abs)
-  "Use directory-files without these \".\" \"..\".
-If abs is non-nil use absolute path.
-Check a second time with mapcar if we have no \".\" or \"..\"
-in case we have a directory with crappy files.
-This to avoid infinite loop in walk"
-  `(let ((clean-dir (cddr (directory-files ,dirname ,abs))))
-    (mapcar #'(lambda (x)
-                (if (and (not (equal (file-name-nondirectory x)
-                                     "."))
-                         (not (equal (file-name-nondirectory x)
-                                     "..")))
-                    x))
-            clean-dir)))
 
-;;;###autoload
+(defsubst tv-list-directory (dirname &optional abs)
+  "Use directory-files without these \".\" \"..\".
+If abs is non-nil use absolute path."
+  (cddr (directory-files dirname abs)))
+     
+
 (defun tv-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
@@ -153,12 +143,20 @@ on each file found.
                        (not (file-symlink-p name))) ;; don't follow symlinks
                   (if exclude-dirs
                       (dolist (x (tv-list-directory name t))
-                        (if x ;; be sure x is a string and not nil
-                            (unless (member (file-name-nondirectory x) exclude-dirs)
-                              (walk x)))) ;; Return to TOP and take the good cond
+                        (when x ;; be sure x is a string and not nil
+                          (if (and (not (equal (file-name-nondirectory x)
+                                               "."))
+                                   (not (equal (file-name-nondirectory x)
+                                               "..")))
+                              (unless (member (file-name-nondirectory x) exclude-dirs)
+                                (walk x))))) ;; Return to TOP and take the good cond
                       (dolist (x (tv-list-directory name t))
-                        (if x
-                            (walk x))))) ;; Return to TOP and take the good cond
+                        (when x
+                          (if (and (not (equal (file-name-nondirectory x)
+                                               "."))
+                                   (not (equal (file-name-nondirectory x)
+                                               "..")))
+                              (walk x)))))) ;; Return to TOP and take the good cond
                  ((and (file-regular-p name) ;; FILE PROCESSING
                        (not (file-symlink-p name))) ;; don't follow symlinks
                   (if exclude-files
@@ -177,25 +175,20 @@ on each file found.
 (defvar traverse-count-occurences -1)
 
 (defvar traverse-table (make-hash-table))
-;;;###autoload
-(defsubst hash-readlines (file table)
-  "Record all lines of file in lines-table.
-Keys of table are the number of lines
-starting at line 0"
-  (let ((count 0)
-        (end))
-    ;(clrhash table)
-    (with-temp-buffer
-      (insert-file-contents file)
-      (goto-char (point-min))
-      (setq end (point-max))
-      (while (< (line-end-position) end)
-        (puthash count (thing-at-point 'line) table)
-        (setq count (+ count 1))
-        ;;(goto-line count)))))
-        (forward-line 1)))))
 
-;;;###autoload
+(defsubst hash-readlines (file table)
+  "Return a list where elements are the lines of a file
+\\(emulate object.readlines() of python)"
+  (let* ((my-string (with-temp-buffer
+                       (insert-file-contents file)
+                       (buffer-string)))
+          (my-read-list (split-string my-string "\n"))
+          (count 0))
+     (dolist (i my-read-list)
+       (puthash count i table)
+       (incf count))))
+
+
 (defsubst tv-find-all-regex-in-hash (regex table)
   "Return a list of all lines that match regex
 founded in the hash-table created by `hash-readlines'
@@ -238,7 +231,7 @@ Each element of the list is a list of the form '(key value)"
         (sit-for 2)
         (unhighlight-regexp (thing-at-point 'sexp))))))
 
-;;;###autoload
+
 (defun traverse-tv-file-process (regex fname)
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
