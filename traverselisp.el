@@ -87,7 +87,7 @@ Special commands:
     ".mdb" ".adp"
     "TAGS" ".tiff"
     ".pdf" ".dvi"
-    ".xbm")
+    ".xbm" ".gpg")
   "Files we want to ignore (extensions)"
   :group 'traversedir
   :type '(repeat string))
@@ -114,7 +114,7 @@ Special commands:
   :group 'traversedir
   :type 'symbol)
 
-(defvar traverse-version "hash-0.1")
+(defvar traverse-version "1.1")
 
 (defun traverse-lisp-version ()
   (interactive)
@@ -164,12 +164,6 @@ on each file found.
                         (funcall file-fn name))
                       (funcall file-fn name))))))
       (walk (expand-file-name dirname))))
-
-
-;;TODO : make a find-regex-in-file func
-;;+it should be called from the same function than deep-find
-;; (defun traverse-find-in-file (regexp file)
-;;   (interactive "sRegexp: \nfFileName: "))
 
 
 (defvar traverse-count-occurences -1)
@@ -232,7 +226,7 @@ Each element of the list is a list of the form '(key value)"
         (unhighlight-regexp (thing-at-point 'sexp))))))
 
 
-(defun traverse-tv-file-process (regex fname)
+(defun traverse-tv-file-process (regex fname &optional full-path)
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
   (clrhash traverse-table)
@@ -240,12 +234,15 @@ in *traverse-lisp* buffer"
   (let ((matched-lines (tv-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (and (insert-button (format "[%s]" fname)
+        (and (insert-button (format "[%s]" (if full-path
+                                               fname
+                                               (file-relative-name fname
+                                                               default-directory)))
                             'action 'traverse-button-func
                             'face "hi-green")
              (insert (concat " "
                              (int-to-string (+ (first i) 1))
-                             " :"
+                             ":"
                              (replace-regexp-in-string "^ *" ""
                                                        (if
                                                         (> (length (second i))
@@ -280,11 +277,17 @@ except on files that are in `traverse-ignore-files'"
                             #'(lambda (y)
                                 (if (equal only "")
                                     (setq only nil))
-                                (if only
-                                    (when (equal (file-name-extension y t)
-                                                 only)
-                                      (funcall traverse-file-function regexp y))
-                                    (funcall traverse-file-function regexp y))
+                                (if current-prefix-arg
+                                    (if only
+                                        (when (equal (file-name-extension y t)
+                                                     only)
+                                          (funcall traverse-file-function regexp y t))
+                                        (funcall traverse-file-function regexp y t))
+                                    (if only
+                                        (when (equal (file-name-extension y t)
+                                                     only)
+                                          (funcall traverse-file-function regexp y))
+                                        (funcall traverse-file-function regexp y)))
                                 (message "%s [Matches] for %s in [%s]"
                                          (if (>= traverse-count-occurences 1)
                                              traverse-count-occurences
