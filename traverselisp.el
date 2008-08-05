@@ -46,6 +46,7 @@
 ;; M-x traverse-deep-rfind
 ;; Use customize to configure or setq differents variables.
 
+(defconst traverse-version "1.1")
 
 ;;; Code:
 (require 'derived)
@@ -114,7 +115,20 @@ Special commands:
   :group 'traversedir
   :type 'symbol)
 
-(defvar traverse-version "1.1")
+(defgroup traverse-faces nil
+  "Faces for TRAVERSEDIR."
+  :group 'traversedir)
+
+(defface traverse-match-face '((t (:foreground "red")))
+  "TRAVERSEDIR face."
+  :group 'traverse-faces)
+(defface traverse-regex-face '((t (:foreground "yellow")))
+  "TRAVERSEDIR face."
+  :group 'traverse-faces)
+(defface traverse-path-face '((t (:foreground "green")))
+  "TRAVERSEDIR face."
+  :group 'traverse-faces)
+
 
 (defun traverse-lisp-version ()
   (interactive)
@@ -171,7 +185,8 @@ on each file found.
 (defvar traverse-table (make-hash-table))
 
 (defsubst hash-readlines (file table)
-  "Return a list where elements are the lines of a file
+  "Load all the line of a file in an hash-table
+with the number of line as key.
 \\(emulate object.readlines() of python)"
   (let* ((my-string (with-temp-buffer
                        (insert-file-contents file)
@@ -290,10 +305,13 @@ except on files that are in `traverse-ignore-files'"
                                         (funcall traverse-file-function regexp y)))
                                 (message "%s [Matches] for %s in [%s]"
                                          (if (>= traverse-count-occurences 1)
-                                             traverse-count-occurences
+                                             (propertize (int-to-string traverse-count-occurences)
+                                                         'face 'traverse-match-face)
                                              0)
-                                         regexp
-                                         y))
+                                         (propertize regexp
+                                                     'face 'traverse-regex-face)
+                                         (propertize y
+                                                     'face 'traverse-path-face)))
                             traverse-ignore-files
                             traverse-ignore-dirs)
       (setq traverse-count-occurences (if (< traverse-count-occurences 0)
@@ -316,8 +334,10 @@ except on files that are in `traverse-ignore-files'"
                             traverse-count-occurences
                             regexp))))
       (message "%s Occurences found for %s in %s seconds"
-               traverse-count-occurences
-               regexp
+               (propertize (int-to-string traverse-count-occurences)
+                           'face 'traverse-match-face)
+               (propertize regexp
+                           'face 'traverse-regex-face)
                (- (cadr (current-time)) init-time))
     (highlight-regexp regexp) 
     (setq traverse-count-occurences -1))))
