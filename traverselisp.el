@@ -177,7 +177,7 @@ on each file found.
       (walk (expand-file-name dirname))))
 
 
-(defvar traverse-count-occurences -1)
+(defvar traverse-count-occurences 0)
 
 (defvar traverse-table (make-hash-table))
 
@@ -337,7 +337,7 @@ except on files that are in `traverse-ignore-files'"
                            'face 'traverse-regex-face)
                (- (cadr (current-time)) init-time))
     (highlight-regexp regexp) 
-    (setq traverse-count-occurences -1))))
+    (setq traverse-count-occurences 0))))
     
     
 (provide 'traverselisp)
