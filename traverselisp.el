@@ -1,4 +1,4 @@
-;;; traverse-lisp.el -- elisp implementations of rgrep, grep-find, grep, etc...
+;;; traverselisp.el -- elisp implementations of rgrep, grep-find, grep, etc...
 
 ;; Author: Thierry Volpiatto
 
@@ -30,15 +30,12 @@
 
 ;; Comments:
 ;; ========
-;; This code is EXPERIMENTAL and NOT FINISHED, if you want something
-;; stable, use the python implementation (see README)
-
-;; However, it's actually working fine, if you want to test it,
-;; you need only this file.
+;; This is a clone of rgrep, working on all platforms.
+;; It can walk throught directorys to find a regexp
 
 ;; Install:
 ;; =======
-;; (require 'traversepurelisp)
+;; (require 'traverselisp)
 ;; (setq max-lisp-eval-depth 40000)
 
 ;; Usage:
