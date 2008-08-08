@@ -1,26 +1,36 @@
-;;; traverselisp.el -- elisp implementations of rgrep, grep-find, grep, etc...
+;;; traverselisp.el --- walk through directories to find regex in files
+;; 
+;; Filename: traverselisp.el
+;; Description: A clone of rgrep wrote all in lisp.
+;; Author: Thierry Volpiatto 
+;; Maintainer: Thierry Volpiatto 
+;; Created: ven aoû  8 16:23:26 2008 (+0200)
+;; Version:
+(defconst traverse-version "1.1")
 
-;; Author: Thierry Volpiatto
+;; Last-Updated: ven aoû  8 16:42:04 2008 (+0200)
+;;           By: thierry
+;;     Update #: 3
+;; URL: http://freehg.org/u/thiedlecques/traverselisp/
+;; Keywords: 
 
-;; Copyright (C) 2008 Thierry Volpiatto
-;;
-;; this file is NOT part of GNU Emacs
-;;
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3 of
-;; the License, or (at your option) any later version.
+;; Compatibility:
 
-;; This program is distributed in the hope that it will be
-;; useful, but WITHOUT ANY WARRANTY; without even the implied
-;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-;; PURPOSE.  See the GNU General Public License for more details.
+;; Work on all platforms that support emacs.
+;; Don't need any backend.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
+;;; Commentary:
 
-;; You should have received a copy of the GNU General Public
-;; License along with this program; if not, write to the Free
-;; Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301 USA
+;; Install:
+;; =======
+;; (require 'traverselisp)
+;; (setq max-lisp-eval-depth 40000) ; should work with lower values now.
 
+;; Usage:
+;; =====
+;; M-x traverse-deep-rfind
+;; Use customize to configure or setq differents variables.
 
 ;; Contact:
 ;; =======
@@ -28,24 +38,33 @@
 ;; You can get the developpement version of the file here with hg:
 ;; hg clone http://freehg.org/u/thiedlecques/traverselisp/
 
-;; Comments:
-;; ========
-;; This is a clone of rgrep, working on all platforms.
-;; It can walk throught directorys to find a regexp
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
+;;; Change log:
+;; 
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 3, or
+;; (at your option) any later version.
+;; 
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;; 
+;; You should have received a copy of the GNU General Public License
+;; along with this program; see the file COPYING.  If not, write to
+;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+;; Floor, Boston, MA 02110-1301, USA.
 
-;; Install:
-;; =======
-;; (require 'traverselisp)
-;; (setq max-lisp-eval-depth 40000)
-
-;; Usage:
-;; =====
-;; M-x traverse-deep-rfind
-;; Use customize to configure or setq differents variables.
-
-(defconst traverse-version "1.1")
-
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; 
 ;;; Code:
+
 (require 'derived)
 (eval-when-compile (require 'cl))
 
@@ -345,3 +364,9 @@ except on files that are in `traverse-ignore-files'"
 ;;; end of file
 
   
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; traverselisp.el ends here
+
+
