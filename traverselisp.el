@@ -7,10 +7,10 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
 (defconst traverse-version "1.1")
-
-;; Last-Updated: ven aoû  8 16:42:04 2008 (+0200)
+;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
+;; Last-Updated: sam aoû  9 09:52:01 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 3
+;;     Update #: 6
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -88,7 +88,7 @@ Special commands:
 
 (defgroup traversedir nil
   "Mode to search recursively regex like grep-find"
-  :prefix "traversedir"
+  :prefix "traversedir-"
   :group 'text)
 
 (defcustom traverse-ignore-files
@@ -361,9 +361,6 @@ except on files that are in `traverse-ignore-files'"
     
 (provide 'traverselisp)
 
-;;; end of file
-
-  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
