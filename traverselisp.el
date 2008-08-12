@@ -8,9 +8,9 @@
 ;; Version:
 (defconst traverse-version "1.1")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: sam aoû  9 09:52:01 2008 (+0200)
+;; Last-Updated: mar aoû 12 15:33:32 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 6
+;;     Update #: 13
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -265,26 +265,25 @@ in *traverse-lisp* buffer"
   (let ((matched-lines (tv-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (and (insert-button (format "[%s]" (if full-path
-                                               fname
-                                               (file-relative-name fname
-                                                               default-directory)))
-                            'action 'traverse-button-func
-                            'face "hi-green")
-             (insert (concat " "
-                             (int-to-string (+ (first i) 1))
-                             ":"
-                             (replace-regexp-in-string "^ *" ""
-                                                       (if
-                                                        (> (length (second i))
-                                                           traverse-length-line)
-                                                        (substring (second i)
-                                                                   0
-                                                                   traverse-length-line)
-                                                        (second i)))
-                             "\n"))))
-      (setq traverse-count-occurences (+ traverse-count-occurences
-                                         (length matched-lines))))))
+        (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
+          (and (insert-button (format "[%s]" (if full-path
+                                                 fname
+                                                 (file-relative-name fname
+                                                                     default-directory)))
+                              'action 'traverse-button-func
+                              'face "hi-green")
+               (insert (concat " "
+                               (int-to-string (+ (first i) 1))
+                               ":"
+                               (if (> (length line-to-print)
+                                      traverse-length-line)
+                                   (substring line-to-print
+                                              0
+                                              traverse-length-line)
+                                   line-to-print)
+                               "\n")))))
+        (setq traverse-count-occurences (+ traverse-count-occurences
+                                           (length matched-lines))))))
 
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
