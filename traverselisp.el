@@ -1,16 +1,17 @@
-;;; traverselisp.el --- walk through directories to find regex in files
+;;; traverselisp.el 
 ;; 
 ;; Filename: traverselisp.el
 ;; Description: A clone of rgrep wrote all in lisp.
+;; Also: walk through directories and perform diverses actions on files.
 ;; Author: Thierry Volpiatto 
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.1")
+(defconst traverse-version "1.2")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar aoû 12 15:33:32 2008 (+0200)
+;; Last-Updated: mer aoû 27 09:24:50 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 13
+;;     Update #: 28
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -357,7 +358,33 @@ except on files that are in `traverse-ignore-files'"
     (highlight-regexp regexp) 
     (setq traverse-count-occurences 0))))
     
-    
+(defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
+  "Recurse in `tree' and copy/move all files with `ext' in `dir'.
+Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
+`func' is a symbol when called non-interactively
+Note: `dir' will be use as target and NO search inside it will be performed.
+If you want to move/copy files that are nested in subdir(s) of `dir'
+It will fail silently.==> So use another dir target"
+  (interactive "DTree: \nsExt(with dot): \nGTargetDirectory: ")
+  (let ((fn (cond (func
+                   func)
+                  (current-prefix-arg
+                   'rename-file)
+                  (t 'copy-file)))
+        (igndir (file-name-nondirectory dir)))
+    (unless (file-directory-p dir)
+      (make-directory dir t))
+    (tv-walk-directory tree
+                       #'(lambda (x)
+                           (if (or (eq fn 'rename-file)
+                                   (eq fn 'copy-file))
+                               (when (equal (file-name-extension x t) ext)
+                                 (funcall fn (expand-file-name x) dir 1))
+                               (when (equal (file-name-extension x t) ext)
+                                 (funcall fn (expand-file-name x)))))
+                       nil
+                       `(,igndir))))
+
 (provide 'traverselisp)
 
 
