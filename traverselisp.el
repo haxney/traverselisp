@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.2")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer aoû 27 17:06:52 2008 (+0200)
+;; Last-Updated: mer aoû 27 21:55:16 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 51
+;;     Update #: 70
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -130,7 +130,7 @@ Special commands:
   :type 'integer)
 
 (defcustom traverse-file-function
-  'traverse-tv-file-process
+  'traverse-file-process
   "Default function to use to process files"
   :group 'traversedir
   :type 'symbol)
@@ -163,13 +163,13 @@ Special commands:
 ;;; Main backend functions
 
 
-(defsubst tv-list-directory (dirname &optional abs)
+(defsubst traverse-list-directory (dirname &optional abs)
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path."
   (cddr (directory-files dirname abs)))
      
 
-(defun tv-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
+(defun traverse-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
 `dirname' ==> we start in this directory
@@ -182,7 +182,7 @@ on each file found.
            (cond ((and (file-directory-p name) ;; DIR PROCESSING
                        (not (file-symlink-p name))) ;; don't follow symlinks
                   (if exclude-dirs
-                      (dolist (x (tv-list-directory name t))
+                      (dolist (x (traverse-list-directory name t))
                         (when x ;; be sure x is a string and not nil
                           (if (and (not (equal (file-name-nondirectory x)
                                                "."))
@@ -190,7 +190,7 @@ on each file found.
                                                "..")))
                               (unless (member (file-name-nondirectory x) exclude-dirs)
                                 (walk x))))) ;; Return to TOP and take the good cond
-                      (dolist (x (tv-list-directory name t))
+                      (dolist (x (traverse-list-directory name t))
                         (when x
                           (if (and (not (equal (file-name-nondirectory x)
                                                "."))
@@ -200,7 +200,8 @@ on each file found.
                  ((and (file-regular-p name) ;; FILE PROCESSING
                        (not (file-symlink-p name))) ;; don't follow symlinks
                   (if exclude-files
-                      (unless (member (file-name-extension name t) exclude-files)
+                      (unless (or (member (file-name-extension name t) exclude-files)
+                                  (member (file-name-nondirectory name) exclude-files))
                         (funcall file-fn name))
                       (funcall file-fn name))))))
       (walk (expand-file-name dirname))))
@@ -224,7 +225,7 @@ with the number of line as key.
        (incf count))))
 
 
-(defsubst tv-find-all-regex-in-hash (regex table)
+(defsubst traverse-find-all-regex-in-hash (regex table)
   "Return a list of all lines that match regex
 founded in the hash-table created by `hash-readlines'
 Each element of the list is a list of the form '(key value)"
@@ -261,35 +262,48 @@ Each element of the list is a list of the form '(key value)"
       (setq case-fold-search t)
       (beginning-of-line)
       (when (re-search-forward regex nil nil)
-        (beginning-of-sexp) 
-        (highlight-regexp (thing-at-point 'sexp))
+        (goto-char (- (point) (length regex)))
+        (highlight-regexp regex)
         (sit-for traverse-show-regexp-delay)
-        (unhighlight-regexp (thing-at-point 'sexp))))))
+        (unhighlight-regexp regex)))))
 
 (defun traverse-search-and-replace (str)
   "Replace regex with `str', replacement is
 performed only on current line"
   (interactive "sNewstring: ")
-  (if (button-at (point))
-      (progn
-        (save-window-excursion
-          (let ((fname (button-label (button-at (point)))))
-            (setq fname (replace-regexp-in-string "\\[" "" fname))
-            (setq fname (replace-regexp-in-string "\\]" "" fname))
-            (push-button)
-            (with-current-buffer (file-name-nondirectory fname) 
-              (let ((beg (point))
-                    (regex (thing-at-point 'sexp)))
-                (goto-char (+ beg (length regex)))
-                (delete-region beg (point))
-                (insert str))
-              (save-buffer)
-              (kill-buffer (current-buffer)))))
-        (beginning-of-line)
-        (delete-region (point) (line-end-position))
-        (delete-blank-lines)
-        (forward-line 1))
-      (message "We are not on a button!")))
+  (let ((pos (point))
+        (regex))
+    (goto-char (point-min))
+    (when (re-search-forward "^Found ")
+      (end-of-line)
+      (beginning-of-sexp)
+      (setq regex (thing-at-point 'sexp)))
+    (goto-char pos)
+    (if (button-at (point))
+        (progn
+          (save-window-excursion
+            (let ((fname (button-label (button-at (point)))))
+              (setq fname (replace-regexp-in-string "\\[" "" fname))
+              (setq fname (replace-regexp-in-string "\\]" "" fname))
+              (push-button)
+              (with-current-buffer (file-name-nondirectory fname) 
+                (let ((beg (point)))
+                  (goto-char (+ beg (length regex)))
+                  (delete-region beg (point))
+                  (insert str))
+                (save-buffer)
+                (kill-buffer (current-buffer)))))
+          (beginning-of-line)
+          (delete-region (point) (line-end-position))
+          (delete-blank-lines)
+          (forward-line 1)
+          (message "%s Replaced by %s"
+                   (propertize regex
+                               'face 'traverse-regex-face)
+                   (propertize str
+                               'face 'traverse-match-face)))
+        (message "We are not on a button!"))))
+
 
 (defun traverse-search-and-replace-all (str)
   "Launch search and replace on all occurences
@@ -308,7 +322,7 @@ you can stop it with X"
                (if traverse-sar-break
                    (throw 'break-sar
                      (progn
-                       (message "Traverse-search-and-replace-stopped!")
+                       (message "Traverse-search-and-replace stopped!")
                        (setq traverse-sar-break nil)))))))
       (setq traverse-show-regexp-delay mem-srd))))
 
@@ -320,12 +334,12 @@ you can stop it with X"
   (interactive)
   (setq traverse-sar-break t))
 
-(defun traverse-tv-file-process (regex fname &optional full-path)
+(defun traverse-file-process (regex fname &optional full-path)
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
   (clrhash traverse-table)
   (hash-readlines fname traverse-table)
-  (let ((matched-lines (tv-find-all-regex-in-hash regex traverse-table)))
+  (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
@@ -366,7 +380,7 @@ except on files that are in `traverse-ignore-files'"
   (sit-for 1)
   (let ((init-time (cadr (current-time))))
     (unwind-protect
-         (tv-walk-directory tree
+         (traverse-walk-directory tree
                             #'(lambda (y)
                                 (if (equal only "")
                                     (setq only nil))
@@ -436,7 +450,7 @@ It will fail silently.==> So use another dir target"
         (igndir (file-name-nondirectory dir)))
     (unless (file-directory-p dir)
       (make-directory dir t))
-    (tv-walk-directory tree
+    (traverse-walk-directory tree
                        #'(lambda (x)
                            (if (or (eq fn 'rename-file)
                                    (eq fn 'copy-file))
