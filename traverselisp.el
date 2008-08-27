@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.2")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer aoû 27 09:24:50 2008 (+0200)
+;; Last-Updated: mer aoû 27 17:06:52 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 28
+;;     Update #: 51
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -72,6 +72,9 @@
 (defvar traversedir-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [?q] 'traverse-quit)
+    (define-key map [?S] 'traverse-search-and-replace)
+    (define-key map [?!] 'traverse-search-and-replace-all)
+    (define-key map [?X] 'traverse-search-and-replace-break)
     map)
   "Keymap used for traversedir commands.")
 
@@ -131,6 +134,12 @@ Special commands:
   "Default function to use to process files"
   :group 'traversedir
   :type 'symbol)
+
+(defcustom traverse-show-regexp-delay
+  2
+  "Delay in seconds where regexp found is highligted"
+  :group 'traversedir
+  :type 'integer)
 
 (defgroup traverse-faces nil
   "Faces for TRAVERSEDIR."
@@ -254,9 +263,62 @@ Each element of the list is a list of the form '(key value)"
       (when (re-search-forward regex nil nil)
         (beginning-of-sexp) 
         (highlight-regexp (thing-at-point 'sexp))
-        (sit-for 2)
+        (sit-for traverse-show-regexp-delay)
         (unhighlight-regexp (thing-at-point 'sexp))))))
 
+(defun traverse-search-and-replace (str)
+  "Replace regex with `str', replacement is
+performed only on current line"
+  (interactive "sNewstring: ")
+  (if (button-at (point))
+      (progn
+        (save-window-excursion
+          (let ((fname (button-label (button-at (point)))))
+            (setq fname (replace-regexp-in-string "\\[" "" fname))
+            (setq fname (replace-regexp-in-string "\\]" "" fname))
+            (push-button)
+            (with-current-buffer (file-name-nondirectory fname) 
+              (let ((beg (point))
+                    (regex (thing-at-point 'sexp)))
+                (goto-char (+ beg (length regex)))
+                (delete-region beg (point))
+                (insert str))
+              (save-buffer)
+              (kill-buffer (current-buffer)))))
+        (beginning-of-line)
+        (delete-region (point) (line-end-position))
+        (delete-blank-lines)
+        (forward-line 1))
+      (message "We are not on a button!")))
+
+(defun traverse-search-and-replace-all (str)
+  "Launch search and replace on all occurences
+you can stop it with X"
+  (interactive "sNewstring: ")
+  (let ((mem-srd traverse-show-regexp-delay))
+    (unwind-protect
+         (progn
+           (setq traverse-show-regexp-delay 0)
+           (when (not (button-at (point)))
+             (goto-char (point-min))
+             (forward-button 1))
+           (catch 'break-sar
+             (while (button-at (point))
+               (traverse-search-and-replace str)
+               (if traverse-sar-break
+                   (throw 'break-sar
+                     (progn
+                       (message "Traverse-search-and-replace-stopped!")
+                       (setq traverse-sar-break nil)))))))
+      (setq traverse-show-regexp-delay mem-srd))))
+
+
+(defvar traverse-sar-break nil
+  "When non nil stop traverse search and replace loop")
+(defun traverse-search-and-replace-break ()
+  "Break traverse-search-and-replace loop"
+  (interactive)
+  (setq traverse-sar-break t))
 
 (defun traverse-tv-file-process (regex fname &optional full-path)
   "Default function to process files  and insert matched lines
