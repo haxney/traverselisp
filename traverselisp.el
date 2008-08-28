@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.3")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu aoû 28 14:30:41 2008 (+0200)
+;; Last-Updated: jeu aoû 28 17:19:19 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 90
+;;     Update #: 91
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -289,6 +289,7 @@ performed only on current line"
                         (flag-w nil))
                     (setq fname (replace-regexp-in-string "\\[" "" fname))
                     (setq fname (replace-regexp-in-string "\\]" "" fname))
+                    (setq fname (expand-file-name fname))
                     (push-button)
                     ;; We are now in the file buffer
                     (with-current-buffer (file-name-nondirectory fname) 
