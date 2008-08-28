@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.3")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu aoû 28 11:35:50 2008 (+0200)
+;; Last-Updated: jeu aoû 28 14:30:41 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 81
+;;     Update #: 90
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -250,10 +250,10 @@ Each element of the list is a list of the form '(key value)"
          (fname (button-label (button-at (point)))))
     (save-excursion
       (goto-char (point-min))
-      (when (re-search-forward "^Found ")
-        (end-of-line)
-        (beginning-of-sexp)
-        (setq regex (thing-at-point 'sexp))))
+      (when (re-search-forward "for ")
+        (setq regex
+              (buffer-substring (point)
+                          (- (line-end-position) 1)))))
     (save-excursion
       (setq fname (replace-regexp-in-string "\\[" "" fname))
       (setq fname (replace-regexp-in-string "\\]" "" fname))
@@ -277,10 +277,10 @@ performed only on current line"
         (let ((pos (point))
               (regex))
           (goto-char (point-min))
-          (when (re-search-forward "^Found ")
-            (end-of-line)
-            (beginning-of-sexp)
-            (setq regex (thing-at-point 'sexp)))
+          (when (re-search-forward "for ")
+            (setq regex
+                  (buffer-substring (point)
+                                    (- (line-end-position) 1))))
           (goto-char pos)
           (if (button-at (point))
               (progn
@@ -299,6 +299,8 @@ performed only on current line"
                             (delete-region beg (point))
                             (insert str)
                             (save-buffer)
+                            (highlight-regexp str 'hi-pink)
+                            (sit-for 1)
                             (kill-buffer (current-buffer))
                             (setq flag-w t))
                           (kill-buffer (current-buffer))))
@@ -308,11 +310,12 @@ performed only on current line"
                 (delete-blank-lines)
                 (forward-line 1)
                 (if flag-w
-                    (message "%s Replaced by %s"
+                    (message "<%s> Replaced by <%s> in [%s]"
                              (propertize regex
                                          'face 'traverse-regex-face)
                              (propertize str
-                                         'face 'traverse-match-face))
+                                         'face 'traverse-match-face)
+                             fname)
                     (message "Skipping: File not writable or under vc")))))
               (message "We are not on a button!"))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
