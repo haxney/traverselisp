@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.2")
+(defconst traverse-version "1.3")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer aoû 27 21:55:16 2008 (+0200)
+;; Last-Updated: jeu aoû 28 11:35:50 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 70
+;;     Update #: 81
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -267,68 +267,86 @@ Each element of the list is a list of the form '(key value)"
         (sit-for traverse-show-regexp-delay)
         (unhighlight-regexp regex)))))
 
+;;;###autoload
 (defun traverse-search-and-replace (str)
   "Replace regex with `str', replacement is
 performed only on current line"
   (interactive "sNewstring: ")
-  (let ((pos (point))
-        (regex))
-    (goto-char (point-min))
-    (when (re-search-forward "^Found ")
-      (end-of-line)
-      (beginning-of-sexp)
-      (setq regex (thing-at-point 'sexp)))
-    (goto-char pos)
-    (if (button-at (point))
-        (progn
-          (save-window-excursion
-            (let ((fname (button-label (button-at (point)))))
-              (setq fname (replace-regexp-in-string "\\[" "" fname))
-              (setq fname (replace-regexp-in-string "\\]" "" fname))
-              (push-button)
-              (with-current-buffer (file-name-nondirectory fname) 
-                (let ((beg (point)))
-                  (goto-char (+ beg (length regex)))
-                  (delete-region beg (point))
-                  (insert str))
-                (save-buffer)
-                (kill-buffer (current-buffer)))))
-          (beginning-of-line)
-          (delete-region (point) (line-end-position))
-          (delete-blank-lines)
-          (forward-line 1)
-          (message "%s Replaced by %s"
-                   (propertize regex
-                               'face 'traverse-regex-face)
-                   (propertize str
-                               'face 'traverse-match-face)))
-        (message "We are not on a button!"))))
+  (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
+      (progn
+        (let ((pos (point))
+              (regex))
+          (goto-char (point-min))
+          (when (re-search-forward "^Found ")
+            (end-of-line)
+            (beginning-of-sexp)
+            (setq regex (thing-at-point 'sexp)))
+          (goto-char pos)
+          (if (button-at (point))
+              (progn
+                (save-window-excursion
+                  (let ((fname (button-label (button-at (point))))
+                        (flag-w nil))
+                    (setq fname (replace-regexp-in-string "\\[" "" fname))
+                    (setq fname (replace-regexp-in-string "\\]" "" fname))
+                    (push-button)
+                    ;; We are now in the file buffer
+                    (with-current-buffer (file-name-nondirectory fname) 
+                      (if (and (file-writable-p fname)
+                               (not (backup-file-name-p fname)))
+                          (let ((beg (point)))
+                            (goto-char (+ beg (length regex)))
+                            (delete-region beg (point))
+                            (insert str)
+                            (save-buffer)
+                            (kill-buffer (current-buffer))
+                            (setq flag-w t))
+                          (kill-buffer (current-buffer))))
+                ;; We are back in traverse-buffer
+                (beginning-of-line)
+                (delete-region (point) (line-end-position))
+                (delete-blank-lines)
+                (forward-line 1)
+                (if flag-w
+                    (message "%s Replaced by %s"
+                             (propertize regex
+                                         'face 'traverse-regex-face)
+                             (propertize str
+                                         'face 'traverse-match-face))
+                    (message "Skipping: File not writable or under vc")))))
+              (message "We are not on a button!"))))
+      (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
-
+;;;###autoload
 (defun traverse-search-and-replace-all (str)
   "Launch search and replace on all occurences
 you can stop it with X"
   (interactive "sNewstring: ")
-  (let ((mem-srd traverse-show-regexp-delay))
-    (unwind-protect
-         (progn
-           (setq traverse-show-regexp-delay 0)
-           (when (not (button-at (point)))
-             (goto-char (point-min))
-             (forward-button 1))
-           (catch 'break-sar
-             (while (button-at (point))
-               (traverse-search-and-replace str)
-               (if traverse-sar-break
-                   (throw 'break-sar
-                     (progn
-                       (message "Traverse-search-and-replace stopped!")
-                       (setq traverse-sar-break nil)))))))
-      (setq traverse-show-regexp-delay mem-srd))))
+  (setq traverse-sar-break nil)
+  (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
+      (progn
+        (let ((mem-srd traverse-show-regexp-delay))
+          (unwind-protect
+               (progn
+                 (setq traverse-show-regexp-delay 0)
+                 (when (not (button-at (point)))
+                   (goto-char (point-min))
+                   (forward-button 1))
+                 (catch 'break-sar
+                   (while (button-at (point))
+                     (traverse-search-and-replace str)
+                     (if traverse-sar-break
+                         (throw 'break-sar
+                           (progn
+                             (message "Traverse-search-and-replace stopped!")
+                             (setq traverse-sar-break nil)))))))
+            (setq traverse-show-regexp-delay mem-srd))))
+      (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 
 (defvar traverse-sar-break nil
-  "When non nil stop traverse search and replace loop")
+  "When non nil stop traverse-search-and-replace loop")
+;;;###autoload
 (defun traverse-search-and-replace-break ()
   "Break traverse-search-and-replace loop"
   (interactive)
