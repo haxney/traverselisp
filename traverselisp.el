@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.3")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu aoû 28 17:19:19 2008 (+0200)
+;; Last-Updated: dim aoû 31 09:21:17 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 91
+;;     Update #: 94
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -455,7 +455,8 @@ except on files that are in `traverse-ignore-files'"
                (- (cadr (current-time)) init-time))
     (highlight-regexp regexp) 
     (setq traverse-count-occurences 0))))
-    
+
+;;; Utils
 (defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
   "Recurse in `tree' and copy/move all files with `ext' in `dir'.
 Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
@@ -482,6 +483,27 @@ It will fail silently.==> So use another dir target"
                                  (funcall fn (expand-file-name x)))))
                        nil
                        `(,igndir))))
+
+
+(defun traverse-build-tags-in-project (dir ext &optional new-file)
+  "Build an etags file in current project.
+If `new-file' is non-nil (do it with C-u) build a new file
+instead of appending to the current one.
+Many file extensions can be enter at `ext' prompt.
+Tag file will be build in `dir'"
+  (interactive "Ddir: \nsExt: ")
+  (let ((ext-list (split-string ext)))
+    (when current-prefix-arg
+      (setq new-file t))
+    (when new-file
+      (delete-file (expand-file-name "TAGS" dir)))
+    (dolist (i ext-list)
+      (traverse-walk-directory dir
+                               #'(lambda (x)
+                                   (when (equal (file-name-extension x t) i)
+                                     (shell-command (format "etags %s -a %s"
+                                                            x
+                                                            (expand-file-name "TAGS" dir)))))))))
 
 (provide 'traverselisp)
 
