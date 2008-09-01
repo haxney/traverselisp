@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.3")
+(defconst traverse-version "1.4")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim aoû 31 09:21:17 2008 (+0200)
+;; Last-Updated: dim aoû 31 17:37:08 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 94
+;;     Update #: 127
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -73,8 +73,7 @@
   (let ((map (make-sparse-keymap)))
     (define-key map [?q] 'traverse-quit)
     (define-key map [?S] 'traverse-search-and-replace)
-    (define-key map [?!] 'traverse-search-and-replace-all)
-    (define-key map [?X] 'traverse-search-and-replace-break)
+    (define-key map [?R] 'traverse-search-and-replace-all)
     map)
   "Keymap used for traversedir commands.")
 
@@ -326,35 +325,48 @@ performed only on current line"
   "Launch search and replace on all occurences
 you can stop it with X"
   (interactive "sNewstring: ")
-  (setq traverse-sar-break nil)
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
-        (let ((mem-srd traverse-show-regexp-delay))
+        (let ((mem-srd traverse-show-regexp-delay)
+              (action ""))
           (unwind-protect
                (progn
                  (setq traverse-show-regexp-delay 0)
                  (when (not (button-at (point)))
                    (goto-char (point-min))
                    (forward-button 1))
-                 (catch 'break-sar
+                 (catch 'break
                    (while (button-at (point))
-                     (traverse-search-and-replace str)
-                     (if traverse-sar-break
-                         (throw 'break-sar
+                     (catch 'continue
+                       (if (equal action '?a)
                            (progn
-                             (message "Traverse-search-and-replace stopped!")
-                             (setq traverse-sar-break nil)))))))
+                             (traverse-search-and-replace str)
+                             (throw 'continue nil))
+                           (setq action (read-event (concat (propertize "Next("
+                                                                        'face 'traverse-match-face)
+                                                            (propertize "n "
+                                                                        'face 'traverse-path-face)
+                                                            (propertize ") All("
+                                                                        'face 'traverse-match-face)
+                                                            (propertize "a"
+                                                                        'face 'traverse-path-face)
+                                                            (propertize ") Stop("
+                                                                        'face 'traverse-match-face)
+                                                            (propertize "s"
+                                                                        'face 'traverse-path-face)
+                                                            (propertize ") :"
+                                                                        'face 'traverse-match-face))))
+                           (cond ((equal action '?n)
+                                  (traverse-search-and-replace str)
+                                  (throw 'continue nil))
+                                 ((equal action '?a)
+                                  (traverse-search-and-replace str)
+                                  (throw 'continue nil))
+                                 ((equal action '?s)
+                                  (throw 'break nil))))))))
             (setq traverse-show-regexp-delay mem-srd))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
-
-(defvar traverse-sar-break nil
-  "When non nil stop traverse-search-and-replace loop")
-;;;###autoload
-(defun traverse-search-and-replace-break ()
-  "Break traverse-search-and-replace loop"
-  (interactive)
-  (setq traverse-sar-break t))
 
 (defun traverse-file-process (regex fname &optional full-path)
   "Default function to process files  and insert matched lines
