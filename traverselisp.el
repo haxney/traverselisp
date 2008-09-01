@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.4")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep  1 12:05:31 2008 (+0200)
+;; Last-Updated: lun sep  1 12:43:00 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 134
+;;     Update #: 141
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -329,7 +329,8 @@ you can stop it with X"
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
         (let ((mem-srd traverse-show-regexp-delay)
-              (action ""))
+              (action "")
+              (count 0))
           (unwind-protect
                (progn
                  (setq traverse-show-regexp-delay 0)
@@ -342,6 +343,7 @@ you can stop it with X"
                        (if (equal action '?a)
                            (progn
                              (traverse-search-and-replace str)
+                             (incf count)
                              (throw 'continue nil))
                            (setq action (read-event (concat (propertize "Next("
                                                                         'face 'traverse-match-face)
@@ -364,9 +366,11 @@ you can stop it with X"
                            (case action
                              ('?n (progn
                                     (traverse-search-and-replace str)
+                                    (incf count)
                                     (throw 'continue nil)))
                              ('?a (progn
                                     (traverse-search-and-replace str)
+                                    (incf count)
                                     (throw 'continue nil)))
                              ('?s (progn
                                     (delete-region (point) (line-end-position))
@@ -378,7 +382,13 @@ you can stop it with X"
                              (t (progn
                                   (error "Unknow command, operation Aborted")
                                   (throw 'break nil)))))))))
-            (setq traverse-show-regexp-delay mem-srd))))
+            (setq traverse-show-regexp-delay mem-srd)
+            (when (re-search-backward "^Found")
+              (beginning-of-line)
+              (delete-region (point) (line-end-position))
+              (insert (format "%s Occurences replaced by %s"
+                              count
+                              str))))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 
