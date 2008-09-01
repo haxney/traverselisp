@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.4")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim aoû 31 17:37:08 2008 (+0200)
+;; Last-Updated: lun sep  1 10:25:24 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 127
+;;     Update #: 130
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -107,7 +107,8 @@ Special commands:
     ".mdb" ".adp"
     "TAGS" ".tiff"
     ".pdf" ".dvi"
-    ".xbm" ".gpg")
+    ".xbm" ".gpg"
+    ".svg")
   "Files we want to ignore (extensions)"
   :group 'traversedir
   :type '(repeat string))
@@ -350,9 +351,13 @@ you can stop it with X"
                                                                         'face 'traverse-match-face)
                                                             (propertize "a"
                                                                         'face 'traverse-path-face)
-                                                            (propertize ") Stop("
+                                                            (propertize ") Skip("
                                                                         'face 'traverse-match-face)
                                                             (propertize "s"
+                                                                        'face 'traverse-path-face)
+                                                            (propertize ") Stop("
+                                                                        'face 'traverse-match-face)
+                                                            (propertize "x"
                                                                         'face 'traverse-path-face)
                                                             (propertize ") :"
                                                                         'face 'traverse-match-face))))
@@ -363,6 +368,11 @@ you can stop it with X"
                                   (traverse-search-and-replace str)
                                   (throw 'continue nil))
                                  ((equal action '?s)
+                                  (delete-region (point) (line-end-position))
+                                  (delete-blank-lines)
+                                  (forward-button 1)
+                                  (throw 'continue nil))
+                                 ((equal action '?x)
                                   (throw 'break nil))))))))
             (setq traverse-show-regexp-delay mem-srd))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
