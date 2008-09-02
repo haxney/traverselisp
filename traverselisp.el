@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.4")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep  1 12:43:00 2008 (+0200)
+;; Last-Updated: mar sep  2 10:17:29 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 141
+;;     Update #: 146
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -382,13 +382,21 @@ you can stop it with X"
                              (t (progn
                                   (error "Unknow command, operation Aborted")
                                   (throw 'break nil)))))))))
-            (setq traverse-show-regexp-delay mem-srd)
-            (when (re-search-backward "^Found")
-              (beginning-of-line)
-              (delete-region (point) (line-end-position))
-              (insert (format "%s Occurences replaced by %s"
-                              count
-                              str))))))
+            (if (eq action '?x)
+                (progn
+                  (setq traverse-show-regexp-delay mem-srd)
+                  (message "[%s] Occurences replaced by <%s>"
+                           (propertize (int-to-string count)
+                                       'face 'traverse-match-face)
+                           (propertize str
+                                       'face 'traverse-path-face)))
+                (setq traverse-show-regexp-delay mem-srd)
+                (when (re-search-backward "^Found")
+                  (beginning-of-line)
+                  (delete-region (point) (line-end-position))
+                  (insert (format "[%s] Occurences replaced by <%s>"
+                                  count
+                                  str)))))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 
