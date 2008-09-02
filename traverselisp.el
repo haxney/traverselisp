@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.4")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep  2 10:17:29 2008 (+0200)
+;; Last-Updated: mar sep  2 10:53:05 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 146
+;;     Update #: 155
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -268,19 +268,19 @@ Each element of the list is a list of the form '(key value)"
         (unhighlight-regexp regex)))))
 
 ;;;###autoload
-(defun traverse-search-and-replace (str)
+(defun traverse-search-and-replace (str &optional regex)
   "Replace regex with `str', replacement is
 performed only on current line"
   (interactive "sNewstring: ")
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
-        (let ((pos (point))
-              (regex))
+        (let ((pos (point)))
           (goto-char (point-min))
-          (when (re-search-forward "for ")
-            (setq regex
-                  (buffer-substring (point)
-                                    (- (line-end-position) 1))))
+          (when (not regex)
+            (when (re-search-forward "for ")
+              (setq regex
+                    (buffer-substring (point)
+                                      (- (line-end-position) 1)))))
           (goto-char pos)
           (if (button-at (point))
               (progn
@@ -328,9 +328,13 @@ you can stop it with X"
   (interactive "sNewstring: ")
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
+        (goto-char (point-min))
         (let ((mem-srd traverse-show-regexp-delay)
               (action "")
-              (count 0))
+              (count 0)
+              (regex (when (re-search-forward "for ")
+                       (buffer-substring (point)
+                                    (- (line-end-position) 1)))))
           (unwind-protect
                (progn
                  (setq traverse-show-regexp-delay 0)
@@ -342,7 +346,7 @@ you can stop it with X"
                      (catch 'continue
                        (if (equal action '?a)
                            (progn
-                             (traverse-search-and-replace str)
+                             (traverse-search-and-replace str regex)
                              (incf count)
                              (throw 'continue nil))
                            (setq action (read-event (concat (propertize "Next("
@@ -365,11 +369,11 @@ you can stop it with X"
                                                                         'face 'traverse-match-face))))
                            (case action
                              ('?n (progn
-                                    (traverse-search-and-replace str)
+                                    (traverse-search-and-replace str regex)
                                     (incf count)
                                     (throw 'continue nil)))
                              ('?a (progn
-                                    (traverse-search-and-replace str)
+                                    (traverse-search-and-replace str regex)
                                     (incf count)
                                     (throw 'continue nil)))
                              ('?s (progn
@@ -385,17 +389,22 @@ you can stop it with X"
             (if (eq action '?x)
                 (progn
                   (setq traverse-show-regexp-delay mem-srd)
-                  (message "[%s] Occurences replaced by <%s>"
+                  (message "[%s] Occurences of %s replaced by <%s>"
                            (propertize (int-to-string count)
                                        'face 'traverse-match-face)
+                           (propertize regex
+                                       'face 'traverse-regex-face)
                            (propertize str
                                        'face 'traverse-path-face)))
                 (setq traverse-show-regexp-delay mem-srd)
                 (when (re-search-backward "^Found")
                   (beginning-of-line)
                   (delete-region (point) (line-end-position))
-                  (insert (format "[%s] Occurences replaced by <%s>"
+                  (highlight-regexp str "hi-pink")
+                  (highlight-regexp "^\\[.\\]" "hi-green")
+                  (insert (format "[%s] Occurences of <%s> replaced by <%s>"
                                   count
+                                  regex
                                   str)))))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
