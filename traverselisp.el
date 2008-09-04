@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.6")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep  4 12:26:47 2008 (+0200)
+;; Last-Updated: jeu sep  4 13:05:46 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 180
+;;     Update #: 181
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -515,8 +515,9 @@ except on files that are in `traverse-ignore-files'"
 (defun traverse-go-forward ()
   (interactive)
   (other-window-backward)
-  (save-buffer)
-  (kill-buffer (current-buffer))
+  (when (buffer-file-name (current-buffer))
+    (save-buffer)
+    (kill-buffer (current-buffer)))
   (other-window-backward)
   (forward-button 1)
   (push-button)
@@ -525,7 +526,9 @@ except on files that are in `traverse-ignore-files'"
 (defun traverse-go-backward ()
   (interactive)
   (other-window-backward)
-  (save-buffer)
+  (when (buffer-file-name (current-buffer))
+    (save-buffer)
+    (kill-buffer (current-buffer)))
   (kill-buffer (current-buffer))
   (other-window-backward)
   (forward-button -1)
