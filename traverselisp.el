@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.6")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep  4 10:24:04 2008 (+0200)
+;; Last-Updated: jeu sep  4 12:26:47 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 171
+;;     Update #: 180
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -520,7 +520,7 @@ except on files that are in `traverse-ignore-files'"
   (other-window-backward)
   (forward-button 1)
   (push-button)
-  (other-window-backward)))
+  (other-window-backward))
   
 (defun traverse-go-backward ()
   (interactive)
@@ -530,7 +530,7 @@ except on files that are in `traverse-ignore-files'"
   (other-window-backward)
   (forward-button -1)
   (push-button)
-  (other-window-backward)))
+  (other-window-backward))
 
 ;;;; Utils
 (defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
@@ -560,7 +560,7 @@ It will fail silently.==> So use another dir target"
                        nil
                        `(,igndir))))
 
-
+;; Experimental ==> Huge projects not supported (Tags files become to big)
 (defun traverse-build-tags-in-project (dir ext &optional new-file)
   "Build an etags file in current project.
 If `new-file' is non-nil (do it with C-u) build a new file
@@ -568,7 +568,8 @@ instead of appending to the current one.
 Many file extensions can be enter at `ext' prompt.
 Tag file will be build in `dir'"
   (interactive "Ddir: \nsExt: ")
-  (let ((ext-list (split-string ext)))
+  (let ((ext-list (split-string ext))
+        (count 0))
     (when current-prefix-arg
       (setq new-file t))
     (when new-file
@@ -577,9 +578,16 @@ Tag file will be build in `dir'"
       (traverse-walk-directory dir
                                #'(lambda (x)
                                    (when (equal (file-name-extension x t) i)
-                                     (shell-command (format "etags %s -a %s"
+                                     (message "Tagging [%s]" (propertize x
+                                                                         'face 'traverse-path-face))
+                                     (incf count)
+                                     (call-process-shell-command (format "etags %s -a %s"
                                                             x
-                                                            (expand-file-name "TAGS" dir)))))))))
+                                                            (expand-file-name "TAGS" dir)))))
+                               nil
+                               traverse-ignore-dirs))
+    (message "%s Files tagged" (propertize (int-to-string count)
+                                           'face 'traverse-match-face))))
 
 (provide 'traverselisp)
 
