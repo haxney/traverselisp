@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.5")
+(defconst traverse-version "1.6")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep  2 11:47:03 2008 (+0200)
+;; Last-Updated: jeu sep  4 10:24:04 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 156
+;;     Update #: 171
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -74,6 +74,8 @@
     (define-key map [?q] 'traverse-quit)
     (define-key map [?S] 'traverse-search-and-replace)
     (define-key map [?R] 'traverse-search-and-replace-all)
+    (define-key map [?N] 'traverse-go-forward)
+    (define-key map [?P] 'traverse-go-backward)
     map)
   "Keymap used for traversedir commands.")
 
@@ -509,7 +511,28 @@ except on files that are in `traverse-ignore-files'"
     (highlight-regexp regexp) 
     (setq traverse-count-occurences 0))))
 
-;;; Utils
+;; Navigate in traverse
+(defun traverse-go-forward ()
+  (interactive)
+  (other-window-backward)
+  (save-buffer)
+  (kill-buffer (current-buffer))
+  (other-window-backward)
+  (forward-button 1)
+  (push-button)
+  (other-window-backward)))
+  
+(defun traverse-go-backward ()
+  (interactive)
+  (other-window-backward)
+  (save-buffer)
+  (kill-buffer (current-buffer))
+  (other-window-backward)
+  (forward-button -1)
+  (push-button)
+  (other-window-backward)))
+
+;;;; Utils
 (defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
   "Recurse in `tree' and copy/move all files with `ext' in `dir'.
 Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
