@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.6")
+(defconst traverse-version "1.7")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep  4 13:05:46 2008 (+0200)
+;; Last-Updated: ven sep  5 11:35:20 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 181
+;;     Update #: 192
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -76,6 +76,8 @@
     (define-key map [?R] 'traverse-search-and-replace-all)
     (define-key map [?N] 'traverse-go-forward)
     (define-key map [?P] 'traverse-go-backward)
+    (define-key map [(shift down)] 'traverse-scroll-down-other-window)
+    (define-key map [(shift up)] 'traverse-scroll-up-other-window)
     map)
   "Keymap used for traversedir commands.")
 
@@ -243,7 +245,6 @@ Each element of the list is a list of the form '(key value)"
     (setq match-list (reverse match-list))
     match-list))
 
-;;;###autoload
 (defun traverse-button-func (button)
   "The function called by buttons in traverse buffer"
   (let* ((list-line (split-string (thing-at-point 'line)))
@@ -325,8 +326,8 @@ performed only on current line"
 
 ;;;###autoload
 (defun traverse-search-and-replace-all (str)
-  "Launch search and replace on all occurences
-you can stop it with X"
+  "Launch search and replace interactively on all occurences
+commands provided here are: (n)ext (a)ll (s)kip (x)stop"
   (interactive "sNewstring: ")
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
@@ -535,7 +536,21 @@ except on files that are in `traverse-ignore-files'"
   (push-button)
   (other-window-backward))
 
+(defun traverse-scroll-down-other-window ()
+  (interactive)
+   (when (equal (current-buffer)
+               (get-buffer "*traverse-lisp*"))
+    (scroll-other-window 1)))
+
+(defun traverse-scroll-up-other-window ()
+  (interactive)
+   (when (equal (current-buffer)
+               (get-buffer "*traverse-lisp*"))
+  (scroll-other-window -1)))
+
+
 ;;;; Utils
+;;;###autoload
 (defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
   "Recurse in `tree' and copy/move all files with `ext' in `dir'.
 Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
@@ -564,6 +579,7 @@ It will fail silently.==> So use another dir target"
                        `(,igndir))))
 
 ;; Experimental ==> Huge projects not supported (Tags files become to big)
+;;;###autoload
 (defun traverse-build-tags-in-project (dir ext &optional new-file)
   "Build an etags file in current project.
 If `new-file' is non-nil (do it with C-u) build a new file
