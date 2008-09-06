@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.7")
+(defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep  5 11:35:20 2008 (+0200)
+;; Last-Updated: sam sep  6 22:01:19 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 192
+;;     Update #: 196
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -446,73 +446,74 @@ in *traverse-lisp* buffer"
 will be set as nil and search will be proceeded on all files
 except on files that are in `traverse-ignore-files'"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
-  (set-buffer (get-buffer-create "*traverse-lisp*"))
-  (erase-buffer)
-  (hi-lock-mode 1)
-  (goto-char (point-min))
-  (traversedir-mode)
-  (insert " *Traverse-lisp-output*\n\n\n")
-  (highlight-regexp " \\*Traverse-lisp-output\\*$" "hi-pink")
-  (display-buffer "*traverse-lisp*")
-  (insert  "Wait Lisp searching...\n\n")
-  (sit-for 1)
-  (let ((init-time (cadr (current-time))))
-    (unwind-protect
-         (traverse-walk-directory tree
-                            #'(lambda (y)
-                                (if (equal only "")
-                                    (setq only nil))
-                                (if current-prefix-arg
-                                    (if only
-                                        (when (equal (file-name-extension y t)
-                                                     only)
-                                          (funcall traverse-file-function regexp y t))
-                                        (funcall traverse-file-function regexp y t))
-                                    (if only
-                                        (when (equal (file-name-extension y t)
-                                                     only)
-                                          (funcall traverse-file-function regexp y))
-                                        (funcall traverse-file-function regexp y)))
-                                (message "%s [Matches] for %s in [%s]"
-                                         (if (>= traverse-count-occurences 1)
-                                             (propertize (int-to-string traverse-count-occurences)
-                                                         'face 'traverse-match-face)
-                                             0)
-                                         (propertize regexp
-                                                     'face 'traverse-regex-face)
-                                         (propertize y
-                                                     'face 'traverse-path-face)))
-                            traverse-ignore-files
-                            traverse-ignore-dirs)
-      (setq traverse-count-occurences (if (< traverse-count-occurences 0)
-                                          0
-                                          traverse-count-occurences))
-      (if (eq traverse-count-occurences 0)
-          (progn
+  (save-excursion
+    (set-buffer (get-buffer-create "*traverse-lisp*"))
+    (erase-buffer)
+    (hi-lock-mode 1)
+    (goto-char (point-min))
+    (traversedir-mode)
+    (insert " *Traverse-lisp-output*\n\n\n")
+    (highlight-regexp " \\*Traverse-lisp-output\\*$" "hi-pink")
+    (display-buffer "*traverse-lisp*")
+    (insert  "Wait Lisp searching...\n\n")
+    (sit-for 1)
+    (let ((init-time (cadr (current-time))))
+      (unwind-protect
+           (traverse-walk-directory tree
+                                    #'(lambda (y)
+                                        (if (equal only "")
+                                            (setq only nil))
+                                        (if current-prefix-arg
+                                            (if only
+                                                (when (equal (file-name-extension y t)
+                                                             only)
+                                                  (funcall traverse-file-function regexp y t))
+                                                (funcall traverse-file-function regexp y t))
+                                            (if only
+                                                (when (equal (file-name-extension y t)
+                                                             only)
+                                                  (funcall traverse-file-function regexp y))
+                                                (funcall traverse-file-function regexp y)))
+                                        (message "%s [Matches] for %s in [%s]"
+                                                 (if (>= traverse-count-occurences 1)
+                                                     (propertize (int-to-string traverse-count-occurences)
+                                                                 'face 'traverse-match-face)
+                                                     0)
+                                                 (propertize regexp
+                                                             'face 'traverse-regex-face)
+                                                 (propertize y
+                                                             'face 'traverse-path-face)))
+                                    traverse-ignore-files
+                                    traverse-ignore-dirs)
+        (setq traverse-count-occurences (if (< traverse-count-occurences 0)
+                                            0
+                                            traverse-count-occurences))
+        (if (eq traverse-count-occurences 0)
+            (progn
+              (goto-char (point-min))
+              (when (re-search-forward "^Wait")
+                (beginning-of-line)
+                (kill-line)
+                (insert "Oh!No! Nothing found!")))
             (goto-char (point-min))
             (when (re-search-forward "^Wait")
               (beginning-of-line)
               (kill-line)
-              (insert "Oh!No! Nothing found!")))
-          (goto-char (point-min))
-          (when (re-search-forward "^Wait")
-            (beginning-of-line)
-            (kill-line)
-            (insert (format "Search performed in %s seconds\n\n"
-                            (- (cadr (current-time)) init-time)))
-            (insert (format "Found %s occurences for %s:\n"
-                            traverse-count-occurences
-                            regexp))))
-      (message "%s Occurences found for %s in %s seconds"
-               (propertize (int-to-string traverse-count-occurences)
-                           'face 'traverse-match-face)
-               (propertize regexp
-                           'face 'traverse-regex-face)
-               (- (cadr (current-time)) init-time))
-    (highlight-regexp regexp) 
-    (setq traverse-count-occurences 0))))
+              (insert (format "Search performed in %s seconds\n\n"
+                              (- (cadr (current-time)) init-time)))
+              (insert (format "Found %s occurences for %s:\n"
+                              traverse-count-occurences
+                              regexp))))
+        (message "%s Occurences found for %s in %s seconds"
+                 (propertize (int-to-string traverse-count-occurences)
+                             'face 'traverse-match-face)
+                 (propertize regexp
+                             'face 'traverse-regex-face)
+                 (- (cadr (current-time)) init-time))
+        (highlight-regexp regexp) 
+        (setq traverse-count-occurences 0)))))
 
-;; Navigate in traverse
+;;;; Navigate in traverse
 (defun traverse-go-forward ()
   (interactive)
   (other-window-backward)
