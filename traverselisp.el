@@ -9,16 +9,20 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: sam sep  6 22:01:19 2008 (+0200)
+;; Last-Updated: dim sep  7 22:34:24 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 196
+;;     Update #: 197
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
 ;; Compatibility:
 
+;; Developped and tested on:
+;; GNU Emacs 23.0.60.1 (i686-pc-linux-gnu, GTK+ Version 2.12.11)
+
 ;; Work on all platforms that support emacs.
 ;; Don't need any backend.
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Commentary:
@@ -30,9 +34,19 @@
 
 ;; Usage:
 ;; =====
-;; M-x traverse-deep-rfind
-;; Use customize to configure or setq differents variables.
+;; M-x `traverse-deep-rfind'
+;; When searching is done and you are in traverse buffer
+;; some actions are provided for navigate and for replacing regexps
+;; Use "C-h m" for more info.
+;; You can use customize to set some variables :
+;; (customize-group "traversedir")
 
+;; Other functions are provided:
+;; `traverse-cp-or-mv-extfiles-in-dir'
+;; `traverse-build-tags-in-project'
+
+;; Use customize to configure or setq differents variables.
+;; 
 ;; Contact:
 ;; =======
 ;; thierry dot volpiatto hat gmail dot com
