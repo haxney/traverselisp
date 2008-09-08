@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim sep  7 22:34:24 2008 (+0200)
+;; Last-Updated: lun sep  8 09:52:39 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 197
+;;     Update #: 207
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -458,7 +458,8 @@ in *traverse-lisp* buffer"
 (defun traverse-deep-rfind (tree regexp &optional only)
   "Main function that call walk, if only is omitted it
 will be set as nil and search will be proceeded on all files
-except on files that are in `traverse-ignore-files'"
+except on files that are in `traverse-ignore-files'
+Called with prefix-argument (C-u) absolute path is displayed"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
   (save-excursion
     (set-buffer (get-buffer-create "*traverse-lisp*"))
@@ -526,6 +527,18 @@ except on files that are in `traverse-ignore-files'"
                  (- (cadr (current-time)) init-time))
         (highlight-regexp regexp) 
         (setq traverse-count-occurences 0)))))
+
+(defun traverse-search-in-dired-at-point (regex &optional only)
+  "Launch `traverse-deep-rfind' from `dired-mode'"
+  (interactive "sRegexp: \nsCheckOnly: ")
+  (if (eq major-mode 'dired-mode)
+      (let ((tree (dired-get-filename)))
+        (if (file-directory-p tree)
+            (if only
+                (traverse-deep-rfind tree regex only)
+                (traverse-deep-rfind tree regex nil))
+            (message "Sorry! %s is not a Directory" tree)))
+      (message "Hoops! We are not in Dired!")))
 
 ;;;; Navigate in traverse
 (defun traverse-go-forward ()
