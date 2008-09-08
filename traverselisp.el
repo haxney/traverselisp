@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep  8 09:52:39 2008 (+0200)
+;; Last-Updated: mar sep  9 00:23:06 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 207
+;;     Update #: 208
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -543,26 +543,26 @@ Called with prefix-argument (C-u) absolute path is displayed"
 ;;;; Navigate in traverse
 (defun traverse-go-forward ()
   (interactive)
-  (other-window-backward)
+  (other-window -1)
   (when (buffer-file-name (current-buffer))
     (save-buffer)
     (kill-buffer (current-buffer)))
-  (other-window-backward)
+  (other-window -1)
   (forward-button 1)
   (push-button)
-  (other-window-backward))
+  (other-window -1))
   
 (defun traverse-go-backward ()
   (interactive)
-  (other-window-backward)
+  (other-window -1)
   (when (buffer-file-name (current-buffer))
     (save-buffer)
     (kill-buffer (current-buffer)))
   (kill-buffer (current-buffer))
-  (other-window-backward)
+  (other-window -1)
   (forward-button -1)
   (push-button)
-  (other-window-backward))
+  (other-window -1))
 
 (defun traverse-scroll-down-other-window ()
   (interactive)
