@@ -1,5 +1,6 @@
 ;;; traverselisp.el 
-;; 
+;;
+;; -*- mode: emacs-lisp; coding: utf-8; -*-
 ;; Filename: traverselisp.el
 ;; Description: A clone of rgrep wrote all in lisp.
 ;; Also: walk through directories and perform diverses actions on files.
@@ -9,9 +10,9 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep  9 00:23:06 2008 (+0200)
+;; Last-Updated: mar sep  9 11:51:18 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 208
+;;     Update #: 211
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -478,17 +479,11 @@ Called with prefix-argument (C-u) absolute path is displayed"
                                     #'(lambda (y)
                                         (if (equal only "")
                                             (setq only nil))
-                                        (if current-prefix-arg
-                                            (if only
-                                                (when (equal (file-name-extension y t)
-                                                             only)
-                                                  (funcall traverse-file-function regexp y t))
-                                                (funcall traverse-file-function regexp y t))
-                                            (if only
-                                                (when (equal (file-name-extension y t)
-                                                             only)
-                                                  (funcall traverse-file-function regexp y))
-                                                (funcall traverse-file-function regexp y)))
+                                        (let ((prefarg (not (null current-prefix-arg))))
+                                          (if only
+                                              (when (equal (file-name-extension y t) only)
+                                                (funcall traverse-file-function regexp y prefarg))
+                                              (funcall traverse-file-function regexp y prefarg)))
                                         (message "%s [Matches] for %s in [%s]"
                                                  (if (>= traverse-count-occurences 1)
                                                      (propertize (int-to-string traverse-count-occurences)
@@ -534,10 +529,8 @@ Called with prefix-argument (C-u) absolute path is displayed"
   (if (eq major-mode 'dired-mode)
       (let ((tree (dired-get-filename)))
         (if (file-directory-p tree)
-            (if only
-                (traverse-deep-rfind tree regex only)
-                (traverse-deep-rfind tree regex nil))
-            (message "Sorry! %s is not a Directory" tree)))
+            (traverse-deep-rfind tree regex only))
+            (message "Sorry! %s is not a Directory" tree))
       (message "Hoops! We are not in Dired!")))
 
 ;;;; Navigate in traverse
