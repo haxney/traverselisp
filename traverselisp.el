@@ -10,9 +10,9 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep  9 11:51:18 2008 (+0200)
+;; Last-Updated: mar sep  9 16:25:01 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 211
+;;     Update #: 212
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -529,8 +529,8 @@ Called with prefix-argument (C-u) absolute path is displayed"
   (if (eq major-mode 'dired-mode)
       (let ((tree (dired-get-filename)))
         (if (file-directory-p tree)
-            (traverse-deep-rfind tree regex only))
-            (message "Sorry! %s is not a Directory" tree))
+            (traverse-deep-rfind tree regex only)
+            (message "Sorry! %s is not a Directory" tree)))
       (message "Hoops! We are not in Dired!")))
 
 ;;;; Navigate in traverse
