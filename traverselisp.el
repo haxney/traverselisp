@@ -10,9 +10,9 @@
 ;; Version:
 (defconst traverse-version "1.8")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep  9 16:25:01 2008 (+0200)
+;; Last-Updated: mer sep 10 11:28:59 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 212
+;;     Update #: 214
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -534,28 +534,23 @@ Called with prefix-argument (C-u) absolute path is displayed"
       (message "Hoops! We are not in Dired!")))
 
 ;;;; Navigate in traverse
-(defun traverse-go-forward ()
-  (interactive)
+(defun traverse-go-forward-or-backward (num)
   (other-window -1)
   (when (buffer-file-name (current-buffer))
     (save-buffer)
     (kill-buffer (current-buffer)))
   (other-window -1)
-  (forward-button 1)
+  (forward-button num)
   (push-button)
   (other-window -1))
+
+(defun traverse-go-forward (&optional num)
+  (interactive "p")
+  (traverse-go-forward-or-backward (or num 1)))
   
-(defun traverse-go-backward ()
-  (interactive)
-  (other-window -1)
-  (when (buffer-file-name (current-buffer))
-    (save-buffer)
-    (kill-buffer (current-buffer)))
-  (kill-buffer (current-buffer))
-  (other-window -1)
-  (forward-button -1)
-  (push-button)
-  (other-window -1))
+(defun traverse-go-backward (&optional num)
+  (interactive "p")
+  (traverse-go-forward-or-backward (- (or num 1))))
 
 (defun traverse-scroll-down-other-window ()
   (interactive)
