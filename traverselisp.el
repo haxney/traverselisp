@@ -10,9 +10,9 @@
 ;; Version:
 (defconst traverse-version "1.9")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer sep 10 12:18:09 2008 (+0200)
+;; Last-Updated: jeu sep 11 10:10:14 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 215
+;;     Update #: 216
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -310,7 +310,7 @@ performed only on current line"
                     (setq fname (expand-file-name fname))
                     (push-button)
                     ;; We are now in the file buffer
-                    (with-current-buffer (file-name-nondirectory fname) 
+                    (with-current-buffer (find-buffer-visiting fname) 
                       (if (and (file-writable-p fname)
                                (not (backup-file-name-p fname)))
                           (let ((beg (point)))
