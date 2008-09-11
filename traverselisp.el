@@ -8,11 +8,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.9")
+(defconst traverse-version "1.10")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 11 10:10:14 2008 (+0200)
+;; Last-Updated: jeu sep 11 14:05:20 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 216
+;;     Update #: 222
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -362,11 +362,12 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                  (catch 'break
                    (while (button-at (point))
                      (catch 'continue
-                       (if (equal action '?a)
+                       (if (eq action '?a)
+                           ;; replace all without asking
                            (progn
                              (traverse-search-and-replace str regex)
-                             (incf count)
-                             (throw 'continue nil))
+                             (incf count))
+                           ;; ask for next action and set it
                            (setq action (read-event (concat (propertize "Next("
                                                                         'face 'traverse-match-face)
                                                             (propertize "n "
@@ -405,6 +406,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                                   (error "Unknow command, operation Aborted")
                                   (throw 'break nil)))))))))
             (if (eq action '?x)
+                ;; action is stopped
                 (progn
                   (setq traverse-show-regexp-delay mem-srd)
                   (message "[%s] Occurences of %s replaced by <%s>"
@@ -414,6 +416,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                                        'face 'traverse-regex-face)
                            (propertize str
                                        'face 'traverse-path-face)))
+                ;; action is finish
                 (setq traverse-show-regexp-delay mem-srd)
                 (when (re-search-backward "^Found")
                   (beginning-of-line)
