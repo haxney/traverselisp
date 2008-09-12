@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.11")
+(defconst traverse-version "1.12")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep 12 10:44:17 2008 (+0200)
+;; Last-Updated: ven sep 12 15:38:53 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 226
+;;     Update #: 246
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -158,6 +158,18 @@ Special commands:
   "Delay in seconds where regexp found is highligted"
   :group 'traversedir
   :type 'integer)
+
+(defcustom traverse-use-avfs
+  nil
+  "Enable support for avfs"
+  :group 'traversedir
+  :type 'boolean)
+
+(defcustom traverse-avfs-default-directory
+  "~/.avfs"
+  "Default directory for avfs"
+  :group 'traversedir
+  :type 'string)
 
 (defgroup traverse-faces nil
   "Faces for TRAVERSEDIR."
@@ -531,6 +543,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
         (highlight-regexp regexp) 
         (setq traverse-count-occurences 0)))))
 
+;;; Dired
 (defun traverse-search-in-dired-at-point (regex &optional only)
   "Launch `traverse-deep-rfind' from `dired-mode'"
   (interactive "sRegexp: \nsCheckOnly: ")
@@ -540,6 +553,44 @@ Called with prefix-argument (C-u) absolute path is displayed"
             (traverse-deep-rfind tree regex only)
             (message "Sorry! %s is not a Directory" tree)))
       (message "Hoops! We are not in Dired!")))
+
+
+(defun traverse-dired-browse-archive ()
+  "This function use AVFS and FUSE, so be sure
+to have these programs and modules installed on your system"
+  (interactive)
+  (when traverse-use-avfs
+    (let ((file-at-point (dired-get-filename)))
+      (if (or (equal (file-name-extension file-at-point) "gz")
+              (equal (file-name-extension file-at-point) "bz2")
+              (equal (file-name-extension file-at-point) "zip"))
+          (progn
+            (when (not (cddr (directory-files "~/.avfs")))
+              (shell-command "mountavfs"))
+            (find-file (concat "~/.avfs" file-at-point "#")))
+          (find-file file-at-point)))))
+
+
+(defun traverse-dired-search-in-archive (regexp &optional only)
+  "This function use AVFS and FUSE, so be sure
+to have these programs installed on your system and FUSE module
+enabled in your kernel.
+This function is disabled by default, enable it setting
+traverse-use-avfs to non--nil"
+  (interactive "sRegexp: \nsCheckOnly: ")
+  (when traverse-use-avfs
+    (let ((file-at-point (dired-get-filename)))
+      (if (or (equal (file-name-extension file-at-point) "gz")
+              (equal (file-name-extension file-at-point) "bz2")
+              (equal (file-name-extension file-at-point) "zip"))
+          (progn
+            (when (not (cddr (directory-files "~/.avfs")))
+              (shell-command "mountavfs"))
+            (traverse-deep-rfind (concat "~/.avfs" file-at-point "#")
+                                 regexp
+                                 only))
+          (message "That's not a compressed file")))))
+          
 
 ;;;; Navigate in traverse
 (defun traverse-go-forward-or-backward (num)
