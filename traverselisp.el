@@ -1,6 +1,5 @@
-;;; traverselisp.el 
+;;; traverselisp.el -- Search and replace throught directorys
 ;;
-;; -*- mode: emacs-lisp; coding: utf-8; -*-
 ;; Filename: traverselisp.el
 ;; Description: A clone of rgrep wrote all in lisp.
 ;; Also: walk through directories and perform diverses actions on files.
@@ -8,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.10")
+(defconst traverse-version "1.11")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 11 14:05:20 2008 (+0200)
+;; Last-Updated: ven sep 12 10:44:17 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 222
+;;     Update #: 226
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -392,6 +391,12 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                                     (incf count)
                                     (throw 'continue nil)))
                              ('?a (progn
+                                    (message "Replacing all, you can %s at any time with %s"
+                                             (propertize "STOP"
+                                                         'face 'traverse-match-face)
+                                             (propertize "<C-g>"
+                                                         'face 'traverse-match-face))
+                                    (sit-for 3)
                                     (traverse-search-and-replace str regex)
                                     (incf count)
                                     (throw 'continue nil)))
