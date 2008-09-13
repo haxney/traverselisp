@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.12")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep 12 15:38:53 2008 (+0200)
+;; Last-Updated: sam sep 13 08:14:00 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 246
+;;     Update #: 250
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -241,7 +241,7 @@ on each file found.
 
 (defvar traverse-table (make-hash-table))
 
-(defsubst hash-readlines (file table)
+(defsubst traverse-hash-readlines (file table)
   "Load all the line of a file in an hash-table
 with the number of line as key.
 \\(emulate object.readlines() of python)"
@@ -257,7 +257,7 @@ with the number of line as key.
 
 (defsubst traverse-find-all-regex-in-hash (regex table)
   "Return a list of all lines that match regex
-founded in the hash-table created by `hash-readlines'
+founded in the hash-table created by `traverse-hash-readlines'
 Each element of the list is a list of the form '(key value)"
   (let ((match-list nil))
     (maphash #'(lambda (x y)
@@ -451,7 +451,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
   (clrhash traverse-table)
-  (hash-readlines fname traverse-table)
+  (traverse-hash-readlines fname traverse-table)
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
