@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.12")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: sam sep 13 08:14:00 2008 (+0200)
+;; Last-Updated: dim sep 14 09:47:20 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 250
+;;     Update #: 261
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -565,9 +565,9 @@ to have these programs and modules installed on your system"
               (equal (file-name-extension file-at-point) "bz2")
               (equal (file-name-extension file-at-point) "zip"))
           (progn
-            (when (not (cddr (directory-files "~/.avfs")))
+            (when (not (cddr (directory-files traverse-avfs-default-directory)))
               (shell-command "mountavfs"))
-            (find-file (concat "~/.avfs" file-at-point "#")))
+            (find-file (concat traverse-avfs-default-directory file-at-point "#")))
           (find-file file-at-point)))))
 
 
@@ -584,9 +584,9 @@ traverse-use-avfs to non--nil"
               (equal (file-name-extension file-at-point) "bz2")
               (equal (file-name-extension file-at-point) "zip"))
           (progn
-            (when (not (cddr (directory-files "~/.avfs")))
+            (when (not (cddr (directory-files traverse-avfs-default-directory)))
               (shell-command "mountavfs"))
-            (traverse-deep-rfind (concat "~/.avfs" file-at-point "#")
+            (traverse-deep-rfind (concat traverse-avfs-default-directory file-at-point "#")
                                  regexp
                                  only))
           (message "That's not a compressed file")))))
