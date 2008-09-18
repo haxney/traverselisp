@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.13")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 18 16:31:03 2008 (+0200)
+;; Last-Updated: jeu sep 18 16:50:43 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 293
+;;     Update #: 295
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -600,7 +600,7 @@ to have these programs and modules installed on your system"
   (interactive)
   (when traverse-use-avfs
     (let ((file-at-point (dired-get-filename)))
-      (if (file-compressed-p)
+      (if (file-compressed-p file-at-point)
           (progn
             (when (not (cddr (directory-files traverse-avfs-default-directory)))
               (shell-command "mountavfs"))
@@ -617,9 +617,7 @@ traverse-use-avfs to non--nil"
   (interactive "sRegexp: \nsCheckOnly: ")
   (when traverse-use-avfs
     (let ((file-at-point (dired-get-filename)))
-      (if (or (equal (file-name-extension file-at-point) "gz")
-              (equal (file-name-extension file-at-point) "bz2")
-              (equal (file-name-extension file-at-point) "zip"))
+      (if (file-compressed-p file-at-point)          
           (progn
             (when (not (cddr (directory-files traverse-avfs-default-directory)))
               (shell-command "mountavfs"))
