@@ -1,4 +1,4 @@
-;;; traverselisp.el -- Search and replace throught directorys
+;;; traverselisp.el -- Search and replace through directorys
 ;;
 ;; Filename: traverselisp.el
 ;; Description: A clone of rgrep wrote all in lisp.
@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.12")
+(defconst traverse-version "1.13")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim sep 14 09:47:20 2008 (+0200)
+;; Last-Updated: jeu sep 18 13:52:44 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 261
+;;     Update #: 277
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -474,6 +474,44 @@ in *traverse-lisp* buffer"
                                "\n")))))
         (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
+
+(defun traverse-prepare-buffer ()
+  "Prepare traverse buffer"
+  (set-buffer (get-buffer-create "*traverse-lisp*"))
+  (erase-buffer)
+  (hi-lock-mode 1)
+  (goto-char (point-min))
+  (traversedir-mode)
+  (insert " *Traverse-lisp-output*\n\n\n")
+  (highlight-regexp " \\*Traverse-lisp-output\\*$" "hi-pink")
+  (display-buffer "*traverse-lisp*")
+  (insert  "Wait Lisp searching...\n\n")
+  (sit-for 1))
+
+(defun traverse-find-in-file (fname regexp &optional full-path)
+  "Traverse search regex in a single file"
+  (interactive "fFileName: \nsRegexp: ")
+  (traverse-prepare-buffer)
+  (let ((prefarg (not (null current-prefix-arg))))
+    (when
+        (and (file-regular-p fname)
+             (not (file-symlink-p fname)))
+      (traverse-file-process regexp fname prefarg))
+    (goto-char (point-min))
+    (when (re-search-forward "^Wait")
+      (beginning-of-line)
+      (kill-line)
+      (insert (format "Found %s occurences for %s:\n"
+                      traverse-count-occurences
+                      regexp))
+      (message "%s Occurences found for %s"
+               (propertize (int-to-string traverse-count-occurences)
+                           'face 'traverse-match-face)
+               (propertize regexp
+                           'face 'traverse-regex-face))
+      (highlight-regexp regexp) 
+      (setq traverse-count-occurences 0))))
+  
 
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
