@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.13")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 18 13:52:44 2008 (+0200)
+;; Last-Updated: jeu sep 18 15:59:16 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 277
+;;     Update #: 290
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -581,8 +581,8 @@ Called with prefix-argument (C-u) absolute path is displayed"
         (highlight-regexp regexp) 
         (setq traverse-count-occurences 0)))))
 
-;;; Dired
-(defun traverse-search-in-dired-at-point (regex &optional only)
+;;; Dired functions
+(defun traverse-search-in-dired-dir-at-point (regex &optional only)
   "Launch `traverse-deep-rfind' from `dired-mode'"
   (interactive "sRegexp: \nsCheckOnly: ")
   (if (eq major-mode 'dired-mode)
@@ -590,6 +590,16 @@ Called with prefix-argument (C-u) absolute path is displayed"
         (if (file-directory-p tree)
             (traverse-deep-rfind tree regex only)
             (message "Sorry! %s is not a Directory" tree)))
+      (message "Hoops! We are not in Dired!")))
+
+
+(defun traverse-search-in-dired-file-at-point (regex)
+  (interactive "sRegexp: ")
+  (if (eq major-mode 'dired-mode)
+      (let ((fname (dired-get-filename)))
+        (if (file-regular-p fname)
+            (traverse-find-in-file fname regex)
+            (message "Sorry! %s is not a regular file" fname)))
       (message "Hoops! We are not in Dired!")))
 
 
@@ -628,8 +638,40 @@ traverse-use-avfs to non--nil"
                                  regexp
                                  only))
           (message "That's not a compressed file")))))
-          
 
+(defun file-compressed-p (fname)
+  "Return t if fname is a compressed file"
+  (let ((ext (file-name-extension fname)))
+    (cond ((equal ext "gz")
+           t)
+          ((equal ext "bz2")
+           t)
+          ((equal ext "zip")
+           t)
+          (t nil))))
+
+(defun traverse-dired-search-regexp-in-anything-at-point (regexp &optional only)
+  "Generic function for dired"
+  (interactive
+   (let ((f-or-d-name (dired-get-filename)))
+     (cond ((and (file-regular-p f-or-d-name)
+                 (not (file-compressed-p f-or-d-name)))
+            (list (read-string "Regexp: ")))
+           ((or (file-directory-p f-or-d-name)
+                (and (file-regular-p f-or-d-name)
+                     (file-compressed-p f-or-d-name)))
+            (list (read-string "Regexp: ")
+                  (read-string "CheckOnly: "))))))
+  (let ((fname (dired-get-filename)))
+     (cond ((and (file-regular-p fname)
+                 (not (file-compressed-p fname)))
+            (traverse-search-in-dired-file-at-point regexp))
+           ((file-directory-p fname)
+            (traverse-search-in-dired-dir-at-point regexp only))
+           ((and (file-regular-p fname)
+                 (file-compressed-p fname))
+            (traverse-dired-search-in-archive regexp only)))))
+    
 ;;;; Navigate in traverse
 (defun traverse-go-forward-or-backward (num)
   (other-window -1)
