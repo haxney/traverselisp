@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.13")
+(defconst traverse-version "1.14")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 18 16:50:43 2008 (+0200)
+;; Last-Updated: jeu sep 18 17:39:40 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 295
+;;     Update #: 296
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -29,23 +29,46 @@
 
 ;; Install:
 ;; =======
+;; Put this file in your load-path
+;; Add to your .emacs:
+;;
 ;; (require 'traverselisp)
-;; (setq max-lisp-eval-depth 40000) ; should work with lower values now.
+;;
+;; Here is my config with version-1.13:
+;; ===================================
+;; (require 'traverselisp)
+;; (setq traverse-use-avfs t)
+;; (global-set-key (kbd "<f12> f") 'traverse-deep-rfind)
+;; (global-set-key (kbd "<f12> u") 'traverse-build-tags-in-project)
+;; (define-key dired-mode-map (kbd "C-c t") 'traverse-dired-search-regexp-in-anything-at-point)
+;; (define-key dired-mode-map (kbd "C-c C-z") 'traverse-dired-browse-archive)
+;; (add-to-list 'traverse-ignore-files ".ledger-cache")
+
+;; You can use customize to set some variables : (eval with C-x C-e)
+;; (customize-group "traversedir")
 
 ;; Usage:
 ;; =====
-;; M-x `traverse-deep-rfind'
+;; M-x traverse-deep-rfind
 ;; When searching is done and you are in traverse buffer
 ;; some actions are provided for navigate and for replacing regexps
-;; Use "C-h m" for more info.
-;; You can use customize to set some variables :
-;; (customize-group "traversedir")
-
+;; Use "C-h m" for more info while in traverse-buffer.
+;;
+;; You can also use traverse from Dired:
+;; M-x traverse-dired-search-regexp-in-anything-at-point
+;; This function work on directory, files, (1)compressed files (avfs)
+;; M-x traverse-dired-browse-archive
+;; This function use (1)avfs to browse archive tar.gz, bz2 etc..
 ;; Other functions are provided:
 ;; `traverse-cp-or-mv-extfiles-in-dir'
 ;; `traverse-build-tags-in-project'
-
-;; Use customize to configure or setq differents variables.
+;;
+;; (1)NOTE: You have to install avfs and enable fuse in your kernel if
+;; you want to browse and search in archives.
+;; Please see the doc of your distrib.
+;; and the doc of avfs
+;; http://sourceforge.net/projects/avf
+;;
 ;; 
 ;; Contact:
 ;; =======
