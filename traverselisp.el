@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.14")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu sep 18 17:39:40 2008 (+0200)
+;; Last-Updated: ven sep 19 10:28:43 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 296
+;;     Update #: 307
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -294,6 +294,17 @@ Each element of the list is a list of the form '(key value)"
     (setq match-list (reverse match-list))
     match-list))
 
+(defun file-compressed-p (fname)
+  "Return t if fname is a compressed file"
+  (let ((ext (file-name-extension fname)))
+    (cond ((equal ext "gz")
+           t)
+          ((equal ext "bz2")
+           t)
+          ((equal ext "zip")
+           t)
+          (t nil))))
+
 (defun traverse-button-func (button)
   "The function called by buttons in traverse buffer"
   (let* ((list-line (split-string (thing-at-point 'line)))
@@ -511,6 +522,7 @@ in *traverse-lisp* buffer"
   (insert  "Wait Lisp searching...\n\n")
   (sit-for 1))
 
+;;;###autoload
 (defun traverse-find-in-file (fname regexp &optional full-path)
   "Traverse search regex in a single file"
   (interactive "fFileName: \nsRegexp: ")
@@ -534,7 +546,6 @@ in *traverse-lisp* buffer"
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
-  
 
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
@@ -596,6 +607,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
         (setq traverse-count-occurences 0)))))
 
 ;;; Dired functions
+;;;###autoload
 (defun traverse-search-in-dired-dir-at-point (regex &optional only)
   "Launch `traverse-deep-rfind' from `dired-mode'"
   (interactive "sRegexp: \nsCheckOnly: ")
@@ -606,7 +618,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
             (message "Sorry! %s is not a Directory" tree)))
       (message "Hoops! We are not in Dired!")))
 
-
+;;;###autoload
 (defun traverse-search-in-dired-file-at-point (regex)
   (interactive "sRegexp: ")
   (if (eq major-mode 'dired-mode)
@@ -616,7 +628,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
             (message "Sorry! %s is not a regular file" fname)))
       (message "Hoops! We are not in Dired!")))
 
-
+;;;###autoload
 (defun traverse-dired-browse-archive ()
   "This function use AVFS and FUSE, so be sure
 to have these programs and modules installed on your system"
@@ -630,7 +642,7 @@ to have these programs and modules installed on your system"
             (find-file (concat traverse-avfs-default-directory file-at-point "#")))
           (find-file file-at-point)))))
 
-
+;;;###autoload
 (defun traverse-dired-search-in-archive (regexp &optional only)
   "This function use AVFS and FUSE, so be sure
 to have these programs installed on your system and FUSE module
@@ -649,17 +661,39 @@ traverse-use-avfs to non--nil"
                                  only))
           (message "That's not a compressed file")))))
 
-(defun file-compressed-p (fname)
-  "Return t if fname is a compressed file"
-  (let ((ext (file-name-extension fname)))
-    (cond ((equal ext "gz")
-           t)
-          ((equal ext "bz2")
-           t)
-          ((equal ext "zip")
-           t)
-          (t nil))))
+;;;###autoload
+(defun traverse-dired-find-in-marked-files (regexp &optional full-path)
+  "Traverse search regex in marked files
+if some of the marked files are directories ignore them"
+  (interactive "sRegexp: ")
+  (let ((prefarg (not (null current-prefix-arg)))
+        (fname-list (mapcar #'(lambda (x)
+                                (when (not (file-directory-p x))
+                                  x))
+                            (dired-get-marked-files))))
+    (traverse-prepare-buffer)
+    (dolist (i fname-list)
+      (when
+          (and i
+               (file-regular-p i)
+               (not (file-symlink-p i)))
+        (traverse-file-process regexp i prefarg)))
+    (goto-char (point-min))
+    (when (re-search-forward "^Wait")
+      (beginning-of-line)
+      (kill-line)
+      (insert (format "Found %s occurences for %s:\n"
+                      traverse-count-occurences
+                      regexp))
+      (message "%s Occurences found for %s"
+               (propertize (int-to-string traverse-count-occurences)
+                           'face 'traverse-match-face)
+               (propertize regexp
+                           'face 'traverse-regex-face))
+      (highlight-regexp regexp) 
+      (setq traverse-count-occurences 0))))
 
+;;;###autoload
 (defun traverse-dired-search-regexp-in-anything-at-point (regexp &optional only)
   "Generic function for dired"
   (interactive
