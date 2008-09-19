@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.14")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep 19 10:28:43 2008 (+0200)
+;; Last-Updated: ven sep 19 13:14:55 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 307
+;;     Update #: 324
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -664,20 +664,14 @@ traverse-use-avfs to non--nil"
 ;;;###autoload
 (defun traverse-dired-find-in-marked-files (regexp &optional full-path)
   "Traverse search regex in marked files
-if some of the marked files are directories ignore them"
+if some of the marked files are directories ignore them
+if no marked files use file at point"
   (interactive "sRegexp: ")
   (let ((prefarg (not (null current-prefix-arg)))
-        (fname-list (mapcar #'(lambda (x)
-                                (when (not (file-directory-p x))
-                                  x))
-                            (dired-get-marked-files))))
+        (fname-list (traverse-dired-get-marked-files)))
     (traverse-prepare-buffer)
     (dolist (i fname-list)
-      (when
-          (and i
-               (file-regular-p i)
-               (not (file-symlink-p i)))
-        (traverse-file-process regexp i prefarg)))
+      (traverse-file-process regexp i prefarg))
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
       (beginning-of-line)
@@ -693,13 +687,42 @@ if some of the marked files are directories ignore them"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
 
+(defun traverse-dired-get-marked-files ()
+  "Get a list of all marked files for traverse"
+  (let ((fname-list (mapcar #'(lambda (x)
+                                (when (and (not (file-directory-p x))
+                                           (not (file-compressed-p x)))
+                                  x))
+                            (dired-get-marked-files)))
+        (new-list nil))
+    (dolist (i fname-list)
+      (when i
+        (push i new-list)))
+    new-list))
+
+(defun traverse-dired-has-marked-files ()
+  "Check if dired has marked files for traverse:
+not compressed
+not directory"
+  (let ((fm-list (traverse-dired-get-marked-files)))
+    (if fm-list
+        t
+        nil)))
+
 ;;;###autoload
 (defun traverse-dired-search-regexp-in-anything-at-point (regexp &optional only)
-  "Generic function for dired"
+  "Generic function for dired
+Search in:
+file at point
+or
+marked files
+or
+directory at point (recursion)
+or
+in compressed archive if traverse-use-avfs is non--nil"
   (interactive
    (let ((f-or-d-name (dired-get-filename)))
-     (cond ((and (file-regular-p f-or-d-name)
-                 (not (file-compressed-p f-or-d-name)))
+     (cond ((traverse-dired-has-marked-files)
             (list (read-string "Regexp: ")))
            ((or (file-directory-p f-or-d-name)
                 (and (file-regular-p f-or-d-name)
@@ -707,9 +730,8 @@ if some of the marked files are directories ignore them"
             (list (read-string "Regexp: ")
                   (read-string "CheckOnly: "))))))
   (let ((fname (dired-get-filename)))
-     (cond ((and (file-regular-p fname)
-                 (not (file-compressed-p fname)))
-            (traverse-search-in-dired-file-at-point regexp))
+     (cond ((traverse-dired-has-marked-files)
+            (traverse-dired-find-in-marked-files regexp))
            ((file-directory-p fname)
             (traverse-search-in-dired-dir-at-point regexp only))
            ((and (file-regular-p fname)
