@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.14")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep 19 13:14:55 2008 (+0200)
+;; Last-Updated: ven sep 19 13:44:31 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 324
+;;     Update #: 326
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -49,26 +49,34 @@
 
 ;; Usage:
 ;; =====
-;; M-x traverse-deep-rfind
+;; M-x `traverse-deep-rfind'
 ;; When searching is done and you are in traverse buffer
-;; some actions are provided for navigate and for replacing regexps
+;; some interactive actions are provided for navigate and for replacing regexps
 ;; Use "C-h m" for more info while in traverse-buffer.
 ;;
-;; You can also use traverse from Dired:
-;; M-x traverse-dired-search-regexp-in-anything-at-point
-;; This function work on directory, files, (1)compressed files (avfs)
-;; M-x traverse-dired-browse-archive
-;; This function use (1)avfs to browse archive tar.gz, bz2 etc..
+;; You can also use traverse from DIRED:
+;; M-x `traverse-dired-search-regexp-in-anything-at-point'
+;; This function work on directory, files, (1)compressed files (AVFS)
+;; and marked files:
+;; If you have marked files search will be performed on these files.
+;; If no files are marked, traverse will search in element at point
+;; with appropriate function.
+;; However, you can use specialized functions, check this file to see all
+;; the interactives functions.
+;;
+;; M-x `traverse-dired-browse-archive'
+;; This function use (1)AVFS to browse archive tar.gz, bz2 etc..
 ;; Other functions are provided:
 ;; `traverse-cp-or-mv-extfiles-in-dir'
 ;; `traverse-build-tags-in-project'
 ;;
-;; (1)NOTE: You have to install avfs and enable fuse in your kernel if
+;; (1)NOTE: You have to install AVFS and enable fuse in your kernel if
 ;; you want to browse and search in archives.
 ;; Please see the doc of your distrib.
-;; and the doc of avfs
+;; and the doc of AVFS
 ;; http://sourceforge.net/projects/avf
-;;
+;; If you don't want to use AVFS in traverse, set `traverse-use-avfs'
+;; to nil (or do nothing because it's the default)
 ;; 
 ;; Contact:
 ;; =======
