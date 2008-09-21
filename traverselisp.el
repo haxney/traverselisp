@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.14")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven sep 19 13:44:31 2008 (+0200)
+;; Last-Updated: dim sep 21 09:35:30 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 326
+;;     Update #: 327
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -697,16 +697,12 @@ if no marked files use file at point"
 
 (defun traverse-dired-get-marked-files ()
   "Get a list of all marked files for traverse"
-  (let ((fname-list (mapcar #'(lambda (x)
-                                (when (and (not (file-directory-p x))
-                                           (not (file-compressed-p x)))
-                                  x))
-                            (dired-get-marked-files)))
-        (new-list nil))
-    (dolist (i fname-list)
-      (when i
-        (push i new-list)))
-    new-list))
+  (let ((fname-list nil))
+    (dolist (i (dired-get-marked-files))
+      (when (and (not (file-directory-p i))
+                 (not (file-compressed-p i)))
+        (push i fname-list)))
+    fname-list))
 
 (defun traverse-dired-has-marked-files ()
   "Check if dired has marked files for traverse:
