@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.15")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep 22 12:12:44 2008 (+0200)
+;; Last-Updated: lun sep 22 13:06:47 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 341
+;;     Update #: 347
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -706,7 +706,11 @@ except compressed files and symlinks"
     (dolist (i all-files)
       (when (and (file-regular-p i)
                  (not (file-symlink-p i))
-                 (not (file-compressed-p i)))
+                 (not (file-compressed-p i))
+                 (not (member (file-name-extension i t)
+                              traverse-ignore-files))
+                 (not (member (file-name-nondirectory i)
+                              traverse-ignore-files)))
         (traverse-file-process regexp i prefarg)))
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
