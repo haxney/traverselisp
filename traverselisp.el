@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.15")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep 22 11:01:32 2008 (+0200)
+;; Last-Updated: lun sep 22 12:12:44 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 335
+;;     Update #: 341
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -696,6 +696,33 @@ if no marked files use file at point"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
 
+(defun traverse-dired-find-in-all-files (regexp &optional full-path)
+  "Traverse search regex in all files of current dired buffer
+except compressed files and symlinks"
+  (interactive "sRegexp: ")
+  (let ((prefarg (not (null current-prefix-arg)))
+        (all-files (traverse-list-directory (dired-current-directory))))
+    (traverse-prepare-buffer)
+    (dolist (i all-files)
+      (when (and (file-regular-p i)
+                 (not (file-symlink-p i))
+                 (not (file-compressed-p i)))
+        (traverse-file-process regexp i prefarg)))
+    (goto-char (point-min))
+    (when (re-search-forward "^Wait")
+      (beginning-of-line)
+      (kill-line)
+      (insert (format "Found %s occurences for %s:\n"
+                      traverse-count-occurences
+                      regexp))
+      (message "%s Occurences found for %s"
+               (propertize (int-to-string traverse-count-occurences)
+                           'face 'traverse-match-face)
+               (propertize regexp
+                           'face 'traverse-regex-face))
+      (highlight-regexp regexp) 
+      (setq traverse-count-occurences 0))))
+
 (defun traverse-dired-get-marked-files ()
   "Get a list of all marked files for traverse"
   (let ((fname-list nil))
@@ -724,7 +751,7 @@ marked files
 or
 directory at point (recursion)
 or
-in compressed archive if traverse-use-avfs is non--nil"
+in compressed archive at point if traverse-use-avfs is non--nil"
   (interactive
    (let ((f-or-d-name (dired-get-filename)))
      (cond ((traverse-dired-has-marked-files)
