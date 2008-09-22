@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.14")
+(defconst traverse-version "1.15")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim sep 21 09:35:30 2008 (+0200)
+;; Last-Updated: lun sep 22 11:01:32 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 327
+;;     Update #: 335
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -87,7 +87,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change log:
-;; 
+;; http://freehg.org/u/thiedlecques/traverselisp/ 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
@@ -157,7 +157,7 @@ Special commands:
     "TAGS" ".tiff"
     ".pdf" ".dvi"
     ".xbm" ".gpg"
-    ".svg")
+    ".svg" ".rej")
   "Files we want to ignore (extensions)"
   :group 'traversedir
   :type '(repeat string))
@@ -338,6 +338,7 @@ Each element of the list is a list of the form '(key value)"
         (sit-for traverse-show-regexp-delay)
         (unhighlight-regexp regex)))))
 
+;;;; Replace functions
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
   "Replace regex with `str', replacement is
@@ -564,15 +565,14 @@ Called with prefix-argument (C-u) absolute path is displayed"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
   (save-excursion
     (traverse-prepare-buffer)
-    (let ((init-time (cadr (current-time))))
+    (let ((init-time (cadr (current-time)))
+          (only-list (split-string only)))
       (unwind-protect
            (traverse-walk-directory tree
                                     #'(lambda (y)
-                                        (if (equal only "")
-                                            (setq only nil))
                                         (let ((prefarg (not (null current-prefix-arg))))
-                                          (if only
-                                              (when (equal (file-name-extension y t) only)
+                                          (if only-list
+                                              (when (member (file-name-extension y t) only-list)
                                                 (funcall traverse-file-function regexp y prefarg))
                                               (funcall traverse-file-function regexp y prefarg)))
                                         (message "%s [Matches] for %s in [%s]"
@@ -584,7 +584,8 @@ Called with prefix-argument (C-u) absolute path is displayed"
                                                              'face 'traverse-regex-face)
                                                  (propertize y
                                                              'face 'traverse-path-face)))
-                                    traverse-ignore-files
+                                    (unless only-list
+                                      traverse-ignore-files)
                                     traverse-ignore-dirs)
         (setq traverse-count-occurences (if (< traverse-count-occurences 0)
                                             0
