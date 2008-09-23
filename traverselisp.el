@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.15")
+(defconst traverse-version "1.16")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep 23 15:40:57 2008 (+0200)
+;; Last-Updated: mar sep 23 16:12:33 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 358
+;;     Update #: 361
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -34,14 +34,18 @@
 ;;
 ;; (require 'traverselisp)
 ;;
-;; Here is my config with version-1.13:
+;; Set up your prefered keys for dired and globals as usual
+;;
+;; Here is my config with version-1.16:
 ;; ===================================
 ;; (require 'traverselisp)
 ;; (setq traverse-use-avfs t)
-;; (global-set-key (kbd "<f12> f") 'traverse-deep-rfind)
-;; (global-set-key (kbd "<f12> u") 'traverse-build-tags-in-project)
-;; (define-key dired-mode-map (kbd "C-c t") 'traverse-dired-search-regexp-in-anything-at-point)
+;; (global-set-key (kbd "<f5> f") 'traverse-deep-rfind)
+;; (global-set-key (kbd "<f5> u") 'traverse-build-tags-in-project)
+;; (global-set-key (kbd "C-c C-o") 'traverse-occur-current-buffer)
+;; (define-key dired-mode-map (kbd "A") 'traverse-dired-search-regexp-in-anything-at-point)
 ;; (define-key dired-mode-map (kbd "C-c C-z") 'traverse-dired-browse-archive)
+;; (define-key dired-mode-map (kbd "C-c t") 'traverse-dired-find-in-all-files)
 ;; (add-to-list 'traverse-ignore-files ".ledger-cache")
 
 ;; You can use customize to set some variables : (eval with C-x C-e)
@@ -54,6 +58,21 @@
 ;; some interactive actions are provided for navigate and for replacing regexps
 ;; Use "C-h m" for more info while in traverse-buffer.
 ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Special commands:
+;; key             binding
+;; ---             -------
+
+;; ESC             Prefix Command
+;; N               traverse-go-forward
+;; P               traverse-go-backward
+;; R               traverse-search-and-replace-all ==> [interactive menu]
+;; S               traverse-search-and-replace
+;; q               traverse-quit
+;; <S-down>        traverse-scroll-down-other-window
+;; <S-up>          traverse-scroll-up-other-window
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
 ;; You can also use traverse from DIRED:
 ;; M-x `traverse-dired-search-regexp-in-anything-at-point'
 ;; This function work on directory, files, (1)compressed files (AVFS)
@@ -63,6 +82,12 @@
 ;; with appropriate function.
 ;; However, you can use specialized functions, check this file to see all
 ;; the interactives functions.
+;;
+;; M-x `traverse-dired-find-in-all-files'
+;; Search in all regular files in the current dired buffer
+;;
+;; M-x `traverse-occur-current-buffer'
+;; Just like occur but you can navigate and replace regexp.
 ;;
 ;; M-x `traverse-dired-browse-archive'
 ;; This function use (1)AVFS to browse archive tar.gz, bz2 etc..
@@ -558,7 +583,7 @@ in *traverse-lisp* buffer"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
 
-;; User option
+;; User options
 (defvar traverse-occur-use-miniwindow nil)
 (defvar traverse-miniwindow-width 30)
 (defun traverse-occur-current-buffer (regexp)
