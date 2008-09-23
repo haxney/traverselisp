@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.16")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep 23 16:12:33 2008 (+0200)
+;; Last-Updated: mar sep 23 16:45:22 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 361
+;;     Update #: 362
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -586,6 +586,7 @@ in *traverse-lisp* buffer"
 ;; User options
 (defvar traverse-occur-use-miniwindow nil)
 (defvar traverse-miniwindow-width 30)
+;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
   (interactive "sRegexp: ")
   (let ((buf-fname (buffer-file-name (current-buffer))))
