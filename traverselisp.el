@@ -1,4 +1,4 @@
-;;; traverselisp.el -- Search and replace through directorys
+;;; traverselisp.el -- Search and replace...
 ;;
 ;; Filename: traverselisp.el
 ;; Description: A clone of rgrep wrote all in lisp.
@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.15")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun sep 22 13:06:47 2008 (+0200)
+;; Last-Updated: mar sep 23 15:40:57 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 347
+;;     Update #: 358
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -136,7 +136,9 @@ Special commands:
 (defun traverse-quit ()
   "Quit and kill traverse buffer"
   (interactive)
-  (quit-window t))
+  (quit-window t)
+  (other-window 1)
+  (delete-other-windows))
 
 (defgroup traversedir nil
   "Mode to search recursively regex like grep-find"
@@ -556,6 +558,21 @@ in *traverse-lisp* buffer"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
 
+;; User option
+(defvar traverse-occur-use-miniwindow nil)
+(defvar traverse-miniwindow-width 30)
+(defun traverse-occur-current-buffer (regexp)
+  (interactive "sRegexp: ")
+  (let ((buf-fname (buffer-file-name (current-buffer))))
+    (if traverse-occur-use-miniwindow
+        (progn
+          (delete-other-windows)
+          (split-window-horizontally traverse-miniwindow-width))
+        (split-window-vertically))
+    (other-window 1)
+    (traverse-find-in-file buf-fname regexp)
+    (switch-to-buffer-other-window "*traverse-lisp*")))
+    
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
   "Main function that call walk, if only is omitted it
