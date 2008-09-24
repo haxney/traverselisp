@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.17")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer sep 24 14:35:19 2008 (+0200)
+;; Last-Updated: mer sep 24 15:00:18 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 368
+;;     Update #: 370
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -585,7 +585,8 @@ in *traverse-lisp* buffer"
 
 ;; User options
 (defvar traverse-occur-use-miniwindow nil)
-(defvar traverse-miniwindow-width 30)
+(defvar traverse-miniwindow-width 30
+  "If nil split window equally")
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
   (interactive "sRegexp: ")
@@ -594,6 +595,7 @@ in *traverse-lisp* buffer"
         (progn
           (delete-other-windows)
           (split-window-horizontally traverse-miniwindow-width))
+        (delete-other-windows)
         (split-window-vertically))
     (other-window 1)
     (traverse-find-in-file buf-fname regexp)
