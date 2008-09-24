@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.16")
+(defconst traverse-version "1.17")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar sep 23 16:45:22 2008 (+0200)
+;; Last-Updated: mer sep 24 14:35:19 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 362
+;;     Update #: 368
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -571,7 +571,7 @@ in *traverse-lisp* buffer"
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
       (beginning-of-line)
-      (kill-line)
+      (delete-region (point) (line-end-position))
       (insert (format "Found %s occurences for %s:\n"
                       traverse-count-occurences
                       regexp))
@@ -638,12 +638,12 @@ Called with prefix-argument (C-u) absolute path is displayed"
               (goto-char (point-min))
               (when (re-search-forward "^Wait")
                 (beginning-of-line)
-                (kill-line)
+                (delete-region (point) (line-end-position))
                 (insert "Oh!No! Nothing found!")))
             (goto-char (point-min))
             (when (re-search-forward "^Wait")
               (beginning-of-line)
-              (kill-line)
+              (delete-region (point) (line-end-position))
               (insert (format "Search performed in %s seconds\n\n"
                               (- (cadr (current-time)) init-time)))
               (insert (format "Found %s occurences for %s:\n"
@@ -727,7 +727,7 @@ if no marked files use file at point"
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
       (beginning-of-line)
-      (kill-line)
+      (delete-region (point) (line-end-position))
       (insert (format "Found %s occurences for %s:\n"
                       traverse-count-occurences
                       regexp))
@@ -758,7 +758,7 @@ except compressed files and symlinks"
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
       (beginning-of-line)
-      (kill-line)
+      (delete-region (point) (line-end-position))
       (insert (format "Found %s occurences for %s:\n"
                       traverse-count-occurences
                       regexp))
