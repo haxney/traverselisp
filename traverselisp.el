@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.17")
+(defconst traverse-version "1.18")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer sep 24 15:00:18 2008 (+0200)
+;; Last-Updated: jeu oct  2 10:54:31 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 370
+;;     Update #: 373
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -589,7 +589,9 @@ in *traverse-lisp* buffer"
   "If nil split window equally")
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
-  (interactive "sRegexp: ")
+  (interactive (list
+                (read-from-minibuffer "Regexp: "
+                                      nil nil nil nil (thing-at-point 'sexp))))
   (let ((buf-fname (buffer-file-name (current-buffer))))
     (if traverse-occur-use-miniwindow
         (progn
