@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.18")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu oct  2 10:54:31 2008 (+0200)
+;; Last-Updated: ven oct 10 21:39:22 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 373
+;;     Update #: 376
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -148,6 +148,7 @@
     (define-key map [?P] 'traverse-go-backward)
     (define-key map [(shift down)] 'traverse-scroll-down-other-window)
     (define-key map [(shift up)] 'traverse-scroll-up-other-window)
+    (define-key map [?|] 'traverse-toggle-split-window-h-v)
     map)
   "Keymap used for traversedir commands.")
 
@@ -911,6 +912,33 @@ Tag file will be build in `dir'"
                                traverse-ignore-dirs))
     (message "%s Files tagged" (propertize (int-to-string count)
                                            'face 'traverse-match-face))))
+
+
+(defun traverse-window-split-h-or-t ()
+  "Give current split window position under
+symbol form.
+Possible value: 'hor or 'ver"
+  (cdr (assoc 'dir (bw-get-tree))))
+
+;;;###autoload
+(defun traverse-toggle-split-window-h-v ()
+  "From traverse buffer toggle split window
+horizontally or vertically ala ediff"
+  (interactive)
+  (when (eq (count-windows) 2)
+    (balance-windows)
+    (let ((buffA (current-buffer))
+          (buffB)
+          (split-pos (tv-window-split-h-or-t)))
+      (save-excursion
+        (other-window 1)
+        (setq buffB (current-buffer))
+        (delete-window))
+      (if (eq split-pos 'hor)
+          (split-window-vertically)
+          (split-window-horizontally))
+      (set-buffer (get-buffer buffB))
+      (display-buffer (current-buffer)))))
 
 (provide 'traverselisp)
 
