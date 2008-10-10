@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.19")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven oct 10 21:55:18 2008 (+0200)
+;; Last-Updated: ven oct 10 22:37:42 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 377
+;;     Update #: 378
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -929,7 +929,7 @@ horizontally or vertically ala ediff"
     (balance-windows)
     (let ((buffA (current-buffer))
           (buffB)
-          (split-pos (tv-window-split-h-or-t)))
+          (split-pos (traverse-window-split-h-or-t)))
       (save-excursion
         (other-window 1)
         (setq buffB (current-buffer))
