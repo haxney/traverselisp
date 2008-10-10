@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.18")
+(defconst traverse-version "1.19")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven oct 10 21:39:22 2008 (+0200)
+;; Last-Updated: ven oct 10 21:55:18 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 376
+;;     Update #: 377
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
