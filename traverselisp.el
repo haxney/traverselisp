@@ -9,9 +9,9 @@
 ;; Version:
 (defconst traverse-version "1.19")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven oct 10 22:37:42 2008 (+0200)
+;; Last-Updated: mar oct 14 21:27:01 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 378
+;;     Update #: 386
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -545,6 +545,27 @@ in *traverse-lisp* buffer"
                                "\n")))))
         (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
+
+(defun traverse-buffer-process-ext (regex fname)
+  "Function to process buffer in external program
+like anything"
+  (clrhash traverse-table)
+  (traverse-hash-readlines fname traverse-table)
+  (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
+    (when matched-lines
+      (dolist (i matched-lines) ;; each element is of the form '(key value)
+        (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
+          (insert (concat " "
+                          (propertize (int-to-string (+ (first i) 1))
+                                      'face 'traverse-match-face)
+                          ":"
+                          (if (> (length line-to-print)
+                                 traverse-length-line)
+                              (substring line-to-print
+                                         0
+                                         traverse-length-line)
+                              line-to-print)
+                          "\n")))))))
 
 (defun traverse-prepare-buffer ()
   "Prepare traverse buffer"
