@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.21")
+(defconst traverse-version "1.22")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven oct 17 12:28:43 2008 (+0200)
+;; Last-Updated: ven oct 17 15:12:50 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 390
+;;     Update #: 396
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -301,11 +301,25 @@ on each file found.
 (defvar traverse-table (make-hash-table))
 
 (defsubst traverse-hash-readlines (file table)
-  "Load all the line of a file in an hash-table
+  "Load all the lines of a file in an hash-table
 with the number of line as key.
 \\(emulate object.readlines() of python)"
   (let* ((my-string (with-temp-buffer
                        (insert-file-contents file)
+                       (buffer-string)))
+          (my-read-list (split-string my-string "\n"))
+          (count 0))
+     (dolist (i my-read-list)
+       (puthash count i table)
+       (incf count))))
+
+
+(defsubst traverse-hash-readlines-from-buffer (buffer table)
+  "Load all the lines of a buffer in an hash-table
+with the number of line as key.
+\\(emulate object.readlines() of python)"
+  (let* ((my-string (with-temp-buffer
+                       (insert-buffer-substring buffer)
                        (buffer-string)))
           (my-read-list (split-string my-string "\n"))
           (count 0))
@@ -546,11 +560,12 @@ in *traverse-lisp* buffer"
         (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
 
-(defun traverse-buffer-process-ext (regex fname)
+
+(defun traverse-buffer-process-ext (regex buffer)
   "Function to process buffer in external program
 like anything"
   (clrhash traverse-table)
-  (traverse-hash-readlines fname traverse-table)
+  (traverse-hash-readlines-from-buffer buffer traverse-table)
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
