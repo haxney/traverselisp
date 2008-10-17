@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.20")
+(defconst traverse-version "1.21")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mar oct 14 21:49:54 2008 (+0200)
+;; Last-Updated: ven oct 17 12:28:43 2008 (+0200)
 ;;           By: thierry
-;;     Update #: 387
+;;     Update #: 390
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -554,17 +554,22 @@ like anything"
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
+        (let* ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i)))
+               (temp-list-line (split-string line-to-print regex))
+               (line-to-print-hight (concat (nth 0 temp-list-line)
+                                            (propertize regex
+                                                        'face 'traverse-regex-face)
+                                            (nth 1 temp-list-line))))
           (insert (concat " "
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face)
                           ":"
-                          (if (> (length line-to-print)
+                          (if (> (length line-to-print-hight)
                                  traverse-length-line)
-                              (substring line-to-print
+                              (substring line-to-print-hight
                                          0
                                          traverse-length-line)
-                              line-to-print)
+                              line-to-print-hight)
                           "\n")))))))
 
 (defun traverse-prepare-buffer ()
