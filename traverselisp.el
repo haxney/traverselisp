@@ -7,11 +7,11 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;; Version:
-(defconst traverse-version "1.22")
+(defconst traverse-version "1.23")
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven oct 17 15:12:50 2008 (+0200)
+;; Last-Updated: lun nov 24 18:48:51 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 396
+;;     Update #: 406
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -162,6 +162,8 @@ Special commands:
 (defun traverse-quit ()
   "Quit and kill traverse buffer"
   (interactive)
+  (when traverse-occur-overlay
+    (delete-overlay traverse-occur-overlay))
   (quit-window t)
   (other-window 1)
   (delete-other-windows))
@@ -243,7 +245,10 @@ Special commands:
 (defface traverse-path-face '((t (:foreground "green")))
   "TRAVERSEDIR face."
   :group 'traverse-faces)
-
+(defface traverse-overlay-face '((t (:background "MediumAquamarine" :underline t)))
+  "Face for highlight line in matched buffer."
+  :group 'traverse-faces)
+(defvar traverse-match-overlay-face 'anything-overlay-face)
 
 (defun traverse-lisp-version ()
   (interactive)
@@ -355,6 +360,19 @@ Each element of the list is a list of the form '(key value)"
            t)
           (t nil))))
 
+
+(defvar traverse-occur-overlay nil)
+(defun traverse-occur-color-current-line ()
+  "Highlight and underline current position"
+  (if (not traverse-occur-overlay)
+      (setq traverse-occur-overlay
+            (make-overlay
+             (line-beginning-position) (1+ (line-end-position))))
+      (move-overlay traverse-occur-overlay
+                    (line-beginning-position) (1+ (line-end-position))))
+  (overlay-put traverse-occur-overlay
+               'face traverse-match-overlay-face))
+
 (defun traverse-button-func (button)
   "The function called by buttons in traverse buffer"
   (let* ((list-line (split-string (thing-at-point 'line)))
@@ -376,9 +394,7 @@ Each element of the list is a list of the form '(key value)"
       (beginning-of-line)
       (when (re-search-forward regex nil nil)
         (goto-char (- (point) (length regex)))
-        (highlight-regexp regex)
-        (sit-for traverse-show-regexp-delay)
-        (unhighlight-regexp regex)))))
+        (traverse-occur-color-current-line)))))
 
 ;;;; Replace functions
 ;;;###autoload
