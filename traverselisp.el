@@ -6,12 +6,11 @@
 ;; Author: Thierry Volpiatto 
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
-;; Version:
-(defconst traverse-version "1.23")
+;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun nov 24 18:48:51 2008 (+0100)
+;; Last-Updated: jeu nov 27 12:30:23 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 406
+;;     Update #: 407
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -133,7 +132,10 @@
 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+;;
+;; Version:
+(defconst traverse-version "1.23")
+
 ;;; Code:
 
 (require 'derived)
@@ -248,7 +250,7 @@ Special commands:
 (defface traverse-overlay-face '((t (:background "MediumAquamarine" :underline t)))
   "Face for highlight line in matched buffer."
   :group 'traverse-faces)
-(defvar traverse-match-overlay-face 'anything-overlay-face)
+(defvar traverse-match-overlay-face 'traverse-overlay-face)
 
 (defun traverse-lisp-version ()
   (interactive)
