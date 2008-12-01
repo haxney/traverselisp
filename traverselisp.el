@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun déc  1 10:25:26 2008 (+0100)
+;; Last-Updated: lun déc  1 11:25:43 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 412
+;;     Update #: 414
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -218,12 +218,6 @@ Special commands:
   :group 'traversedir
   :type 'symbol)
 
-(defcustom traverse-show-regexp-delay
-  2
-  "Delay in seconds where regexp found is highligted"
-  :group 'traversedir
-  :type 'integer)
-
 (defcustom traverse-use-avfs
   nil
   "Enable support for avfs"
@@ -401,6 +395,9 @@ Each element of the list is a list of the form '(key value)"
         (traverse-occur-color-current-line)))))
 
 ;;;; Replace functions
+(defvar traverse-show-regexp-delay 1
+  "Delay in seconds where regexp found is highlighted")
+
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
   "Replace regex with `str', replacement is
@@ -435,7 +432,7 @@ performed only on current line"
                             (insert str)
                             (save-buffer)
                             (highlight-regexp str 'hi-pink)
-                            (sit-for 0.1)
+                            (sit-for traverse-show-regexp-delay)
                             (kill-buffer (current-buffer))
                             (setq flag-w t))
                           (kill-buffer (current-buffer))))
@@ -504,6 +501,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                                                                         'face 'traverse-match-face))))
                            (case action
                              ('?n (progn
+                                    (setq traverse-show-regexp-delay 1)
                                     (traverse-search-and-replace str regex)
                                     (incf count)
                                     (throw 'continue nil)))
@@ -513,6 +511,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                                                          'face 'traverse-match-face)
                                              (propertize "<C-g>"
                                                          'face 'traverse-match-face))
+                                    (setq traverse-show-regexp-delay 0.1)
                                     (sit-for 3)
                                     (traverse-search-and-replace str regex)
                                     (incf count)
