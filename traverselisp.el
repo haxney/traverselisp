@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu nov 27 12:30:23 2008 (+0100)
+;; Last-Updated: lun déc  1 10:25:26 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 407
+;;     Update #: 412
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -133,8 +133,10 @@
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
+;; (emacswiki-post "traverselisp.el" (traverse-lisp-version))
+;;
 ;; Version:
-(defconst traverse-version "1.23")
+(defconst traverse-version "1.24")
 
 ;;; Code:
 
@@ -433,7 +435,7 @@ performed only on current line"
                             (insert str)
                             (save-buffer)
                             (highlight-regexp str 'hi-pink)
-                            (sit-for 1)
+                            (sit-for 0.1)
                             (kill-buffer (current-buffer))
                             (setq flag-w t))
                           (kill-buffer (current-buffer))))
