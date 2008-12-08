@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun déc  8 10:35:30 2008 (+0100)
+;; Last-Updated: lun déc  8 13:15:59 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 421
+;;     Update #: 433
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -387,7 +387,9 @@ Each element of the list is a list of the form '(key value)"
     (save-excursion
       (setq fname (replace-regexp-in-string "\\[" "" fname))
       (setq fname (replace-regexp-in-string "\\]" "" fname))
-      (find-file-other-window fname) 
+      (if (bufferp (get-buffer fname))
+          (switch-to-buffer-other-window (get-buffer fname))
+          (find-file-other-window fname))
       (goto-line (string-to-number nline))
       (setq case-fold-search t)
       (beginning-of-line)
@@ -552,21 +554,27 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 
-(defun traverse-file-process (regex fname &optional full-path)
+(defun* traverse-file-process (regex fname &optional full-path &key (fn 'traverse-hash-readlines))
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
   (clrhash traverse-table)
-  (traverse-hash-readlines fname traverse-table)
+  (funcall fn fname traverse-table)
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
-          (and (insert-button (format "[%s]" (if full-path
-                                                 fname
-                                                 (file-relative-name fname
-                                                                     default-directory)))
-                              'action 'traverse-button-func
-                              'face "hi-green")
+          (and (cond ((eq fn 'traverse-hash-readlines)
+                      (insert-button (format "[%s]" (if full-path
+                                                        fname
+                                                        (file-relative-name fname
+                                                                            default-directory)))
+                                     'action 'traverse-button-func
+                                     'face "hi-green"))
+
+                     ((eq fn 'traverse-hash-readlines-from-buffer)
+                      (insert-button (format "[%s]" (buffer-name fname))
+                                     'action 'traverse-button-func
+                                     'face "hi-green")))
                (insert (concat " "
                                (int-to-string (+ (first i) 1))
                                ":"
@@ -626,10 +634,11 @@ like anything"
   (interactive "fFileName: \nsRegexp: ")
   (traverse-prepare-buffer)
   (let ((prefarg (not (null current-prefix-arg))))
-    (when
-        (and (file-regular-p fname)
+    (if (and (not (bufferp fname))
+             (file-regular-p fname)
              (not (file-symlink-p fname)))
-      (traverse-file-process regexp fname prefarg))
+        (traverse-file-process regexp fname prefarg)
+        (traverse-file-process regexp fname prefarg :fn 'traverse-hash-readlines-from-buffer))
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
       (beginning-of-line)
@@ -662,8 +671,10 @@ like anything"
         (delete-other-windows)
         (split-window-vertically))
     (other-window 1)
-    (traverse-find-in-file buf-fname regexp)
-    (switch-to-buffer-other-window "*traverse-lisp*")))
+    (if buf-fname
+        (traverse-find-in-file buf-fname regexp)
+        (traverse-find-in-file (current-buffer) regexp)))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
     
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
