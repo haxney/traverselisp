@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun déc  1 11:25:43 2008 (+0100)
+;; Last-Updated: lun déc  8 10:35:30 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 414
+;;     Update #: 421
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -102,6 +102,9 @@
 ;; If you don't want to use AVFS in traverse, set `traverse-use-avfs'
 ;; to nil (or do nothing because it's the default)
 ;; 
+;; You can also use traverselisp.el in anything.el with the appropriate sources:
+;; http://www.emacswiki.org/emacs/AnythingSources
+;;
 ;; Contact:
 ;; =======
 ;; thierry dot volpiatto hat gmail dot com
@@ -133,10 +136,8 @@
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;; (emacswiki-post "traverselisp.el" (traverse-lisp-version))
-;;
 ;; Version:
-(defconst traverse-version "1.24")
+(defconst traverse-version "1.25")
 
 ;;; Code:
 
@@ -324,11 +325,11 @@ with the number of line as key.
   (let* ((my-string (with-temp-buffer
                        (insert-buffer-substring buffer)
                        (buffer-string)))
-          (my-read-list (split-string my-string "\n"))
-          (count 0))
-     (dolist (i my-read-list)
-       (puthash count i table)
-       (incf count))))
+         (my-read-list (split-string my-string "\n"))
+         (count 0))
+    (dolist (i my-read-list)
+      (puthash count i table)
+      (incf count))))
 
 
 (defsubst traverse-find-all-regex-in-hash (regex table)
@@ -580,7 +581,7 @@ in *traverse-lisp* buffer"
                                            (length matched-lines))))))
 
 
-(defun traverse-buffer-process-ext (regex buffer)
+(defun* traverse-buffer-process-ext (regex buffer &key (lline traverse-length-line))
   "Function to process buffer in external program
 like anything"
   (clrhash traverse-table)
@@ -599,10 +600,10 @@ like anything"
                                       'face 'traverse-match-face)
                           ":"
                           (if (> (length line-to-print-hight)
-                                 traverse-length-line)
+                                 lline)
                               (substring line-to-print-hight
                                          0
-                                         traverse-length-line)
+                                         lline)
                               line-to-print-hight)
                           "\n")))))))
 
@@ -1005,6 +1006,7 @@ horizontally or vertically ala ediff"
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; (emacswiki-post "traverselisp.el")
 ;;; traverselisp.el ends here
 
 
