@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun déc  8 13:15:59 2008 (+0100)
+;; Last-Updated: dim déc 14 08:24:12 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 433
+;;     Update #: 438
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.25")
+(defconst traverse-version "1.26")
 
 ;;; Code:
 
@@ -162,16 +162,6 @@
 
 Special commands:
 \\{traversedir-mode-map}")
-
-
-(defun traverse-quit ()
-  "Quit and kill traverse buffer"
-  (interactive)
-  (when traverse-occur-overlay
-    (delete-overlay traverse-occur-overlay))
-  (quit-window t)
-  (other-window 1)
-  (delete-other-windows))
 
 (defgroup traversedir nil
   "Mode to search recursively regex like grep-find"
@@ -231,6 +221,7 @@ Special commands:
   :group 'traversedir
   :type 'string)
 
+;;; Faces for traverse
 (defgroup traverse-faces nil
   "Faces for TRAVERSEDIR."
   :group 'traversedir)
@@ -247,21 +238,46 @@ Special commands:
 (defface traverse-overlay-face '((t (:background "MediumAquamarine" :underline t)))
   "Face for highlight line in matched buffer."
   :group 'traverse-faces)
-(defvar traverse-match-overlay-face 'traverse-overlay-face)
+
+
+;;; User's variable (you can set these variables)
+(defvar traverse-match-overlay-face 'traverse-overlay-face
+  "Use the default traverse face for overlay")
+(defvar traverse-show-regexp-delay 1
+  "Delay in seconds where regexp found is highlighted")
+(defvar traverse-keep-indent nil
+  "Keep indentation in traverse buffer if non nil")
+(defvar traverse-occur-use-miniwindow nil
+  "Use a side miniwindow to display results")
+(defvar traverse-miniwindow-width 30
+  "If nil split window equally")
+
+;;; Internal use only (DON'T modify)
+(defvar traverse-count-occurences 0)
+(defvar traverse-table (make-hash-table))
+(defvar traverse-occur-overlay nil)
 
 (defun traverse-lisp-version ()
+  "Give version number of traverse"
   (interactive)
   (message "traverse-lisp-version-%s" traverse-version))
 
 ;;; Main backend functions
 
+(defun traverse-quit ()
+  "Quit and kill traverse buffer"
+  (interactive)
+  (when traverse-occur-overlay
+    (delete-overlay traverse-occur-overlay))
+  (quit-window t)
+  (other-window 1)
+  (delete-other-windows))
 
 (defsubst traverse-list-directory (dirname &optional abs)
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path."
   (cddr (directory-files dirname abs)))
      
-
 (defun traverse-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
     "Walk through dirname and use file-fn function
 on each file found.
@@ -299,11 +315,6 @@ on each file found.
                       (funcall file-fn name))))))
       (walk (expand-file-name dirname))))
 
-
-(defvar traverse-count-occurences 0)
-
-(defvar traverse-table (make-hash-table))
-
 (defsubst traverse-hash-readlines (file table)
   "Load all the lines of a file in an hash-table
 with the number of line as key.
@@ -317,7 +328,6 @@ with the number of line as key.
        (puthash count i table)
        (incf count))))
 
-
 (defsubst traverse-hash-readlines-from-buffer (buffer table)
   "Load all the lines of a buffer in an hash-table
 with the number of line as key.
@@ -330,7 +340,6 @@ with the number of line as key.
     (dolist (i my-read-list)
       (puthash count i table)
       (incf count))))
-
 
 (defsubst traverse-find-all-regex-in-hash (regex table)
   "Return a list of all lines that match regex
@@ -359,8 +368,6 @@ Each element of the list is a list of the form '(key value)"
            t)
           (t nil))))
 
-
-(defvar traverse-occur-overlay nil)
 (defun traverse-occur-color-current-line ()
   "Highlight and underline current position"
   (if (not traverse-occur-overlay)
@@ -398,8 +405,6 @@ Each element of the list is a list of the form '(key value)"
         (traverse-occur-color-current-line)))))
 
 ;;;; Replace functions
-(defvar traverse-show-regexp-delay 1
-  "Delay in seconds where regexp found is highlighted")
 
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
@@ -562,7 +567,9 @@ in *traverse-lisp* buffer"
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
+        (let ((line-to-print (if traverse-keep-indent
+                                 (second i)
+                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
           (and (cond ((eq fn 'traverse-hash-readlines)
                       (insert-button (format "[%s]" (if full-path
                                                         fname
@@ -597,7 +604,9 @@ like anything"
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let* ((line-to-print (replace-regexp-in-string "\\(^ *\\)" "" (second i)))
+        (let* ((line-to-print (if traverse-keep-indent
+                                  (second i)
+                                  (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
                (temp-list-line (split-string line-to-print regex))
                (line-to-print-hight (concat (nth 0 temp-list-line)
                                             (propertize regex
@@ -654,10 +663,6 @@ like anything"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0))))
 
-;; User options
-(defvar traverse-occur-use-miniwindow nil)
-(defvar traverse-miniwindow-width 30
-  "If nil split window equally")
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
   (interactive (list
@@ -924,7 +929,6 @@ in compressed archive at point if traverse-use-avfs is non--nil"
    (when (equal (current-buffer)
                (get-buffer "*traverse-lisp*"))
   (scroll-other-window -1)))
-
 
 ;;;; Utils
 ;;;###autoload
