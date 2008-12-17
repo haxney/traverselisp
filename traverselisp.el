@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer déc 17 18:25:17 2008 (+0100)
+;; Last-Updated: mer déc 17 22:42:10 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 446
+;;     Update #: 448
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -679,8 +679,8 @@ like anything"
     (other-window 1)
     (if buf-fname
         (traverse-find-in-file buf-fname regexp)
-        (traverse-find-in-file (current-buffer) regexp)))
-  (switch-to-buffer-other-window "*traverse-lisp*"))
+        (traverse-find-in-file (current-buffer) regexp))))
+  
     
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
