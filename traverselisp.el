@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: dim déc 14 08:24:12 2008 (+0100)
+;; Last-Updated: mer déc 17 18:25:17 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 438
+;;     Update #: 446
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.26")
+(defconst traverse-version "1.27")
 
 ;;; Code:
 
@@ -661,7 +661,8 @@ like anything"
                (propertize regexp
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
-      (setq traverse-count-occurences 0))))
+      (setq traverse-count-occurences 0)))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
 
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
@@ -688,57 +689,59 @@ will be set as nil and search will be proceeded on all files
 except on files that are in `traverse-ignore-files'
 Called with prefix-argument (C-u) absolute path is displayed"
   (interactive "DTree: \nsRegexp: \nsCheckOnly: ")
-  (save-excursion
-    (traverse-prepare-buffer)
-    (let ((init-time (cadr (current-time)))
-          (only-list (split-string only)))
-      (unwind-protect
-           (traverse-walk-directory tree
-                                    #'(lambda (y)
-                                        (let ((prefarg (not (null current-prefix-arg))))
-                                          (if only-list
-                                              (when (member (file-name-extension y t) only-list)
-                                                (funcall traverse-file-function regexp y prefarg))
-                                              (funcall traverse-file-function regexp y prefarg)))
-                                        (message "%s [Matches] for %s in [%s]"
-                                                 (if (>= traverse-count-occurences 1)
-                                                     (propertize (int-to-string traverse-count-occurences)
-                                                                 'face 'traverse-match-face)
-                                                     0)
-                                                 (propertize regexp
-                                                             'face 'traverse-regex-face)
-                                                 (propertize y
-                                                             'face 'traverse-path-face)))
-                                    (unless only-list
-                                      traverse-ignore-files)
-                                    traverse-ignore-dirs)
-        (setq traverse-count-occurences (if (< traverse-count-occurences 0)
-                                            0
-                                            traverse-count-occurences))
-        (if (eq traverse-count-occurences 0)
-            (progn
-              (goto-char (point-min))
-              (when (re-search-forward "^Wait")
-                (beginning-of-line)
-                (delete-region (point) (line-end-position))
-                (insert "Oh!No! Nothing found!")))
+  ;(save-excursion
+  (traverse-prepare-buffer)
+  (let ((init-time (cadr (current-time)))
+        (only-list (split-string only)))
+    (unwind-protect
+         (traverse-walk-directory tree
+                                  #'(lambda (y)
+                                      (let ((prefarg (not (null current-prefix-arg))))
+                                        (if only-list
+                                            (when (member (file-name-extension y t) only-list)
+                                              (funcall traverse-file-function regexp y prefarg))
+                                            (funcall traverse-file-function regexp y prefarg)))
+                                      (message "%s [Matches] for %s in [%s]"
+                                               (if (>= traverse-count-occurences 1)
+                                                   (propertize (int-to-string traverse-count-occurences)
+                                                               'face 'traverse-match-face)
+                                                   0)
+                                               (propertize regexp
+                                                           'face 'traverse-regex-face)
+                                               (propertize y
+                                                           'face 'traverse-path-face)))
+                                  (unless only-list
+                                    traverse-ignore-files)
+                                  traverse-ignore-dirs)
+      (setq traverse-count-occurences (if (< traverse-count-occurences 0)
+                                          0
+                                          traverse-count-occurences))
+      (if (eq traverse-count-occurences 0)
+          (progn
             (goto-char (point-min))
             (when (re-search-forward "^Wait")
               (beginning-of-line)
               (delete-region (point) (line-end-position))
-              (insert (format "Search performed in %s seconds\n\n"
-                              (- (cadr (current-time)) init-time)))
-              (insert (format "Found %s occurences for %s:\n"
-                              traverse-count-occurences
-                              regexp))))
-        (message "%s Occurences found for %s in %s seconds"
-                 (propertize (int-to-string traverse-count-occurences)
-                             'face 'traverse-match-face)
-                 (propertize regexp
-                             'face 'traverse-regex-face)
-                 (- (cadr (current-time)) init-time))
-        (highlight-regexp regexp) 
-        (setq traverse-count-occurences 0)))))
+              (insert "Oh!No! Nothing found!")))
+          (goto-char (point-min))
+          (when (re-search-forward "^Wait")
+            (beginning-of-line)
+            (delete-region (point) (line-end-position))
+            (insert (format "Search performed in %s seconds\n\n"
+                            (- (cadr (current-time)) init-time)))
+            (insert (format "Found %s occurences for %s:\n"
+                            traverse-count-occurences
+                            regexp))))
+      (message "%s Occurences found for %s in %s seconds"
+               (propertize (int-to-string traverse-count-occurences)
+                           'face 'traverse-match-face)
+               (propertize regexp
+                           'face 'traverse-regex-face)
+               (- (cadr (current-time)) init-time))
+      (highlight-regexp regexp) 
+      (setq traverse-count-occurences 0)))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
+  
 
 ;;; Dired functions
 ;;;###autoload
@@ -819,7 +822,8 @@ if no marked files use file at point"
                (propertize regexp
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
-      (setq traverse-count-occurences 0))))
+      (setq traverse-count-occurences 0)))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-find-in-all-files (regexp &optional full-path)
   "Traverse search regex in all files of current dired buffer
@@ -850,7 +854,8 @@ except compressed files and symlinks"
                (propertize regexp
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
-      (setq traverse-count-occurences 0))))
+      (setq traverse-count-occurences 0)))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-get-marked-files ()
   "Get a list of all marked files for traverse"
