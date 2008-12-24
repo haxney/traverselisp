@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer déc 24 16:25:46 2008 (+0100)
+;; Last-Updated: mer déc 24 18:45:56 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 469
+;;     Update #: 470
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -1023,6 +1023,19 @@ horizontally or vertically ala ediff"
           (split-window-horizontally))
       (set-buffer (get-buffer buffB))
       (display-buffer (current-buffer)))))
+
+;;;###autoload
+(defun traverse-count-files-in-dir (tree &optional quiet)
+  "Count files in `directory' and return a message
+and the number of files. If `quiet' is non-nil don't send message"
+  (interactive "DDirectory: ")
+  (let ((count-files 0))
+    (traverse-walk-directory tree (lambda (n)
+                                    (when n
+                                      (incf count-files))))
+    (unless quiet
+      (message "[%s] contain <%s> files" tree count-files))
+    count-files))
 
 (provide 'traverselisp)
 
