@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer déc 17 22:42:10 2008 (+0100)
+;; Last-Updated: mer déc 24 14:51:48 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 448
+;;     Update #: 458
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.27")
+(defconst traverse-version "1.28")
 
 ;;; Code:
 
@@ -604,24 +604,24 @@ like anything"
   (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let* ((line-to-print (if traverse-keep-indent
-                                  (second i)
-                                  (replace-regexp-in-string "\\(^ *\\)" "" (second i))))
-               (temp-list-line (split-string line-to-print regex))
-               (line-to-print-hight (concat (nth 0 temp-list-line)
-                                            (propertize regex
-                                                        'face 'traverse-regex-face)
-                                            (nth 1 temp-list-line))))
+        (let ((line-to-print (if traverse-keep-indent
+                                 (second i)
+                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
+          (when (string-match regex line-to-print)
+            (add-text-properties
+             (match-beginning 0) (match-end 0)
+             '(face traverse-regex-face)
+             line-to-print))
           (insert (concat " "
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face)
                           ":"
-                          (if (> (length line-to-print-hight)
+                          (if (> (length line-to-print)
                                  lline)
-                              (substring line-to-print-hight
+                              (substring line-to-print
                                          0
                                          lline)
-                              line-to-print-hight)
+                              line-to-print)
                           "\n")))))))
 
 (defun traverse-prepare-buffer ()
