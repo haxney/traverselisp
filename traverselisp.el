@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer déc 24 14:51:48 2008 (+0100)
+;; Last-Updated: mer déc 24 16:25:46 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 458
+;;     Update #: 469
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -606,7 +606,10 @@ like anything"
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let ((line-to-print (if traverse-keep-indent
                                  (second i)
-                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
+                                 (replace-regexp-in-string (if (string-match "^\t" (second i))
+                                                               "\\(^\t*\\)"
+                                                               "\\(^ *\\)")
+                                                           "" (second i)))))
           (when (string-match regex line-to-print)
             (add-text-properties
              (match-beginning 0) (match-end 0)
