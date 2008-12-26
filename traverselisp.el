@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven déc 26 21:19:36 2008 (+0100)
+;; Last-Updated: ven déc 26 21:40:57 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 471
+;;     Update #: 472
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -434,29 +434,32 @@ performed only on current line"
                     (with-current-buffer (find-buffer-visiting fname) 
                       (if (and (file-writable-p fname)
                                (not (backup-file-name-p fname)))
-                          (let ((beg (point)))
-                            (goto-char (+ beg (length regex)))
-                            (delete-region beg (point))
-                            (insert str)
-                            (save-buffer)
-                            (highlight-regexp str 'hi-pink)
-                            (sit-for traverse-show-regexp-delay)
-                            (kill-buffer (current-buffer))
-                            (setq flag-w t))
-                          (kill-buffer (current-buffer))))
-                ;; We are back in traverse-buffer
-                (beginning-of-line)
-                (delete-region (point) (line-end-position))
-                (delete-blank-lines)
-                (forward-line 1)
-                (if flag-w
-                    (message "<%s> Replaced by <%s> in [%s]"
-                             (propertize regex
-                                         'face 'traverse-regex-face)
-                             (propertize str
-                                         'face 'traverse-match-face)
-                             fname)
-                    (message "Skipping: File not writable or under vc")))))
+                          (when (re-search-forward regex)
+                            (let ((line (thing-at-point 'line))
+                                  (new-line))
+                              (delete-region (line-beginning-position)
+                                             (line-end-position))
+                              (setq new-line (replace-regexp-in-string regex str line))
+                              (insert new-line)
+                              (delete-blank-lines)
+                              (save-buffer)
+                              (highlight-regexp str 'hi-pink)
+                              (sit-for traverse-show-regexp-delay)
+                              (setq flag-w t))
+                            (kill-buffer (current-buffer)))))
+                    ;; We are back in traverse-buffer
+                    (beginning-of-line)
+                    (delete-region (point) (line-end-position))
+                    (delete-blank-lines)
+                    (forward-line 1)
+                    (if flag-w
+                        (message "<%s> Replaced by <%s> in [%s]"
+                                 (propertize regex
+                                             'face 'traverse-regex-face)
+                                 (propertize str
+                                             'face 'traverse-match-face)
+                                 fname)
+                        (message "Skipping: File not writable or under vc")))))
               (message "We are not on a button!"))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
