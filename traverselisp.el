@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: mer déc 24 18:45:56 2008 (+0100)
+;; Last-Updated: ven déc 26 21:19:36 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 470
+;;     Update #: 471
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -643,7 +643,8 @@ like anything"
 ;;;###autoload
 (defun traverse-find-in-file (fname regexp &optional full-path)
   "Traverse search regex in a single file"
-  (interactive "fFileName: \nsRegexp: ")
+  (interactive (list (read-file-name "FileName: ")
+                     (read-regexp "Regexp: ")))
   (traverse-prepare-buffer)
   (let ((prefarg (not (null current-prefix-arg))))
     (if (and (not (bufferp fname))
@@ -670,8 +671,7 @@ like anything"
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
   (interactive (list
-                (read-from-minibuffer "Regexp: "
-                                      nil nil nil nil (thing-at-point 'sexp))))
+                (read-regexp "Regexp: ")))
   (let ((buf-fname (buffer-file-name (current-buffer))))
     (if traverse-occur-use-miniwindow
         (progn
@@ -683,6 +683,7 @@ like anything"
     (if buf-fname
         (traverse-find-in-file buf-fname regexp)
         (traverse-find-in-file (current-buffer) regexp))))
+  
   
     
 ;;;###autoload
