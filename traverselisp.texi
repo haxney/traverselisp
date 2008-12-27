@@ -1,0 +1,169 @@
+\input texinfo  @c -*-texinfo-*-
+
+@setfilename traverselisp.info
+@settitle traverselisp
+
+@documentencoding iso-8859-1
+
+@iftex
+@finalout
+@end iftex
+
+@titlepage
+@title traverselisp
+@author 
+@end titlepage
+
+
+
+@node Top, Installation, (dir), (dir)
+@top Overview
+@c Page published by Emacs Muse begins here
+
+Traverselisp Manual
+
+Traverse is a library of recursive search functions in Emacs.
+
+@sp 1
+
+@menu
+* Installation::                
+* Configuration::               
+* Functions::                   
+* Usage::                       
+@end menu
+
+@node Installation, Configuration, Top, Top
+@chapter Installation
+
+Put the file traverselisp.el in your Load path.
+
+Write in your init-file (.emacs):
+
+@samp{
+(require 'traverselisp)
+}
+
+@sp 1
+
+
+@node Configuration, Functions, Installation, Top
+@chapter Configuration
+
+@menu
+* Exemple of Config::           
+* Variables::                   
+@end menu
+
+@node Exemple of Config, Variables, Configuration, Configuration
+@section Exemple of Config
+
+@samp{
+
+(require 'traverselisp)
+
+(setq traverse-use-avfs t)
+
+(global-set-key (kbd "<f5> f") 'traverse-deep-rfind)
+
+(global-set-key (kbd "<f5> u") 'traverse-build-tags-in-project)
+
+(global-set-key (kbd "C-c o") 'traverse-occur-current-buffer)
+
+(define-key dired-mode-map (kbd "A") 'traverse-dired-search-regexp-in-anything-at-point)
+
+(define-key dired-mode-map (kbd "C-c C-z") 'traverse-dired-browse-archive)
+
+(define-key dired-mode-map (kbd "C-c t") 'traverse-dired-find-in-all-files)
+
+(add-to-list 'traverse-ignore-files ".ledger-cache")
+
+}
+
+
+@node Variables,  , Exemple of Config, Configuration
+@section Variables
+
+@sp 1
+
+
+
+@node Functions, Usage, Configuration, Top
+@chapter Functions
+
+@sp 1
+
+
+@node Usage,  , Functions, Top
+@chapter Usage
+
+@menu
+* Searching::                   
+* Navigating From traverse buffer::  
+* Replacing::                   
+* Creating Tag file in project::  
+* Moving files of all subdirs to one dir::  
+@end menu
+
+@node Searching, Navigating From traverse buffer, Usage, Usage
+@section Searching
+
+@menu
+* Search in a Whole tree::      
+* Search in a file::            
+* Search in a buffer::          
+* Search from Dired::           
+@end menu
+
+@node Search in a Whole tree, Search in a file, Searching, Searching
+@subsection Search in a Whole tree
+
+
+@node Search in a file, Search in a buffer, Search in a Whole tree, Searching
+@subsection Search in a file
+
+
+@node Search in a buffer, Search from Dired, Search in a file, Searching
+@subsection Search in a buffer
+
+
+@node Search from Dired,  , Search in a buffer, Searching
+@subsection Search from Dired
+
+
+
+@node Navigating From traverse buffer, Replacing, Searching, Usage
+@section Navigating From traverse buffer
+
+
+@node Replacing, Creating Tag file in project, Navigating From traverse buffer, Usage
+@section Replacing
+
+@menu
+* Replace in just one line::    
+* Replace all::                 
+@end menu
+
+@node Replace in just one line, Replace all, Replacing, Replacing
+@subsection Replace in just one line
+
+
+@node Replace all,  , Replace in just one line, Replacing
+@subsection Replace all
+
+
+
+@node Creating Tag file in project, Moving files of all subdirs to one dir, Replacing, Usage
+@section Creating Tag file in project
+
+
+@node Moving files of all subdirs to one dir,  , Creating Tag file in project, Usage
+@section Moving files of all subdirs to one dir
+
+@sp 1
+
+
+
+
+@c Page published by Emacs Muse ends here
+@bye

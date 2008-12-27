@@ -1,0 +1,269 @@
+Info file: traverselisp.info,    -*-Text-*-
+produced by `texinfo-format-buffer'
+from filebuffer `*--traverselisp.texi--temporary-buffer*'
+using `texinfmt.el' version 2.42 of  7 Jul 2006.
+
+
+File: traverselisp.info, Node: Top, Next: Installation, Prev: (dir), Up: (dir)
+
+Overview
+********
+
+Traverselisp Manual
+
+Traverse is a library of recursive search functions in Emacs.
+
+
+
+* Menu:
+
+* Installation::
+* Configuration::
+* Functions::
+* Usage::
+
+ -- The Detailed Node Listing ---
+
+Configuration
+
+* Exemple of Config::
+* Variables::
+
+Usage
+
+* Searching::
+* Navigating From traverse buffer::
+* Replacing::
+* Creating Tag file in project::
+* Moving files of all subdirs to one dir::
+
+Searching
+
+* Search in a Whole tree::
+* Search in a file::
+* Search in a buffer::
+* Search from Dired::
+
+Replacing
+
+* Replace in just one line::
+* Replace all::
+
+
+
+
+File: traverselisp.info, Node: Installation, Next: Configuration, Prev: Top, Up: Top
+
+Installation
+************
+
+Put the file traverselisp.el in your Load path.
+
+Write in your init-file (.emacs):
+
+` (require 'traverselisp) '
+
+
+
+
+
+
+File: traverselisp.info, Node: Configuration, Next: Functions, Prev: Installation, Up: Top
+
+Configuration
+*************
+
+* Menu:
+
+* Exemple of Config::
+* Variables::
+
+
+
+File: traverselisp.info, Node: Exemple of Config, Next: Variables, Prev: Configuration, Up: Configuration
+
+Exemple of Config
+=================
+
+`
+
+(require 'traverselisp)
+
+(setq traverse-use-avfs t)
+
+(global-set-key (kbd "<f5> f") 'traverse-deep-rfind)
+
+(global-set-key (kbd "<f5> u") 'traverse-build-tags-in-project)
+
+(global-set-key (kbd "C-c o") 'traverse-occur-current-buffer)
+
+(define-key dired-mode-map (kbd "A")
+'traverse-dired-search-regexp-in-anything-at-point)
+
+(define-key dired-mode-map (kbd "C-c C-z")
+'traverse-dired-browse-archive)
+
+(define-key dired-mode-map (kbd "C-c t")
+'traverse-dired-find-in-all-files)
+
+(add-to-list 'traverse-ignore-files ".ledger-cache")
+
+'
+
+
+
+
+File: traverselisp.info, Node: Variables, Prev: Exemple of Config, Up: Configuration
+
+Variables
+=========
+
+
+
+
+
+
+
+File: traverselisp.info, Node: Functions, Next: Usage, Prev: Configuration, Up: Top
+
+Functions
+*********
+
+
+
+
+
+
+File: traverselisp.info, Node: Usage, Prev: Functions, Up: Top
+
+Usage
+*****
+
+* Menu:
+
+* Searching::
+* Navigating From traverse buffer::
+* Replacing::
+* Creating Tag file in project::
+* Moving files of all subdirs to one dir::
+
+
+
+File: traverselisp.info, Node: Searching, Next: Navigating From traverse buffer, Prev: Usage, Up: Usage
+
+Searching
+=========
+
+* Menu:
+
+* Search in a Whole tree::
+* Search in a file::
+* Search in a buffer::
+* Search from Dired::
+
+
+
+File: traverselisp.info, Node: Search in a Whole tree, Next: Search in a file, Prev: Searching, Up: Searching
+
+Search in a Whole tree
+----------------------
+
+
+
+
+File: traverselisp.info, Node: Search in a file, Next: Search in a buffer, Prev: Search in a Whole tree, Up: Searching
+
+Search in a file
+----------------
+
+
+
+
+File: traverselisp.info, Node: Search in a buffer, Next: Search from Dired, Prev: Search in a file, Up: Searching
+
+Search in a buffer
+------------------
+
+
+
+
+File: traverselisp.info, Node: Search from Dired, Prev: Search in a buffer, Up: Searching
+
+Search from Dired
+-----------------
+
+
+
+
+
+File: traverselisp.info, Node: Navigating From traverse buffer, Next: Replacing, Prev: Searching, Up: Usage
+
+Navigating From traverse buffer
+===============================
+
+
+
+
+File: traverselisp.info, Node: Replacing, Next: Creating Tag file in project, Prev: Navigating From traverse buffer, Up: Usage
+
+Replacing
+=========
+
+* Menu:
+
+* Replace in just one line::
+* Replace all::
+
+
+
+File: traverselisp.info, Node: Replace in just one line, Next: Replace all, Prev: Replacing, Up: Replacing
+
+Replace in just one line
+------------------------
+
+
+
+
+File: traverselisp.info, Node: Replace all, Prev: Replace in just one line, Up: Replacing
+
+Replace all
+-----------
+
+
+
+
+
+File: traverselisp.info, Node: Creating Tag file in project, Next: Moving files of all subdirs to one dir, Prev: Replacing, Up: Usage
+
+Creating Tag file in project
+============================
+
+
+
+
+File: traverselisp.info, Node: Moving files of all subdirs to one dir, Prev: Creating Tag file in project, Up: Usage
+
+Moving files of all subdirs to one dir
+======================================
+
+Tag table:
+Node: Top191
+Node: Installation846
+Node: Configuration1078
+Node: Exemple of Config1248
+Node: Variables1934
+Node: Functions2048
+Node: Usage2160
+Node: Searching2390
+Node: Search in a Whole tree2622
+Node: Search in a file2784
+Node: Search in a buffer2943
+Node: Search from Dired3101
+Node: Navigating From traverse buffer3234
+Node: Replacing3412
+Node: Replace in just one line3619
+Node: Replace all3782
+Node: Creating Tag file in project3903
+Node: Moving files of all subdirs to one dir4101
+
+End tag table
