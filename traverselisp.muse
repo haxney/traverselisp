@@ -76,3 +76,6 @@ Write in your init-file (.emacs):
  
 -----
  
+* Note about using traverselisp in anything
+
+-----
