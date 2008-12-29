@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven déc 26 21:56:45 2008 (+0100)
+;; Last-Updated: lun déc 29 19:03:19 2008 (+0100)
 ;;           By: thierry
-;;     Update #: 475
+;;     Update #: 491
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.29")
+(defconst traverse-version "1.30")
 
 ;;; Code:
 
@@ -405,7 +405,8 @@ Each element of the list is a list of the form '(key value)"
         (traverse-occur-color-current-line)))))
 
 ;;;; Replace functions
-
+(defvar traverse-last-regexp nil)
+(defvar traverse-replace-auth nil)
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
   "Replace regex with `str', replacement is
@@ -435,6 +436,17 @@ performed only on current line"
                       (if (and (file-writable-p fname)
                                (not (backup-file-name-p fname)))
                           (when (re-search-forward regex)
+                            (setq traverse-last-regexp (match-string 0))
+                            (if (not traverse-replace-auth)
+                                (if (y-or-n-p (format "Replace all occurences of [%s] with [%s]? "
+                                                      (propertize traverse-last-regexp
+                                                                  'face 'traverse-match-face)
+                                                      (propertize str
+                                                                  'face 'traverse-match-face)))
+                                    (setq traverse-replace-auth t)
+                                    (throw 'break
+                                      (error "Operation Aborted"))))
+                            
                             (let ((line (thing-at-point 'line))
                                   (new-line))
                               (delete-region (line-beginning-position)
@@ -462,6 +474,7 @@ performed only on current line"
                         (message "Skipping: File not writable or under vc")))))
               (message "We are not on a button!"))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
+
 
 ;;;###autoload
 (defun traverse-search-and-replace-all (str)
@@ -549,6 +562,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                            (propertize str
                                        'face 'traverse-path-face)))
                 ;; action is finish
+                (setq traverse-replace-auth nil)
                 (setq traverse-show-regexp-delay mem-srd)
                 (when (re-search-backward "^Found")
                   (beginning-of-line)
@@ -558,7 +572,8 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
                   (insert (format "[%s] Occurences of <%s> replaced by <%s>"
                                   count
                                   regex
-                                  str)))))))
+                                  str))))
+            (setq traverse-replace-auth nil))))
       (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 
