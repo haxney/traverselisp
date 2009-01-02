@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun déc 29 19:03:19 2008 (+0100)
+;; Last-Updated: ven jan  2 17:59:41 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 491
+;;     Update #: 500
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.30")
+(defconst traverse-version "1.31")
 
 ;;; Code:
 
@@ -613,6 +613,37 @@ in *traverse-lisp* buffer"
         (setq traverse-count-occurences (+ traverse-count-occurences
                                            (length matched-lines))))))
 
+
+(defun* traverse-file-process-ext (regex fname &key (fn 'traverse-hash-readlines))
+  "Function to process files in external program
+like anything"
+  (clrhash traverse-table)
+  (funcall fn fname traverse-table)
+  (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
+    (when matched-lines 
+      (dolist (i matched-lines) ;; each element is of the form '(key value)
+        (let ((line-to-print (if traverse-keep-indent
+                                 (second i)
+                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
+          (when (string-match regex line-to-print)
+            (add-text-properties
+             (match-beginning 0) (match-end 0)
+             '(face traverse-regex-face)
+             line-to-print))
+
+          (insert (concat (propertize (file-name-nondirectory fname)
+                                      'face 'traverse-path-face)
+                          " "
+                          (propertize (int-to-string (+ (first i) 1))
+                                      'face 'traverse-match-face)
+                          ":"
+                          (if (> (length line-to-print)
+                                 traverse-length-line)
+                              (substring line-to-print
+                                         0
+                                         traverse-length-line)
+                              line-to-print)
+                          "\n")))))))
 
 (defun* traverse-buffer-process-ext (regex buffer &key (lline traverse-length-line))
   "Function to process buffer in external program
