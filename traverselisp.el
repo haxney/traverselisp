@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven jan  2 17:59:41 2009 (+0100)
+;; Last-Updated: lun jan  5 08:56:17 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 500
+;;     Update #: 505
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.31")
+(defconst traverse-version "1.32")
 
 ;;; Code:
 
@@ -632,7 +632,8 @@ like anything"
              line-to-print))
 
           (insert (concat (propertize (file-name-nondirectory fname)
-                                      'face 'traverse-path-face)
+                                      'face 'traverse-path-face
+                                      'help-echo line-to-print)
                           " "
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face)
@@ -666,7 +667,8 @@ like anything"
              line-to-print))
           (insert (concat " "
                           (propertize (int-to-string (+ (first i) 1))
-                                      'face 'traverse-match-face)
+                                      'face 'traverse-match-face
+                                      'help-echo line-to-print)
                           ":"
                           (if (> (length line-to-print)
                                  lline)
