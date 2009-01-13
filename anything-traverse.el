@@ -6,9 +6,9 @@
 ;; Maintainer: 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
 ;; Version: 
-;; Last-Updated: mar jan 13 08:19:56 2009 (+0100)
+;; Last-Updated: mar jan 13 09:34:35 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 6
+;;     Update #: 7
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 ;; Compatibility: 
@@ -197,6 +197,11 @@ If we are in another source just go to next/prec line."
           (if (eq n 1)
               (anything-next-line)
               (anything-previous-line)))))
+
+(defun anything-traverse ()
+  "Launch anything with traverse separately"
+  (interactive)
+  (anything 'anything-c-source-traverse-occur))
 
 (define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
 (define-key anything-map (kbd "M-p") #'(lambda ()
