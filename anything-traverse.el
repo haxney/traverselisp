@@ -6,9 +6,9 @@
 ;; Maintainer: 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
 ;; Version: 
-;; Last-Updated: mar jan 13 09:34:35 2009 (+0100)
+;; Last-Updated: sam jan 17 11:39:26 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 7
+;;     Update #: 8
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 ;; Compatibility: 
@@ -33,7 +33,7 @@
 ;; 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
+;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
 ;;
 ;; This file is part of traverselisp.
 ;;

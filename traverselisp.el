@@ -7,10 +7,10 @@
 ;; Maintainer: Thierry Volpiatto 
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
-;; Copyright (C) 2008, Thierry Volpiatto, all rights reserved
-;; Last-Updated: lun jan  5 08:56:17 2009 (+0100)
+;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
+;; Last-Updated: jeu jan 22 09:38:36 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 505
+;;     Update #: 510
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -997,7 +997,7 @@ in compressed archive at point if traverse-use-avfs is non--nil"
 
 ;;;; Utils
 ;;;###autoload
-(defun traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional func)
+(defun* traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional (fn 'copy-file))
   "Recurse in `tree' and copy/move all files with `ext' in `dir'.
 Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
 `func' is a symbol when called non-interactively
@@ -1005,22 +1005,15 @@ Note: `dir' will be use as target and NO search inside it will be performed.
 If you want to move/copy files that are nested in subdir(s) of `dir'
 It will fail silently.==> So use another dir target"
   (interactive "DTree: \nsExt(with dot): \nGTargetDirectory: ")
-  (let ((fn (cond (func
-                   func)
-                  (current-prefix-arg
-                   'rename-file)
-                  (t 'copy-file)))
-        (igndir (file-name-nondirectory dir)))
+  (let ((igndir (file-name-nondirectory dir)))
     (unless (file-directory-p dir)
       (make-directory dir t))
+    (when current-prefix-arg
+      (setq fn 'rename-file))
     (traverse-walk-directory tree
                        #'(lambda (x)
-                           (if (or (eq fn 'rename-file)
-                                   (eq fn 'copy-file))
-                               (when (equal (file-name-extension x t) ext)
-                                 (funcall fn (expand-file-name x) dir 1))
-                               (when (equal (file-name-extension x t) ext)
-                                 (funcall fn (expand-file-name x)))))
+                           (when (equal (file-name-extension x t) ext)
+                             (funcall fn (expand-file-name x) dir 'overwrite)))
                        nil
                        `(,igndir))))
 
