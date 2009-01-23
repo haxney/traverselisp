@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
-;; Last-Updated: jeu jan 22 14:01:34 2009 (+0100)
+;; Last-Updated: ven jan 23 06:31:02 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 511
+;;     Update #: 515
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.33")
+(defconst traverse-version "1.34")
 
 ;;; Code:
 
@@ -999,11 +999,15 @@ in compressed archive at point if traverse-use-avfs is non--nil"
 ;;;###autoload
 (defun* traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional (fn 'copy-file))
   "Recurse in `tree' and copy/move all files with `ext' in `dir'.
-Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'
-`func' is a symbol when called non-interactively
+Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'.
+`func' is a symbol when called non-interactively.
+
 Note: `dir' will be use as target and NO search inside it will be performed.
 If you want to move/copy files that are nested in subdir(s) of `dir'
-It will fail silently.==> So use another dir target"
+It will fail silently.==> So use another dir target
+
+If `dir' exists and is not empty, it will be synch with the newest files
+found in `tree'"
   (interactive "DTree: \nsExt(with dot): \nGTargetDirectory: ")
   (let ((igndir (file-name-nondirectory dir)))
     (unless (file-directory-p dir)
@@ -1013,9 +1017,17 @@ It will fail silently.==> So use another dir target"
     (traverse-walk-directory tree
                        #'(lambda (x)
                            (when (equal (file-name-extension x t) ext)
-                             (funcall fn (expand-file-name x) dir 'overwrite)))
+                             ;; should i recurse in dir at this point ?
+                             ;; would implement synch completely.
+                             (if (file-exists-p (concat dir (file-name-nondirectory x)))
+                                 (when (file-newer-than-file-p (expand-file-name x)
+                                                               (concat dir
+                                                                       (file-name-nondirectory x)))
+                                   (funcall fn (expand-file-name x) dir 'overwrite))
+                                 (funcall fn (expand-file-name x) dir 'overwrite))))
                        nil
                        `(,igndir))))
+
 
 ;; Experimental ==> Huge projects not supported (Tags files become to big)
 ;;;###autoload
