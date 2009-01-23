@@ -11,7 +11,7 @@
 
 @titlepage
 @title traverselisp
-@author 
+@author thierry
 @end titlepage
 
 
@@ -30,7 +30,9 @@ Traverse is a library of recursive search functions in Emacs.
 * Installation::                
 * Configuration::               
 * Functions::                   
+* Keymap::                      
 * Usage::                       
+* Using traverselisp in anything::  
 @end menu
 
 @node Installation, Configuration, Top, Top
@@ -88,16 +90,26 @@ Write in your init-file (.emacs):
 
 
 
-@node Functions, Usage, Configuration, Top
+@node Functions, Keymap, Configuration, Top
 @chapter Functions
 
 @sp 1
 
 
-@node Usage,  , Functions, Top
+@node Keymap, Usage, Functions, Top
+@chapter Keymap
+
+Use C-h m as usual while in a traverse buffer.
+
+@sp 1
+
+
+
+@node Usage, Using traverselisp in anything, Keymap, Top
 @chapter Usage
 
 @menu
+* Settings::                    
 * Searching::                   
 * Navigating From traverse buffer::  
 * Replacing::                   
@@ -105,7 +117,24 @@ Write in your init-file (.emacs):
 * Moving files of all subdirs to one dir::  
 @end menu
 
-@node Searching, Navigating From traverse buffer, Usage, Usage
+@node Settings, Searching, Usage, Usage
+@section Settings
+
+There is at list 2 important variables to visit and eventually to set:
+
+
+@itemize @bullet
+@item
+@emph{traverse-ignore-files} ==> this is a list of files to ignore.
+
+@item
+@emph{traverse-ignore-dirs} ==> this is a list of directories to ignore.
+@end itemize
+
+They are already set with default values, you may want to modify that.
+
+
+@node Searching, Navigating From traverse buffer, Settings, Usage
 @section Searching
 
 @menu
@@ -113,27 +142,123 @@ Write in your init-file (.emacs):
 * Search in a file::            
 * Search in a buffer::          
 * Search from Dired::           
+* Search in archives::          
 @end menu
 
 @node Search in a Whole tree, Search in a file, Searching, Searching
 @subsection Search in a Whole tree
 
+@samp{
+
+M-x traverse-deep-rfind
+
+}
+
+@samp{(traverse-deep-rfind tree regexp &optional only)}
+
+Main function that call walk, if only is omitted it
+
+will be set as nil and search will be proceeded on all files
+
+except on files that are in `traverse-ignore-files'
+
+Called with prefix-argument (C-u) absolute path is displayed
+
+
 
 @node Search in a file, Search in a buffer, Search in a Whole tree, Searching
 @subsection Search in a file
+
+@samp{
+
+M-x traverse-find-in-file
+
+}
+
+@samp{(traverse-find-in-file fname regexp &optional full-path)}
+
+Traverse search regex in a single file
 
 
 @node Search in a buffer, Search from Dired, Search in a file, Searching
 @subsection Search in a buffer
 
+@emph{(traverse-occur-current-buffer regexp)}
 
-@node Search from Dired,  , Search in a buffer, Searching
+Search regexp in current buffer
+
+
+@node Search from Dired, Search in archives, Search in a buffer, Searching
 @subsection Search from Dired
+
+All the precedent functions can be called from dired.
+
+The function:
+
+@itemize @bullet
+@item
+@emph{traverse-dired-search-regexp-in-anything-at-point}
+@end itemize
+
+Will search regexp in file at point in dired buffer
+
+or
+
+if files are marked, it will search in these files.
+
+or
+
+if file at point is a directory, will use `traverse-deep-rfind' on this directory.
+
+NOTE: if directories are marked, they are ignored.
+
+
+@itemize @bullet
+@item
+@emph{traverse-dired-find-in-all-files}
+@end itemize
+
+
+@samp{(traverse-dired-find-in-all-files regexp &optional full-path)}
+
+Traverse search regex in all files of current dired buffer
+
+except compressed files and symlinks.
+
+
+
+@node Search in archives,  , Search from Dired, Searching
+@subsection Search in archives
+
+Traverse use AVFS to search in compressed archives.
+
+To do that, you have first to install @emph{avfs}  and @emph{fuse} on your system:
+
+@uref{http://sourceforge.net/projects/avf, http://sourceforge.net/projects/avf}
+
+Then you can open and browse archive in dired with:
+
+@samp{(traverse-dired-browse-archive)}
+
+This function use AVFS and FUSE, so be sure
+to have these programs and modules installed on your system
+
 
 
 
 @node Navigating From traverse buffer, Replacing, Searching, Usage
 @section Navigating From traverse buffer
+
+Principal command are:
+
+N ==> find next occurence in other buffer.
+
+P ==> find precedent occurence in other buffer.
+
+R ==> call another menu for interactive replacement.
+
+S ==> replace regexp in current line with new regexp.
+
 
 
 @node Replacing, Creating Tag file in project, Navigating From traverse buffer, Usage
@@ -156,12 +281,66 @@ Write in your init-file (.emacs):
 @node Creating Tag file in project, Moving files of all subdirs to one dir, Replacing, Usage
 @section Creating Tag file in project
 
+(traverse-build-tags-in-project dir ext &optional new-file)
+
+Build an etags file in current project.
+If `new-file' is non-nil (do it with C-u) build a new file
+instead of appending to the current one.
+Many file extensions can be enter at `ext' prompt.
+Tag file will be build in `dir'
+
 
 @node Moving files of all subdirs to one dir,  , Creating Tag file in project, Usage
 @section Moving files of all subdirs to one dir
 
+traverse-cp-or-mv-extfiles-in-dir is an interactive compiled Lisp
+function in `traverselisp.el'.
+
+(traverse-cp-or-mv-extfiles-in-dir tree ext dir &optional (fn (quote
+copy-file)))
+
+Recurse in `tree' and copy/move all files with `ext' in `dir'.
+Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'.
+`func' is a symbol when called non-interactively.
+
+Note: `dir' will be use as target and NO search inside it will be performed.
+If you want to move/copy files that are nested in subdir(s) of `dir'
+It will fail silently.==> So use another dir target
+
+If `dir' exists and is not empty, it will be synch with the newest files
+found in `tree'
+
+
 @sp 1
 
+
+
+@node Using traverselisp in anything,  , Usage, Top
+@chapter Using traverselisp in anything
+
+Using traverselisp in anything is great and fast.
+
+It provide two methods:
+
+@itemize @bullet
+@item
+In a buffer
+@end itemize
+
+If you are working in a buffer (file, scratch, slime etc..)
+
+it will search for regex in this buffer.
+
+@itemize @bullet
+@item
+In a Dired buffer
+@end itemize
+
+Search will be performed on ALL files of current-directory (no recursion in subdir)
+
+You can navigate from file to file in anything-buffer. (M-n/M-p)
+
+@sp 1
 
 
 
