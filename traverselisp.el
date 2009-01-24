@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
-;; Last-Updated: sam jan 24 08:38:42 2009 (+0100)
+;; Last-Updated: sam jan 24 10:09:01 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 517
+;;     Update #: 518
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -137,7 +137,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Version:
-(defconst traverse-version "1.34")
+(defconst traverse-version "1.35")
 
 ;;; Code:
 
