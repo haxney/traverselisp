@@ -8,9 +8,9 @@
 ;; Created: ven aoû  8 16:23:26 2008 (+0200)
 ;;
 ;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
-;; Last-Updated: ven jan 23 06:31:02 2009 (+0100)
+;; Last-Updated: sam jan 24 08:38:42 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 515
+;;     Update #: 517
 ;; URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: 
 
@@ -278,7 +278,8 @@ Special commands:
 If abs is non-nil use absolute path."
   (cddr (directory-files dirname abs)))
      
-(defun traverse-walk-directory (dirname file-fn &optional exclude-files exclude-dirs)
+
+(defun traverse-walk-directory (dirname file-fn &optional exclude-files exclude-dirs dir-fn)
     "Walk through dirname and use file-fn function
 on each file found.
 `dirname' ==> we start in this directory
@@ -290,6 +291,8 @@ on each file found.
         ((walk (name)
            (cond ((and (file-directory-p name) ;; DIR PROCESSING
                        (not (file-symlink-p name))) ;; don't follow symlinks
+                  (when dir-fn
+                    (funcall dir-fn name))
                   (if exclude-dirs
                       (dolist (x (traverse-list-directory name t))
                         (when x ;; be sure x is a string and not nil
@@ -1092,9 +1095,9 @@ horizontally or vertically ala ediff"
 and the number of files. If `quiet' is non-nil don't send message"
   (interactive "DDirectory: ")
   (let ((count-files 0))
-    (traverse-walk-directory tree (lambda (n)
-                                    (when n
-                                      (incf count-files))))
+    (traverse-walk-directory tree #'(lambda (n)
+                                      (when n
+                                        (incf count-files))))
     (unless quiet
       (message "[%s] contain <%s> files" tree count-files))
     count-files))
