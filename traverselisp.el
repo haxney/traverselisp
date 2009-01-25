@@ -1,30 +1,37 @@
-;;; traverselisp.el -- Search and replace...
-;;
-;; Filename: traverselisp.el
-;; Description: A clone of rgrep wrote all in lisp.
-;; Also: walk through directories and perform diverses actions on files.
-;; Author: Thierry Volpiatto 
-;; Maintainer: Thierry Volpiatto 
-;; Created: ven aoû  8 16:23:26 2008 (+0200)
-;;
-;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
-;; Last-Updated: sam jan 24 10:09:01 2009 (+0100)
-;;           By: thierry
-;;     Update #: 518
-;; URL: http://freehg.org/u/thiedlecques/traverselisp/
-;; Keywords: 
+;;; traverselisp.el --- walk through directories and perform actions on files.
 
-;; Compatibility:
+;; Copyright (C) 2008, 2009 Thierry Volpiatto
+;; Author:     Thierry Volpiatto 
+;; Maintainer: Thierry Volpiatto
+;; Keywords:   data
+
+;; Last-Updated: dim jan 25 18:08:56 2009 (+0100)
+;;           By: thierry
+;;     Update #: 521
+
+;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
+
+;; This file is not part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 3, or
+;; (at your option) any later version.
+;; 
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
+;; 
+;; You should have received a copy of the GNU General Public License
+;; along with this program; see the file COPYING.  If not, write to
+;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+;; Floor, Boston, MA 02110-1301, USA.
+
+;;; Commentary:
 
 ;; Developped and tested on:
 ;; GNU Emacs 23.0.60.1 (i686-pc-linux-gnu, GTK+ Version 2.12.11)
-
-;; Work on all platforms that support emacs.
-;; Don't need any backend.
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;; Commentary:
 
 ;; Install:
 ;; =======
@@ -117,25 +124,7 @@
 ;; http://freehg.org/u/thiedlecques/traverselisp/ 
 ;; 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;; This program is free software; you can redistribute it and/or
-;; modify it under the terms of the GNU General Public License as
-;; published by the Free Software Foundation; either version 3, or
-;; (at your option) any later version.
-;; 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-;; General Public License for more details.
-;; 
-;; You should have received a copy of the GNU General Public License
-;; along with this program; see the file COPYING.  If not, write to
-;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
-;; Floor, Boston, MA 02110-1301, USA.
 
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;; Version:
 (defconst traverse-version "1.35")
 
