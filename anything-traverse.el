@@ -1,42 +1,20 @@
-;;; anything-traverse.el --- 
-;; 
-;; Filename: anything-traverse.el
-;; Description: 
-;; Author: thierry
-;; Maintainer: 
-;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Version: 
-;; Last-Updated: sam jan 17 11:39:26 2009 (+0100)
-;;           By: thierry
-;;     Update #: 8
-;; URL: http://freehg.org/u/thiedlecques/traverselisp/
-;; Keywords: 
-;; Compatibility: 
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;; Commentary:
-;;  This is the source and functions to use traverselisp.el
-;;  with anything. http://www.emacswiki.org/cgi-bin/wiki/Anything.
-;;  You can find traverselisp.el here:
-;;  http://www.emacswiki.org/cgi-bin/emacs/traverselisp.el
-;;  or here using hg (mercurial):
-;;  hg clone http://freehg.org/u/thiedlecques/traverselisp/
-;; 
-;;  You will be able to search any regexp in current buffer
-;;  or in all files of current dired buffer.
-;;  NOTE: You don't need this file to use traverselisp.el if you don't use
-;;  anything.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-;;; Change log:
-;; 
-;; 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; anything-traverse.el --- Use traverselisp within anything.
+
 ;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
-;;
-;; This file is part of traverselisp.
-;;
+
+;; Author: thierry volpiatto
+;; Maintainer: thierry volpiatto
+
+;; Created: lun jan 12 11:23:02 2009 (+0100)
+;; Last-Updated: lun jan 26 09:53:35 2009 (+0100)
+;;           By: thierry
+;;     Update #: 10
+
+;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
+;; Keywords: data, regexp
+
+;; This file is not part of GNU Emacs.
+
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 3, or
@@ -51,9 +29,23 @@
 ;; along with this program; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
 ;; Floor, Boston, MA 02110-1301, USA.
+
+;;; Commentary:
+;;
+;;  This is the source and functions to use traverselisp.el
+;;  with anything. http://www.emacswiki.org/cgi-bin/wiki/Anything.
+;;  You can find traverselisp.el here:
+;;  http://www.emacswiki.org/cgi-bin/emacs/traverselisp.el
+;;  or here using hg (mercurial):
+;;  hg clone http://freehg.org/u/thiedlecques/traverselisp/
 ;; 
+;;  You will be able to incremental search any regexp in current buffer
+;;  or in all files of current dired buffer.
+;;
+;;  NOTE: You don't need this file to use traverselisp.el if you don't use
+;;  Anything.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
+
 ;;; Code:
 
 (require 'traverselisp)
