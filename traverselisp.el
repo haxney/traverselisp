@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim jan 25 18:08:56 2009 (+0100)
+;; Last-Updated: mar jan 27 23:53:09 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 521
+;;     Update #: 532
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -268,44 +268,47 @@ If abs is non-nil use absolute path."
   (cddr (directory-files dirname abs)))
      
 
-(defun traverse-walk-directory (dirname file-fn &optional exclude-files exclude-dirs dir-fn)
-    "Walk through dirname and use file-fn function
+(defun* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
+  "Walk through dirname and use file-fn function
 on each file found.
 `dirname' ==> we start in this directory
 `file-fn' ==> function to apply to FILES
 `excludes-files' ==> list of .ext to ignore  
 `exclude-dirs' ==> list of directory to ignore
 "
-    (labels
-        ((walk (name)
-           (cond ((and (file-directory-p name) ;; DIR PROCESSING
-                       (not (file-symlink-p name))) ;; don't follow symlinks
-                  (when dir-fn
-                    (funcall dir-fn name))
-                  (if exclude-dirs
-                      (dolist (x (traverse-list-directory name t))
-                        (when x ;; be sure x is a string and not nil
-                          (if (and (not (equal (file-name-nondirectory x)
-                                               "."))
-                                   (not (equal (file-name-nondirectory x)
-                                               "..")))
-                              (unless (member (file-name-nondirectory x) exclude-dirs)
-                                (walk x))))) ;; Return to TOP and take the good cond
-                      (dolist (x (traverse-list-directory name t))
-                        (when x
-                          (if (and (not (equal (file-name-nondirectory x)
-                                               "."))
-                                   (not (equal (file-name-nondirectory x)
-                                               "..")))
-                              (walk x)))))) ;; Return to TOP and take the good cond
-                 ((and (file-regular-p name) ;; FILE PROCESSING
-                       (not (file-symlink-p name))) ;; don't follow symlinks
+  (labels
+      ((walk (name)
+         (cond ((and (file-directory-p name) ;; DIR PROCESSING
+                     (not (file-symlink-p name))) ;; don't follow symlinks
+                (when dir-fn
+                  (funcall dir-fn name))
+                (if exclude-dirs
+                    (dolist (x (traverse-list-directory name t))
+                      (when x ;; be sure x is a string and not nil
+                        (if (and (not (equal (file-name-nondirectory x)
+                                             "."))
+                                 (not (equal (file-name-nondirectory x)
+                                             "..")))
+                            (unless (member (file-name-nondirectory x) exclude-dirs)
+                              (walk x))))) ;; Return to TOP and take the good cond
+                    (dolist (x (traverse-list-directory name t))
+                      (when x
+                        (if (and (not (equal (file-name-nondirectory x)
+                                             "."))
+                                 (not (equal (file-name-nondirectory x)
+                                             "..")))
+                            (walk x)))))) ;; Return to TOP and take the good cond
+               ((and (file-regular-p name) ;; FILE PROCESSING
+                     (not (file-symlink-p name))) ;; don't follow symlinks
+                (when file-fn
                   (if exclude-files
                       (unless (or (member (file-name-extension name t) exclude-files)
                                   (member (file-name-nondirectory name) exclude-files))
                         (funcall file-fn name))
-                      (funcall file-fn name))))))
-      (walk (expand-file-name dirname))))
+                      (funcall file-fn name)))))))
+    (if (or file-fn dir-fn)
+        (walk (expand-file-name dirname))
+        (error "Error:you have to specify at list one function"))))
 
 (defsubst traverse-hash-readlines (file table)
   "Load all the lines of a file in an hash-table
@@ -745,24 +748,24 @@ Called with prefix-argument (C-u) absolute path is displayed"
         (only-list (split-string only)))
     (unwind-protect
          (traverse-walk-directory tree
-                                  #'(lambda (y)
-                                      (let ((prefarg (not (null current-prefix-arg))))
-                                        (if only-list
-                                            (when (member (file-name-extension y t) only-list)
-                                              (funcall traverse-file-function regexp y prefarg))
-                                            (funcall traverse-file-function regexp y prefarg)))
-                                      (message "%s [Matches] for %s in [%s]"
-                                               (if (>= traverse-count-occurences 1)
-                                                   (propertize (int-to-string traverse-count-occurences)
-                                                               'face 'traverse-match-face)
-                                                   0)
-                                               (propertize regexp
-                                                           'face 'traverse-regex-face)
-                                               (propertize y
-                                                           'face 'traverse-path-face)))
-                                  (unless only-list
-                                    traverse-ignore-files)
-                                  traverse-ignore-dirs)
+                                  :file-fn #'(lambda (y)
+                                               (let ((prefarg (not (null current-prefix-arg))))
+                                                 (if only-list
+                                                     (when (member (file-name-extension y t) only-list)
+                                                       (funcall traverse-file-function regexp y prefarg))
+                                                     (funcall traverse-file-function regexp y prefarg)))
+                                               (message "%s [Matches] for %s in [%s]"
+                                                        (if (>= traverse-count-occurences 1)
+                                                            (propertize (int-to-string traverse-count-occurences)
+                                                                        'face 'traverse-match-face)
+                                                            0)
+                                                        (propertize regexp
+                                                                    'face 'traverse-regex-face)
+                                                        (propertize y
+                                                                    'face 'traverse-path-face)))
+                                  :exclude-files (unless only-list
+                                                   traverse-ignore-files)
+                                  :exclude-dirs traverse-ignore-dirs)
       (setq traverse-count-occurences (if (< traverse-count-occurences 0)
                                           0
                                           traverse-count-occurences))
@@ -1007,18 +1010,17 @@ found in `tree'"
     (when current-prefix-arg
       (setq fn 'rename-file))
     (traverse-walk-directory tree
-                       #'(lambda (x)
-                           (when (equal (file-name-extension x t) ext)
-                             ;; should i recurse in dir at this point ?
-                             ;; would implement synch completely.
-                             (if (file-exists-p (concat dir (file-name-nondirectory x)))
-                                 (when (file-newer-than-file-p (expand-file-name x)
-                                                               (concat dir
-                                                                       (file-name-nondirectory x)))
-                                   (funcall fn (expand-file-name x) dir 'overwrite))
-                                 (funcall fn (expand-file-name x) dir 'overwrite))))
-                       nil
-                       `(,igndir))))
+                       :file-fn #'(lambda (x)
+                                    (when (equal (file-name-extension x t) ext)
+                                      ;; should i recurse in dir at this point ?
+                                      ;; would implement synch completely.
+                                      (if (file-exists-p (concat dir (file-name-nondirectory x)))
+                                          (when (file-newer-than-file-p (expand-file-name x)
+                                                                        (concat dir
+                                                                                (file-name-nondirectory x)))
+                                            (funcall fn (expand-file-name x) dir 'overwrite))
+                                          (funcall fn (expand-file-name x) dir 'overwrite))))
+                       :exclude-dirs `(,igndir))))
 
 
 ;; Experimental ==> Huge projects not supported (Tags files become to big)
@@ -1038,16 +1040,15 @@ Tag file will be build in `dir'"
       (delete-file (expand-file-name "TAGS" dir)))
     (dolist (i ext-list)
       (traverse-walk-directory dir
-                               #'(lambda (x)
-                                   (when (equal (file-name-extension x t) i)
-                                     (message "Tagging [%s]" (propertize x
-                                                                         'face 'traverse-path-face))
-                                     (incf count)
-                                     (call-process-shell-command (format "etags %s -a %s"
-                                                            x
-                                                            (expand-file-name "TAGS" dir)))))
-                               nil
-                               traverse-ignore-dirs))
+                               :file-fn #'(lambda (x)
+                                            (when (equal (file-name-extension x t) i)
+                                              (message "Tagging [%s]" (propertize x
+                                                                                  'face 'traverse-path-face))
+                                              (incf count)
+                                              (call-process-shell-command (format "etags %s -a %s"
+                                                                                  x
+                                                                                  (expand-file-name "TAGS" dir)))))
+                               :exclude-dirs traverse-ignore-dirs))
     (message "%s Files tagged" (propertize (int-to-string count)
                                            'face 'traverse-match-face))))
 
