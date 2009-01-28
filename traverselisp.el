@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mer jan 28 00:04:28 2009 (+0100)
+;; Last-Updated: mer jan 28 20:06:18 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 533
+;;     Update #: 542
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -126,7 +126,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.36")
+(defconst traverse-version "1.37")
 
 ;;; Code:
 
@@ -686,11 +686,24 @@ like anything"
   (insert  "Wait Lisp searching...\n\n")
   (sit-for 1))
 
+
+(defun traverse-read-regexp (&rest args)
+    "For compatibility with emacs-22
+Use `read-string' in emacs-22 instead of using `read-regexp'.
+Use the same args as `read-string' or `read-regexp'
+depending of what emacs version you use.
+NOTE:When using `read-string' some regexp (complex)
+may not be displayed correctly to traverselisp"
+    (apply #'funcall (if (fboundp 'read-regexp)
+                         'read-regexp
+                         'read-string)
+           args))
+
 ;;;###autoload
 (defun traverse-find-in-file (fname regexp &optional full-path)
   "Traverse search regex in a single file"
   (interactive (list (read-file-name "FileName: ")
-                     (read-regexp "Regexp: ")))
+                     (traverse-read-regexp "Regexp: ")))
   (traverse-prepare-buffer)
   (let ((prefarg (not (null current-prefix-arg))))
     (if (and (not (bufferp fname))
@@ -717,7 +730,7 @@ like anything"
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
   (interactive (list
-                (read-regexp "Regexp: ")))
+                (traverse-read-regexp "Regexp: ")))
   (let ((buf-fname (buffer-file-name (current-buffer))))
     (if traverse-occur-use-miniwindow
         (progn
@@ -740,7 +753,7 @@ except on files that are in `traverse-ignore-files'
 Called with prefix-argument (C-u) absolute path is displayed"
   (interactive
    (list (read-directory-name "Tree: ")
-         (read-regexp "Regexp: ")
+         (traverse-read-regexp "Regexp: ")
          (read-string "CheckOnly: ")))
   ;(save-excursion
   (traverse-prepare-buffer)
@@ -800,7 +813,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 ;;;###autoload
 (defun traverse-search-in-dired-dir-at-point (regex &optional only)
   "Launch `traverse-deep-rfind' from `dired-mode'"
-  (interactive (list (read-regexp "Regexp: ")
+  (interactive (list (traverse-read-regexp "Regexp: ")
                      (read-string "CheckOnly: ")))
   (if (eq major-mode 'dired-mode)
       (let ((tree (dired-get-filename)))
@@ -811,7 +824,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 
 ;;;###autoload
 (defun traverse-search-in-dired-file-at-point (regex)
-  (interactive (list (read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp "Regexp: ")))
   (if (eq major-mode 'dired-mode)
       (let ((fname (dired-get-filename)))
         (if (file-regular-p fname)
@@ -840,7 +853,7 @@ to have these programs installed on your system and FUSE module
 enabled in your kernel.
 This function is disabled by default, enable it setting
 traverse-use-avfs to non--nil"
-  (interactive (list (read-regexp "Regexp: ")
+  (interactive (list (traverse-read-regexp "Regexp: ")
                      (read-string "CheckOnly: ")))
   (when traverse-use-avfs
     (let ((file-at-point (dired-get-filename)))
@@ -858,7 +871,7 @@ traverse-use-avfs to non--nil"
   "Traverse search regex in marked files
 if some of the marked files are directories ignore them
 if no marked files use file at point"
-  (interactive (list (read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp "Regexp: ")))
   (let ((prefarg (not (null current-prefix-arg)))
         (fname-list (traverse-dired-get-marked-files)))
     (traverse-prepare-buffer)
@@ -883,7 +896,7 @@ if no marked files use file at point"
 (defun traverse-dired-find-in-all-files (regexp &optional full-path)
   "Traverse search regex in all files of current dired buffer
 except compressed files and symlinks"
-  (interactive (list (read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp "Regexp: ")))
   (let ((prefarg (not (null current-prefix-arg)))
         (all-files (traverse-list-directory (dired-current-directory))))
     (traverse-prepare-buffer)
@@ -944,11 +957,11 @@ in compressed archive at point if traverse-use-avfs is non--nil"
   (interactive
    (let ((f-or-d-name (dired-get-filename)))
      (cond ((traverse-dired-has-marked-files)
-            (list (read-regexp "Regexp: ")))
+            (list (traverse-read-regexp "Regexp: ")))
            ((or (file-directory-p f-or-d-name)
                 (and (file-regular-p f-or-d-name)
                      (file-compressed-p f-or-d-name)))
-            (list (read-regexp "Regexp: ")
+            (list (traverse-read-regexp "Regexp: ")
                   (read-string "CheckOnly: "))))))
   (let ((fname (dired-get-filename)))
      (cond ((traverse-dired-has-marked-files)
