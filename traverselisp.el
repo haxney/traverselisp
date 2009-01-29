@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: jeu jan 29 15:59:17 2009 (+0100)
+;; Last-Updated: jeu jan 29 16:19:20 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 549
+;;     Update #: 551
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -126,7 +126,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.37")
+(defconst traverse-version "1.38")
 
 ;;; Code:
 
@@ -242,12 +242,20 @@ Special commands:
   "If nil split window equally")
 
 ;;; Internal use only (DON'T modify)
-(defvar traverse-count-occurences 0)
-(defvar traverse-table (make-hash-table))
+(defvar traverse-count-occurences 0
+  "Simple variable to store the number of occurence found")
+(defvar traverse-table (make-hash-table)
+  "The hash-table used by `traverselisp'")
 (defvar traverse-occur-overlay nil)
+(defvar traverse-last-regexp nil
+  "Used in `traverse-search-and-replace'
+remember the regexp used in last search")
+(defvar traverse-replace-auth nil
+  "Used in `traverse-search-and-replace'
+Allow traverse to continue replacing operation")
 
-(defun traverse-lisp-version ()
-  "Give version number of traverse"
+(defun traverselisp-version ()
+  "Give version number of traverselisp"
   (interactive)
   (message "traverse-lisp-version-%s" traverse-version))
 
@@ -399,8 +407,6 @@ Each element of the list is a list of the form '(key value)"
         (traverse-occur-color-current-line)))))
 
 ;;;; Replace functions
-(defvar traverse-last-regexp nil)
-(defvar traverse-replace-auth nil)
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
   "Replace regex with `str', replacement is
