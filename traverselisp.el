@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mer jan 28 20:06:18 2009 (+0100)
+;; Last-Updated: jeu jan 29 15:59:17 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 542
+;;     Update #: 549
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -265,16 +265,23 @@ Special commands:
 (defsubst traverse-list-directory (dirname &optional abs)
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path."
-  (cddr (directory-files dirname abs)))
+  (directory-files dirname abs "[^\\.]"))
      
 
 (defun* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
-  "Walk through dirname and use file-fn function
-on each file found.
+  "Walk through dirname and use file-fn and/or dir-fn function on each file found.
 `dirname' ==> we start in this directory
-`file-fn' ==> function to apply to FILES
-`excludes-files' ==> list of .ext to ignore  
-`exclude-dirs' ==> list of directory to ignore
+
+Use keys to set args:
+
+You must specify at list one of these 2 functions:
+`:file-fn' ==> function to apply to FILES
+`:dir-fn' ==> function to apply on DIRECTORIES
+
+Files or directories in these lists will be skipped:
+`:excludes-files' ==> list of .ext or files to ignore.  
+`:exclude-dirs' ==> list of directory to ignore.
+Look at `traverse-ignore-files' and `traverse-ignore-dirs'
 "
   (labels
       ((walk (name)
@@ -284,20 +291,12 @@ on each file found.
                   (funcall dir-fn name))
                 (if exclude-dirs
                     (dolist (x (traverse-list-directory name t))
-                      (when x ;; be sure x is a string and not nil
-                        (if (and (not (equal (file-name-nondirectory x)
-                                             "."))
-                                 (not (equal (file-name-nondirectory x)
-                                             "..")))
+                      (when (stringp x) ;; be sure x is a string and not nil
                             (unless (member (file-name-nondirectory x) exclude-dirs)
-                              (walk x))))) ;; Return to TOP and take the good cond
+                              (walk x)))) ;; Return to TOP and take the good cond
                     (dolist (x (traverse-list-directory name t))
-                      (when x
-                        (if (and (not (equal (file-name-nondirectory x)
-                                             "."))
-                                 (not (equal (file-name-nondirectory x)
-                                             "..")))
-                            (walk x)))))) ;; Return to TOP and take the good cond
+                      (when (stringp x)
+                            (walk x))))) ;; Return to TOP and take the good cond
                ((and (file-regular-p name) ;; FILE PROCESSING
                      (not (file-symlink-p name))) ;; don't follow symlinks
                 (when file-fn
@@ -308,7 +307,7 @@ on each file found.
                       (funcall file-fn name)))))))
     (if (or file-fn dir-fn)
         (walk (expand-file-name dirname))
-        (error "Error:you have to specify at list one function"))))
+        (error "Error:you must specify at list one function"))))
 
 (defsubst traverse-hash-readlines (file table)
   "Load all the lines of a file in an hash-table
