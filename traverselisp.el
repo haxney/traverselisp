@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: ven jan 30 19:32:25 2009 (+0100)
+;; Last-Updated: ven jan 30 23:42:03 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 556
+;;     Update #: 557
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1104,9 +1104,11 @@ horizontally or vertically ala ediff"
 and the number of files. If `quiet' is non-nil don't send message"
   (interactive "DDirectory: ")
   (let ((count-files 0))
-    (traverse-walk-directory tree #'(lambda (n)
-                                      (when n
-                                        (incf count-files))))
+    (traverse-walk-directory
+     tree
+     :file-fn #'(lambda (n)
+                  (when n
+                    (incf count-files))))
     (unless quiet
       (message "[%s] contain <%s> files" tree count-files))
     count-files))
