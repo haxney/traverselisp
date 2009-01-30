@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: ven jan 30 23:42:03 2009 (+0100)
+;; Last-Updated: sam jan 31 00:13:02 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 557
+;;     Update #: 558
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1110,8 +1110,13 @@ and the number of files. If `quiet' is non-nil don't send message"
                   (when n
                     (incf count-files))))
     (unless quiet
-      (message "[%s] contain <%s> files" tree count-files))
+      (message "[%s] contain <%s> files"
+               (propertize tree
+                           'face 'traverse-path-face)
+               (propertize (number-to-string count-files)
+                           'face 'traverse-match-face)))
     count-files))
+
 
 (defun traverse-list-directories-in-tree (tree)
   "Print all directories and subdirectories of `tree'."
