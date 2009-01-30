@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: ven jan 30 17:57:55 2009 (+0100)
+;; Last-Updated: ven jan 30 19:32:25 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 555
+;;     Update #: 556
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -765,25 +765,26 @@ Called with prefix-argument (C-u) absolute path is displayed"
   (let ((init-time (cadr (current-time)))
         (only-list (split-string only)))
     (unwind-protect
-         (traverse-walk-directory tree
-                                  :file-fn #'(lambda (y)
-                                               (let ((prefarg (not (null current-prefix-arg))))
-                                                 (if only-list
-                                                     (when (member (file-name-extension y t) only-list)
-                                                       (funcall traverse-file-function regexp y prefarg))
-                                                     (funcall traverse-file-function regexp y prefarg)))
-                                               (message "%s [Matches] for %s in [%s]"
-                                                        (if (>= traverse-count-occurences 1)
-                                                            (propertize (int-to-string traverse-count-occurences)
-                                                                        'face 'traverse-match-face)
-                                                            0)
-                                                        (propertize regexp
-                                                                    'face 'traverse-regex-face)
-                                                        (propertize y
-                                                                    'face 'traverse-path-face)))
-                                  :exclude-files (unless only-list
-                                                   traverse-ignore-files)
-                                  :exclude-dirs traverse-ignore-dirs)
+         (traverse-walk-directory
+          tree
+          :file-fn #'(lambda (y)
+                       (let ((prefarg (not (null current-prefix-arg))))
+                         (if only-list
+                             (when (member (file-name-extension y t) only-list)
+                               (funcall traverse-file-function regexp y prefarg))
+                             (funcall traverse-file-function regexp y prefarg)))
+                       (message "%s [Matches] for %s in [%s]"
+                                (if (>= traverse-count-occurences 1)
+                                    (propertize (int-to-string traverse-count-occurences)
+                                                'face 'traverse-match-face)
+                                    0)
+                                (propertize regexp
+                                            'face 'traverse-regex-face)
+                                (propertize y
+                                            'face 'traverse-path-face)))
+          :exclude-files (unless only-list
+                           traverse-ignore-files)
+          :exclude-dirs traverse-ignore-dirs)
       (setq traverse-count-occurences (if (< traverse-count-occurences 0)
                                           0
                                           traverse-count-occurences))
