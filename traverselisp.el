@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: jeu jan 29 16:19:20 2009 (+0100)
+;; Last-Updated: ven jan 30 17:32:12 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 551
+;;     Update #: 554
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1109,6 +1109,57 @@ and the number of files. If `quiet' is non-nil don't send message"
     (unless quiet
       (message "[%s] contain <%s> files" tree count-files))
     count-files))
+
+(defun traverse-list-directories-in-tree (tree)
+  "Print all directories and subdirectories of `tree'."
+  (let (list-dirs)
+    (traverse-walk-directory
+     tree
+     :dir-fn #'(lambda (x)
+                 (push x list-dirs)))
+    (nreverse list-dirs)))
+
+(defun traverse-list-files-in-tree (tree)
+  "List all files in `tree' without directories."
+  (let (list-files)
+    (traverse-walk-directory
+     tree
+     :file-fn #'(lambda (x)
+                  (push x list-files)))
+    (nreverse list-files)))
+
+;;;###autoload
+(defun traverse-pprint-tree (tree)
+  "PPrint all the content of `tree'."
+  (interactive "DTree: ")
+  (switch-to-buffer "*traverse-ls*")
+  (erase-buffer)
+  (let ((dirs-list (traverse-list-directories-in-tree tree))
+        (beg)
+        (end))
+    (loop for i in dirs-list
+       do
+         (insert (propertize (format "%s\n" i)
+                             'face 'traverse-match-face))
+         (setq beg (point))
+         (loop for x in (traverse-list-directory i t) 
+            do
+              (let* ((attr (file-attributes x))
+                     (time-stamp (format-time-string "%Y-%m-%d %H:%M" (nth 6 attr)))
+                     (size (int-to-string (nth 7 attr)))
+                     (mode (nth 8 attr)))
+                (insert (propertize (format "    %s %s %s %s\n"
+                                            mode
+                                            size
+                                            time-stamp
+                                            (file-name-nondirectory x))
+                                    'face 'traverse-path-face))))
+         (setq end (point))
+         (unless (eq beg end)
+           (if (fboundp 'align-cols)
+               (align-cols beg end 4)))))
+  (goto-char (point-min))
+  (traversedir-mode))
 
 (provide 'traverselisp)
 
