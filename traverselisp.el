@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: sam jan 31 00:13:02 2009 (+0100)
+;; Last-Updated: sam jan 31 11:43:41 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 558
+;;     Update #: 565
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1118,23 +1118,46 @@ and the number of files. If `quiet' is non-nil don't send message"
     count-files))
 
 
-(defun traverse-list-directories-in-tree (tree)
-  "Print all directories and subdirectories of `tree'."
+(defun traverse-list-directories-in-tree (tree &optional ignore-dirs)
+  "Return all directories and subdirectories of `tree'.
+`ignore-dirs' is a list of directories to ignore."
   (let (list-dirs)
     (traverse-walk-directory
      tree
      :dir-fn #'(lambda (x)
-                 (push x list-dirs)))
+                 (push x list-dirs))
+     :exclude-dirs (if ignore-dirs
+                       ignore-dirs))
     (nreverse list-dirs)))
 
-(defun traverse-list-files-in-tree (tree)
-  "List all files in `tree' without directories."
+(defun traverse-list-files-in-tree (tree &optional ignore-files)
+  "Return all files in `tree' without directories.
+`ignore-files' is a list of files(and/or).ext to ignore."
   (let (list-files)
     (traverse-walk-directory
      tree
      :file-fn #'(lambda (x)
-                  (push x list-files)))
+                  (push x list-files))
+     :exclude-files (if ignore-files
+                        ignore-files))
     (nreverse list-files)))
+
+(defun traverse-apply-func-on-files (tree fn &optional ext)
+  "Exec `function' on all files with of `tree'.
+If `ext' apply func only on files with .`ext'."
+  (let ((files-list (traverse-list-files-in-tree tree)))
+    (dolist (i files-list)
+      (if ext
+          (when (equal (file-name-extension i t) ext)
+            (funcall fn i))
+          (funcall fn i)))))
+
+(defun traverse-apply-func-on-dirs (tree fn &optional ignore-dirs)
+  "Exec `function' on all directories of `tree'.
+`ignore-dirs' is a list of directories to ignore."
+  (let ((dirs-list (traverse-list-directories-in-tree tree ignore-dirs)))
+    (dolist (i dirs-list)
+      (funcall fn i))))
 
 ;;;###autoload
 (defun traverse-pprint-tree (tree)
