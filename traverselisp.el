@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: sam jan 31 11:43:41 2009 (+0100)
+;; Last-Updated: dim fév  1 09:09:20 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 565
+;;     Update #: 570
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -126,7 +126,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.39")
+(defconst traverse-version "1.40")
 
 ;;; Code:
 
@@ -1130,20 +1130,28 @@ and the number of files. If `quiet' is non-nil don't send message"
                        ignore-dirs))
     (nreverse list-dirs)))
 
-(defun traverse-list-files-in-tree (tree &optional ignore-files)
+(defun traverse-list-files-in-tree (tree &optional ignore-files only-ext)
   "Return all files in `tree' without directories.
-`ignore-files' is a list of files(and/or).ext to ignore."
+`ignore-files' is a list of files(and/or).ext to ignore.
+`only-ext' will match only files with .ext.
+NOTE: if both `ignore-files' and `only-ext' are set, `only-ext'
+will take precedence on `ignore-files'."
   (let (list-files)
     (traverse-walk-directory
      tree
      :file-fn #'(lambda (x)
-                  (push x list-files))
-     :exclude-files (if ignore-files
-                        ignore-files))
+                  (if only-ext
+                      (if (equal (file-name-extension x t)
+                                 only-ext)
+                          (push x list-files))
+                      (push x list-files)))
+     :exclude-files (unless only-ext
+                      (if ignore-files
+                          ignore-files)))
     (nreverse list-files)))
 
 (defun traverse-apply-func-on-files (tree fn &optional ext)
-  "Exec `function' on all files with of `tree'.
+  "Exec `function' on all files of `tree'.
 If `ext' apply func only on files with .`ext'."
   (let ((files-list (traverse-list-files-in-tree tree)))
     (dolist (i files-list)
