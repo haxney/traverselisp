@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  1 09:13:56 2009 (+0100)
+;; Last-Updated: dim fév  1 10:01:14 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 571
+;;     Update #: 572
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1169,7 +1169,10 @@ If `ext' apply func only on files with .`ext'."
 
 ;;;###autoload
 (defun traverse-pprint-tree (tree)
-  "PPrint all the content of `tree'."
+  "PPrint all the content of `tree'.
+NOTE: for a better output, be sure to have
+http://www.emacswiki.org/emacs/align.el
+installed on your emacs even if that work without."
   (interactive "DTree: ")
   (switch-to-buffer "*traverse-ls*")
   (erase-buffer)
