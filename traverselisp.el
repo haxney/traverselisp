@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  1 10:01:14 2009 (+0100)
+;; Last-Updated: dim fév  1 17:33:06 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 572
+;;     Update #: 573
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1028,18 +1028,19 @@ found in `tree'"
       (make-directory dir t))
     (when current-prefix-arg
       (setq fn 'rename-file))
-    (traverse-walk-directory tree
-                       :file-fn #'(lambda (x)
-                                    (when (equal (file-name-extension x t) ext)
-                                      ;; should i recurse in dir at this point ?
-                                      ;; would implement synch completely.
-                                      (if (file-exists-p (concat dir (file-name-nondirectory x)))
-                                          (when (file-newer-than-file-p (expand-file-name x)
-                                                                        (concat dir
-                                                                                (file-name-nondirectory x)))
-                                            (funcall fn (expand-file-name x) dir 'overwrite))
-                                          (funcall fn (expand-file-name x) dir 'overwrite))))
-                       :exclude-dirs `(,igndir))))
+    (traverse-walk-directory
+     tree
+     :file-fn #'(lambda (x)
+                  (when (equal (file-name-extension x t) ext)
+                    ;; should i recurse in dir at this point ?
+                    ;; would implement synch completely.
+                    (if (file-exists-p (concat dir (file-name-nondirectory x)))
+                        (when (file-newer-than-file-p (expand-file-name x)
+                                                      (concat dir
+                                                              (file-name-nondirectory x)))
+                          (funcall fn (expand-file-name x) dir 'overwrite))
+                        (funcall fn (expand-file-name x) dir 'overwrite))))
+     :exclude-dirs `(,igndir))))
 
 
 ;; Experimental ==> Huge projects not supported (Tags files become to big)
@@ -1058,16 +1059,17 @@ Tag file will be build in `dir'"
     (when new-file
       (delete-file (expand-file-name "TAGS" dir)))
     (dolist (i ext-list)
-      (traverse-walk-directory dir
-                               :file-fn #'(lambda (x)
-                                            (when (equal (file-name-extension x t) i)
-                                              (message "Tagging [%s]" (propertize x
-                                                                                  'face 'traverse-path-face))
-                                              (incf count)
-                                              (call-process-shell-command (format "etags %s -a %s"
-                                                                                  x
-                                                                                  (expand-file-name "TAGS" dir)))))
-                               :exclude-dirs traverse-ignore-dirs))
+      (traverse-walk-directory
+       dir
+       :file-fn #'(lambda (x)
+                    (when (equal (file-name-extension x t) i)
+                      (message "Tagging [%s]" (propertize x
+                                                          'face 'traverse-path-face))
+                      (incf count)
+                      (call-process-shell-command (format "etags %s -a %s"
+                                                          x
+                                                          (expand-file-name "TAGS" dir)))))
+       :exclude-dirs traverse-ignore-dirs))
     (message "%s Files tagged" (propertize (int-to-string count)
                                            'face 'traverse-match-face))))
 
