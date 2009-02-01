@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  1 09:09:20 2009 (+0100)
+;; Last-Updated: dim fév  1 09:13:56 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 570
+;;     Update #: 571
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -1187,12 +1187,19 @@ If `ext' apply func only on files with .`ext'."
                      (time-stamp (format-time-string "%Y-%m-%d %H:%M" (nth 6 attr)))
                      (size (int-to-string (nth 7 attr)))
                      (mode (nth 8 attr)))
-                (insert (propertize (format "    %s %s %s %s\n"
-                                            mode
-                                            size
-                                            time-stamp
-                                            (file-name-nondirectory x))
-                                    'face 'traverse-path-face))))
+                (if (file-directory-p x)
+                    (insert (propertize (format "    %s %s %s %s\n"
+                                                mode
+                                                size
+                                                time-stamp
+                                                (file-name-nondirectory x))
+                                        'face 'traverse-regex-face))
+                    (insert (propertize (format "    %s %s %s %s\n"
+                                                mode
+                                                size
+                                                time-stamp
+                                                (file-name-nondirectory x))
+                                        'face 'traverse-path-face)))))
          (setq end (point))
          (unless (eq beg end)
            (if (fboundp 'align-cols)
