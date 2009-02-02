@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: lun fév  2 14:22:49 2009 (+0100)
+;; Last-Updated: lun fév  2 15:26:45 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 575
+;;     Update #: 576
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -126,7 +126,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.40")
+(defconst traverse-version "1.41")
 
 ;;; Code:
 
