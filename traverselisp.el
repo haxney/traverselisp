@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  1 17:33:06 2009 (+0100)
+;; Last-Updated: lun fév  2 14:22:49 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 573
+;;     Update #: 575
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -358,6 +358,20 @@ Each element of the list is a list of the form '(key value)"
              table)
     (setq match-list (reverse match-list))
     match-list))
+
+;; Iterators
+(defmacro tve-list-iterator (list-obj)
+  "Return an iterator from list `list-obj'."
+  `(lexical-let ((lis ,list-obj))
+     (lambda ()
+       (let ((elm (car lis)))
+         (setq lis (cdr lis))
+         elm))))
+
+(defun tve-iter-next (iterator)
+  "Return next elm of `iterator'.
+create `iterator' with `tve-list-iterator'."
+  (funcall iterator))
 
 (defun file-compressed-p (fname)
   "Return t if fname is a compressed file"
