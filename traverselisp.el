@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mar fév  3 10:44:19 2009 (+0100)
+;; Last-Updated: mar fév  3 11:21:22 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 579
+;;     Update #: 580
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -363,7 +363,7 @@ Each element of the list is a list of the form '(key value)"
 
 (defun tve-flines-iterator (file &optional nlines startpos bufsize)
   "Return an iterator on `nlines' lines of file.
-`startpos' and `bufsize' are the byte options start/end to give to
+`startpos' and `bufsize' are the byte options to give to
 `insert-file-contents'."
   (lexical-let ((fname file)
                 (pos 1)
@@ -376,7 +376,9 @@ Each element of the list is a list of the form '(key value)"
           (insert-file-contents fname
                                 nil
                                 start-at
-                                (if proc-size proc-size))
+                                (if (and proc-size
+                                         (> proc-size start-at))
+                                    proc-size))
           (goto-char pos)
           (end-of-line)
           (forward-line (or forw 1))
