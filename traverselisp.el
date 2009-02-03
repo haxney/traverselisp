@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: lun fév  2 15:26:45 2009 (+0100)
+;; Last-Updated: mar fév  3 10:44:19 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 576
+;;     Update #: 579
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -360,15 +360,42 @@ Each element of the list is a list of the form '(key value)"
     match-list))
 
 ;; Iterators
-(defmacro tve-list-iterator (list-obj)
+
+(defun tve-flines-iterator (file &optional nlines startpos bufsize)
+  "Return an iterator on `nlines' lines of file.
+`startpos' and `bufsize' are the byte options start/end to give to
+`insert-file-contents'."
+  (lexical-let ((fname file)
+                (pos 1)
+                (forw nlines)
+                (start-at (or startpos 0))
+                (proc-size bufsize))
+    (lambda ()
+      (with-temp-buffer
+        (let (output)
+          (insert-file-contents fname
+                                nil
+                                start-at
+                                (if proc-size proc-size))
+          (goto-char pos)
+          (end-of-line)
+          (forward-line (or forw 1))
+          (let ((cur-pt (point)))
+            (if (not (eq pos cur-pt))
+                (progn 
+                  (setq output (buffer-substring-no-properties pos cur-pt))
+                  (setq pos cur-pt))))
+          output)))))
+
+(defun tve-list-iterator (list-obj)
   "Return an iterator from list `list-obj'."
-  `(lexical-let ((lis ,list-obj))
+  (lexical-let ((lis list-obj))
      (lambda ()
        (let ((elm (car lis)))
          (setq lis (cdr lis))
          elm))))
 
-(defun tve-iter-next (iterator)
+(defun tve-next (iterator)
   "Return next elm of `iterator'.
 create `iterator' with `tve-list-iterator'."
   (funcall iterator))
