@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mar fév  3 11:21:22 2009 (+0100)
+;; Last-Updated: sam fév  7 21:51:59 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 580
+;;     Update #: 591
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -359,48 +359,6 @@ Each element of the list is a list of the form '(key value)"
     (setq match-list (reverse match-list))
     match-list))
 
-;; Iterators
-
-(defun tve-flines-iterator (file &optional nlines startpos bufsize)
-  "Return an iterator on `nlines' lines of file.
-`startpos' and `bufsize' are the byte options to give to
-`insert-file-contents'."
-  (lexical-let ((fname file)
-                (pos 1)
-                (forw nlines)
-                (start-at (or startpos 0))
-                (proc-size bufsize))
-    (lambda ()
-      (with-temp-buffer
-        (let (output)
-          (insert-file-contents fname
-                                nil
-                                start-at
-                                (if (and proc-size
-                                         (> proc-size start-at))
-                                    proc-size))
-          (goto-char pos)
-          (end-of-line)
-          (forward-line (or forw 1))
-          (let ((cur-pt (point)))
-            (if (not (eq pos cur-pt))
-                (progn 
-                  (setq output (buffer-substring-no-properties pos cur-pt))
-                  (setq pos cur-pt))))
-          output)))))
-
-(defun tve-list-iterator (list-obj)
-  "Return an iterator from list `list-obj'."
-  (lexical-let ((lis list-obj))
-     (lambda ()
-       (let ((elm (car lis)))
-         (setq lis (cdr lis))
-         elm))))
-
-(defun tve-next (iterator)
-  "Return next elm of `iterator'.
-create `iterator' with `tve-list-iterator'."
-  (funcall iterator))
 
 (defun file-compressed-p (fname)
   "Return t if fname is a compressed file"
