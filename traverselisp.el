@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  8 08:16:25 2009 (+0100)
+;; Last-Updated: dim fév  8 08:57:17 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 598
+;;     Update #: 605
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -372,16 +372,44 @@ with the number of line as key.
                            (forward-line)
                            (beginning-of-line)
                            (when (re-search-forward regexp nil t)
-                             (push (buffer-substring (point-at-bol) (point-at-eol)) matched-elm)
+                             (let ((line-pos (line-number-at-pos))
+                                   (cur-line
+                                    (replace-regexp-in-string
+                                     "\n"
+                                     ""
+                                     (buffer-substring (point-at-bol)
+                                                       (point-at-eol)))))
+                               (push (list line-pos cur-line) matched-elm))
                              (throw 'continue nil)))))))
-    matched-elm))
-     ;;                   (buffer-string)))
-     ;;      (my-read-list (split-string my-string "\n"))
-     ;;      (count 0))
-     ;; (dolist (i my-read-list)
-     ;;   (puthash count i table)
-     ;;   (incf count))))
+    (nreverse matched-elm)))
 
+(defun traverse-file-process (regex fname &optional full-path); &key (fn 'traverse-hash-readlines))
+  "Default function to process files  and insert matched lines
+in *traverse-lisp* buffer"
+  (let ((matched-lines (traverse-find-readlines fname regex)))
+    (when matched-lines 
+      (dolist (i matched-lines) ;; each element is of the form '(key value)
+        (let ((line-to-print (if traverse-keep-indent
+                                 (second i)
+                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
+          (insert-button (format "[%s]" (if full-path
+                                            fname
+                                            (file-relative-name fname
+                                                                default-directory)))
+                         'action 'traverse-button-func
+                         'face "hi-green")
+          (insert (concat " "
+                          (int-to-string (+ (first i) 1))
+                          ":"
+                          (if (> (length line-to-print)
+                                 traverse-length-line)
+                              (substring line-to-print
+                                         0
+                                         traverse-length-line)
+                              line-to-print)
+                          "\n")))))
+  (setq traverse-count-occurences (+ traverse-count-occurences
+                                     (length matched-lines))))))
 
 (defun file-compressed-p (fname)
   "Return t if fname is a compressed file"
