@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: sam fév  7 21:51:59 2009 (+0100)
+;; Last-Updated: dim fév  8 08:16:25 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 591
+;;     Update #: 598
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -358,6 +358,29 @@ Each element of the list is a list of the form '(key value)"
              table)
     (setq match-list (reverse match-list))
     match-list))
+
+(defun traverse-find-readlines (file regexp)
+  "Load all the lines of a file in an hash-table
+with the number of line as key.
+\\(emulate object.readlines() of python)"
+  (let* ((matched-elm)
+         (my-string (with-temp-buffer
+                       (insert-file-contents file)
+                       (goto-char (point-min))
+                       (while (not (eobp))
+                         (catch 'continue
+                           (forward-line)
+                           (beginning-of-line)
+                           (when (re-search-forward regexp nil t)
+                             (push (buffer-substring (point-at-bol) (point-at-eol)) matched-elm)
+                             (throw 'continue nil)))))))
+    matched-elm))
+     ;;                   (buffer-string)))
+     ;;      (my-read-list (split-string my-string "\n"))
+     ;;      (count 0))
+     ;; (dolist (i my-read-list)
+     ;;   (puthash count i table)
+     ;;   (incf count))))
 
 
 (defun file-compressed-p (fname)
