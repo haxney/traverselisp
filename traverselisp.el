@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  8 18:07:10 2009 (+0100)
+;; Last-Updated: dim fév  8 18:44:51 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 621
+;;     Update #: 631
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -317,49 +317,49 @@ Look at `traverse-ignore-files' and `traverse-ignore-dirs'
         (walk (expand-file-name dirname))
         (error "Error:you must specify at list one function"))))
 
-(defsubst traverse-hash-readlines (file table)
-  "Load all the lines of a file in an hash-table
-with the number of line as key.
-\\(emulate object.readlines() of python)"
-  (let* ((my-string (with-temp-buffer
-                       (insert-file-contents file)
-                       (buffer-string)))
-          (my-read-list (split-string my-string "\n"))
-          (count 0))
-     (dolist (i my-read-list)
-       (puthash count i table)
-       (incf count))))
+;; (defsubst traverse-hash-readlines (file table)
+;;   "Load all the lines of a file in an hash-table
+;; with the number of line as key.
+;; \\(emulate object.readlines() of python)"
+;;   (let* ((my-string (with-temp-buffer
+;;                        (insert-file-contents file)
+;;                        (buffer-string)))
+;;           (my-read-list (split-string my-string "\n"))
+;;           (count 0))
+;;      (dolist (i my-read-list)
+;;        (puthash count i table)
+;;        (incf count))))
 
-(defsubst traverse-hash-readlines-from-buffer (buffer table)
-  "Load all the lines of a buffer in an hash-table
-with the number of line as key.
-\\(emulate object.readlines() of python)"
-  (let* ((my-string (with-temp-buffer
-                       (insert-buffer-substring buffer)
-                       (buffer-string)))
-         (my-read-list (split-string my-string "\n"))
-         (count 0))
-    (dolist (i my-read-list)
-      (puthash count i table)
-      (incf count))))
+;; (defsubst traverse-hash-readlines-from-buffer (buffer table)
+;;   "Load all the lines of a buffer in an hash-table
+;; with the number of line as key.
+;; \\(emulate object.readlines() of python)"
+;;   (let* ((my-string (with-temp-buffer
+;;                        (insert-buffer-substring buffer)
+;;                        (buffer-string)))
+;;          (my-read-list (split-string my-string "\n"))
+;;          (count 0))
+;;     (dolist (i my-read-list)
+;;       (puthash count i table)
+;;       (incf count))))
 
-(defsubst traverse-find-all-regex-in-hash (regex table)
-  "Return a list of all lines that match regex
-founded in the hash-table created by `traverse-hash-readlines'
-Each element of the list is a list of the form '(key value)"
-  (let ((match-list nil))
-    (maphash #'(lambda (x y)
-                 (when (string-match regex y)
-                    (push (list x
-                                (replace-regexp-in-string "\n"
-                                                          ""
-                                                          y))
-                          match-list)))
-             table)
-    (setq match-list (reverse match-list))
-    match-list))
+;; (defsubst traverse-find-all-regex-in-hash (regex table)
+;;   "Return a list of all lines that match regex
+;; founded in the hash-table created by `traverse-hash-readlines'
+;; Each element of the list is a list of the form '(key value)"
+;;   (let ((match-list nil))
+;;     (maphash #'(lambda (x y)
+;;                  (when (string-match regex y)
+;;                     (push (list x
+;;                                 (replace-regexp-in-string "\n"
+;;                                                           ""
+;;                                                           y))
+;;                           match-list)))
+;;              table)
+;;     (setq match-list (reverse match-list))
+;;     match-list))
 
-(defun* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
+(defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
   "Load all the lines of a file in an hash-table
 with the number of line as key.
 \\(emulate object.readlines() of python)"
@@ -421,13 +421,11 @@ in *traverse-lisp* buffer"
     (setq traverse-count-occurences (+ traverse-count-occurences
                                        (length matched-lines)))))
 
-(defun* traverse-file-process-ext (regex fname &key (fn 'traverse-hash-readlines))
+(defun traverse-file-process-ext (regex fname &optional insert-fn)
   "Function to process files in external program
 like anything"
-  (clrhash traverse-table)
-  (funcall fn fname traverse-table)
-  (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
-    (when matched-lines 
+  (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
+    (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let ((line-to-print (if traverse-keep-indent
                                  (second i)
@@ -456,10 +454,8 @@ like anything"
 (defun* traverse-buffer-process-ext (regex buffer &key (lline traverse-length-line))
   "Function to process buffer in external program
 like anything"
-  (clrhash traverse-table)
-  (traverse-hash-readlines-from-buffer buffer traverse-table)
-  (let ((matched-lines (traverse-find-all-regex-in-hash regex traverse-table)))
-    (when matched-lines
+  (let ((matched-lines (traverse-find-readlines buffer regex :insert-fn 'buffer)))
+    (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let ((line-to-print (if traverse-keep-indent
                                  (second i)

@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: lun jan 26 09:53:35 2009 (+0100)
+;; Last-Updated: dim fév  8 18:38:27 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 10
+;;     Update #: 13
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -130,10 +130,10 @@ in the last chars of line")
                                    anything-pattern
                                    f))))
                             (setq anything-c-traverse-diredp-flag nil)
-                            (funcall anything-c-traverse-func
-                                     anything-pattern
-                                     anything-traverse-current-buffer
-                                     :lline anything-c-traverse-length-line))
+                            (traverse-buffer-process-ext
+                             anything-pattern
+                             anything-traverse-current-buffer
+                             :lline anything-c-traverse-length-line))
                         (split-string (buffer-string) "\n")))))
     (action . (("Go to Line" . (lambda (elm)
                                  (anything-c-traverse-default-action elm)))))
