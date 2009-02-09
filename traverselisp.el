@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: lun fév  9 10:38:20 2009 (+0100)
+;; Last-Updated: lun fév  9 12:49:55 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 655
+;;     Update #: 661
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -244,8 +244,6 @@ Special commands:
 ;;; Internal use only (DON'T modify)
 (defvar traverse-count-occurences 0
   "Simple variable to store the number of occurence found")
-(defvar traverse-table (make-hash-table)
-  "The hash-table used by `traverselisp'")
 (defvar traverse-occur-overlay nil)
 (defvar traverse-last-regexp nil
   "Used in `traverse-search-and-replace'
@@ -325,24 +323,16 @@ with the number of line in a list where each element is a list of the form:
          (fn (cond ((eq insert-fn 'file)
                     'insert-file-contents)
                    ((eq insert-fn 'buffer)
-                    'insert-buffer-substring)))
-         (my-string (with-temp-buffer
-                      (funcall fn bfile) ; call insert function
-                      (goto-char (point-min))
-                      (while (not (eobp))
-                        (catch 'continue
-                          (forward-line)
-                          ;(beginning-of-line) ;; THE BUG!!!!!
-                          (when (re-search-forward regexp nil t)
-                            (let ((line-pos (line-number-at-pos))
-                                  (cur-line
-                                   (replace-regexp-in-string
-                                    "\n"
-                                    ""
-                                    (buffer-substring (point-at-bol)
-                                                      (point-at-eol)))))
-                              (push (list line-pos cur-line) matched-elm))
-                            (throw 'continue nil)))))))
+                    'insert-buffer-substring))))
+    (with-temp-buffer
+      (funcall fn bfile) ; call insert function
+      (goto-char (point-min))
+      (let ((lines-list (split-string (buffer-string) "\n")))
+        (dolist (i lines-list)
+          (when (string-match regexp i)
+            (push (list (position i lines-list)
+                        (replace-regexp-in-string "\n" "" i))
+                  matched-elm)))))
     (nreverse matched-elm)))
 
 
