@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: dim fév  8 18:59:12 2009 (+0100)
+;; Last-Updated: lun fév  9 10:38:20 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 632
+;;     Update #: 655
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -126,7 +126,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.41")
+(defconst traverse-version "1.41-proto")
 
 ;;; Code:
 
@@ -275,7 +275,6 @@ Allow traverse to continue replacing operation")
 If abs is non-nil use absolute path."
   (directory-files dirname abs "[^\\.]"))
      
-
 (defun* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
   "Walk through dirname and use file-fn and/or dir-fn function on each file found.
 `dirname' ==> we start in this directory
@@ -319,35 +318,35 @@ Look at `traverse-ignore-files' and `traverse-ignore-dirs'
 
 
 (defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
-  "Load all the lines of a file in an hash-table
-with the number of line as key.
-\\(emulate object.readlines() of python)"
+  "Return all the lines of a file or buffer matching `regexp'
+with the number of line in a list where each element is a list of the form:
+\\(\"number_of_line\" \"line\")"
   (let* ((matched-elm)
          (fn (cond ((eq insert-fn 'file)
                     'insert-file-contents)
                    ((eq insert-fn 'buffer)
                     'insert-buffer-substring)))
          (my-string (with-temp-buffer
-                       (funcall fn bfile)
-                       (goto-char (point-min))
-                       (while (not (eobp))
-                         (catch 'continue
-                           (forward-line)
-                           (beginning-of-line)
-                           (when (re-search-forward regexp nil t)
-                             (let ((line-pos (line-number-at-pos))
-                                   (cur-line
-                                    (replace-regexp-in-string
-                                     "\n"
-                                     ""
-                                     (buffer-substring (point-at-bol)
-                                                       (point-at-eol)))))
-                               (push (list line-pos cur-line) matched-elm))
-                             (throw 'continue nil)))))))
+                      (funcall fn bfile) ; call insert function
+                      (goto-char (point-min))
+                      (while (not (eobp))
+                        (catch 'continue
+                          (forward-line)
+                          ;(beginning-of-line) ;; THE BUG!!!!!
+                          (when (re-search-forward regexp nil t)
+                            (let ((line-pos (line-number-at-pos))
+                                  (cur-line
+                                   (replace-regexp-in-string
+                                    "\n"
+                                    ""
+                                    (buffer-substring (point-at-bol)
+                                                      (point-at-eol)))))
+                              (push (list line-pos cur-line) matched-elm))
+                            (throw 'continue nil)))))))
     (nreverse matched-elm)))
 
 
-(defun traverse-file-process (regex fname &optional full-path insert-fn); &key (fn 'traverse-hash-readlines))
+(defun traverse-file-process (regex fname &optional full-path insert-fn)
   "Default function to process files  and insert matched lines
 in *traverse-lisp* buffer"
   (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
@@ -546,8 +545,6 @@ may not be displayed correctly to traverselisp"
     (if buf-fname
         (traverse-find-in-file buf-fname regexp)
         (traverse-find-in-file (current-buffer) regexp))))
-  
-  
     
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
@@ -559,7 +556,6 @@ Called with prefix-argument (C-u) absolute path is displayed"
    (list (read-directory-name "Tree: ")
          (traverse-read-regexp "Regexp: ")
          (read-string "CheckOnly: ")))
-  ;(save-excursion
   (traverse-prepare-buffer)
   (let ((init-time (cadr (current-time)))
         (only-list (split-string only)))
@@ -611,7 +607,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
                (- (cadr (current-time)) init-time))
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0)))
-  (switch-to-buffer "*traverse-lisp*"))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
   
 
 ;;; Dired functions
@@ -696,7 +692,7 @@ if no marked files use file at point"
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0)))
-  (switch-to-buffer "*traverse-lisp*"))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-find-in-all-files (regexp &optional full-path)
   "Traverse search regex in all files of current dired buffer
@@ -728,7 +724,7 @@ except compressed files and symlinks"
                            'face 'traverse-regex-face))
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0)))
-  (switch-to-buffer "*traverse-lisp*"))
+  (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-get-marked-files ()
   "Get a list of all marked files for traverse"
