@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: lun fév  9 13:49:15 2009 (+0100)
+;; Last-Updated: mer fév 11 19:25:12 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 662
+;;     Update #: 663
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -147,7 +147,7 @@
   "Keymap used for traversedir commands.")
 
 (define-derived-mode traversedir-mode text-mode "traversedir"
-  "Major mode to search regexp in files recursively.
+                     "Major mode to search regexp in files recursively.
 
 Special commands:
 \\{traversedir-mode-map}")
@@ -272,7 +272,7 @@ Allow traverse to continue replacing operation")
   "Use directory-files without these \".\" \"..\".
 If abs is non-nil use absolute path."
   (directory-files dirname abs "[^\\.]"))
-     
+
 (defun* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
   "Walk through dirname and use file-fn and/or dir-fn function on each file found.
 `dirname' ==> we start in this directory
@@ -297,11 +297,11 @@ Look at `traverse-ignore-files' and `traverse-ignore-dirs'
                 (if exclude-dirs
                     (dolist (x (traverse-list-directory name t))
                       (when (stringp x) ;; be sure x is a string and not nil
-                            (unless (member (file-name-nondirectory x) exclude-dirs)
-                              (walk x)))) ;; Return to TOP and take the good cond
+                        (unless (member (file-name-nondirectory x) exclude-dirs)
+                          (walk x)))) ;; Return to TOP and take the good cond
                     (dolist (x (traverse-list-directory name t))
                       (when (stringp x)
-                            (walk x))))) ;; Return to TOP and take the good cond
+                        (walk x))))) ;; Return to TOP and take the good cond
                ((and (file-regular-p name) ;; FILE PROCESSING
                      (not (file-symlink-p name))) ;; don't follow symlinks
                 (when file-fn
@@ -383,7 +383,6 @@ like anything"
              (match-beginning 0) (match-end 0)
              '(face traverse-regex-face)
              line-to-print))
-
           (insert (concat (propertize (file-name-nondirectory fname)
                                       'face 'traverse-path-face
                                       'help-echo line-to-print)
@@ -479,7 +478,7 @@ like anything"
       (when (re-search-forward "for ")
         (setq regex
               (buffer-substring (point)
-                          (- (line-end-position) 1)))))
+                                (- (line-end-position) 1)))))
     (save-excursion
       (setq fname (replace-regexp-in-string "\\[" "" fname))
       (setq fname (replace-regexp-in-string "\\]" "" fname))
@@ -509,16 +508,16 @@ like anything"
 
 
 (defun traverse-read-regexp (&rest args)
-    "For compatibility with emacs-22
+  "For compatibility with emacs-22
 Use `read-string' in emacs-22 instead of using `read-regexp'.
 Use the same args as `read-string' or `read-regexp'
 depending of what emacs version you use.
 NOTE:When using `read-string' some regexp (complex)
 may not be displayed correctly to traverselisp"
-    (apply #'funcall (if (fboundp 'read-regexp)
-                         'read-regexp
-                         'read-string)
-           args))
+  (apply #'funcall (if (fboundp 'read-regexp)
+                       'read-regexp
+                       'read-string)
+         args))
 
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
@@ -535,7 +534,7 @@ may not be displayed correctly to traverselisp"
     (if buf-fname
         (traverse-find-in-file buf-fname regexp)
         (traverse-find-in-file (current-buffer) regexp))))
-    
+
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
   "Main function that call walk, if only is omitted it
@@ -598,7 +597,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
       (highlight-regexp regexp) 
       (setq traverse-count-occurences 0)))
   (switch-to-buffer-other-window "*traverse-lisp*"))
-  
+
 
 ;;; Dired functions
 ;;;###autoload
@@ -755,14 +754,14 @@ in compressed archive at point if traverse-use-avfs is non--nil"
             (list (traverse-read-regexp "Regexp: ")
                   (read-string "CheckOnly: "))))))
   (let ((fname (dired-get-filename)))
-     (cond ((traverse-dired-has-marked-files)
-            (traverse-dired-find-in-marked-files regexp))
-           ((file-directory-p fname)
-            (traverse-search-in-dired-dir-at-point regexp only))
-           ((and (file-regular-p fname)
-                 (file-compressed-p fname))
-            (traverse-dired-search-in-archive regexp only)))))
-    
+    (cond ((traverse-dired-has-marked-files)
+           (traverse-dired-find-in-marked-files regexp))
+          ((file-directory-p fname)
+           (traverse-search-in-dired-dir-at-point regexp only))
+          ((and (file-regular-p fname)
+                (file-compressed-p fname))
+           (traverse-dired-search-in-archive regexp only)))))
+
 ;;;; Navigate in traverse
 (defun traverse-go-forward-or-backward (num)
   (other-window -1)
@@ -777,22 +776,22 @@ in compressed archive at point if traverse-use-avfs is non--nil"
 (defun traverse-go-forward (&optional num)
   (interactive "p")
   (traverse-go-forward-or-backward (or num 1)))
-  
+
 (defun traverse-go-backward (&optional num)
   (interactive "p")
   (traverse-go-forward-or-backward (- (or num 1))))
 
 (defun traverse-scroll-down-other-window ()
   (interactive)
-   (when (equal (current-buffer)
+  (when (equal (current-buffer)
                (get-buffer "*traverse-lisp*"))
     (scroll-other-window 1)))
 
 (defun traverse-scroll-up-other-window ()
   (interactive)
-   (when (equal (current-buffer)
+  (when (equal (current-buffer)
                (get-buffer "*traverse-lisp*"))
-  (scroll-other-window -1)))
+    (scroll-other-window -1)))
 
 ;;;; Replace functions
 ;;;###autoload
@@ -877,7 +876,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
               (count 0)
               (regex (when (re-search-forward "for ")
                        (buffer-substring (point)
-                                    (- (line-end-position) 1)))))
+                                         (- (line-end-position) 1)))))
           (unwind-protect
                (progn
                  (setq traverse-show-regexp-delay 0)
