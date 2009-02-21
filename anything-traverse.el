@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: dim fév  8 18:38:27 2009 (+0100)
+;; Last-Updated: sam fév 21 11:54:05 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 13
+;;     Update #: 33
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -86,7 +86,8 @@
 (add-hook 'anything-cleanup-hook #'(lambda ()
                                      (when anything-traverse-occur-overlay
                                        (delete-overlay anything-traverse-occur-overlay)
-                                       (setq anything-traverse-occur-overlay nil))))
+                                       (setq anything-traverse-occur-overlay nil))
+                                     (setq anything-c-traverse-diredp-flag nil)))
                                        
 (add-hook 'anything-after-persistent-action-hook #'(lambda ()
                                                      (when anything-traverse-occur-overlay
@@ -101,11 +102,21 @@ Set it to a hight value if you parse buffer with long lines
 otherwise, nothing will be displayed if occurence matched is
 in the last chars of line")
 (defvar anything-c-traverse-diredp-flag nil)
+(defvar anything-traverse-check-only nil)
 (defvar anything-c-source-traverse-occur
   '((name . "Traverse Occur")
     (init . (lambda ()
               (setq anything-traverse-current-buffer
-                    (current-buffer))))
+                    (current-buffer))
+              (let ((dired-buffer-name (find (rassoc anything-traverse-current-buffer
+                                                             dired-buffers)
+                                                     dired-buffers)))
+                (if dired-buffer-name
+                    (progn
+                      (setq anything-c-traverse-diredp-flag t)
+                      (setq anything-traverse-check-only
+                            (split-string (read-string "SearchOnly(.ext): "))))
+                    (setq anything-c-traverse-diredp-flag nil)))))
     (candidates . (lambda ()
                     (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
                           (dired-buffer-name (find (rassoc anything-traverse-current-buffer
@@ -114,22 +125,25 @@ in the last chars of line")
                       (with-current-buffer anything-traverse-buffer
                         (erase-buffer)
                         (goto-char (point-min))
-                        (if dired-buffer-name
-                            (progn
-                              (setq anything-c-traverse-diredp-flag t)
-                              (dolist (f (traverse-list-directory (car dired-buffer-name) t))
-                                (unless (or (file-directory-p f)
-                                            (member (file-name-extension f t)
-                                                    traverse-ignore-files)
-                                            (member (file-name-nondirectory f)
-                                                    traverse-ignore-files)
-                                            (file-compressed-p f)
-                                            (file-symlink-p f)
-                                            (not (file-regular-p f)))
-                                  (traverse-file-process-ext
-                                   anything-pattern
-                                   f))))
-                            (setq anything-c-traverse-diredp-flag nil)
+                        (if anything-c-traverse-diredp-flag
+                            (dolist (f (traverse-list-directory (car dired-buffer-name) t))
+                              (if anything-traverse-check-only
+                                  (when (member (file-name-extension f t)
+                                                anything-traverse-check-only)
+                                    (traverse-file-process-ext
+                                     anything-pattern
+                                     f))
+                                  (unless (or (file-directory-p f)
+                                              (member (file-name-extension f t)
+                                                      traverse-ignore-files)
+                                              (member (file-name-nondirectory f)
+                                                      traverse-ignore-files)
+                                              (file-compressed-p f)
+                                              (file-symlink-p f)
+                                              (not (file-regular-p f)))
+                                    (traverse-file-process-ext
+                                     anything-pattern
+                                     f))))
                             (traverse-buffer-process-ext
                              anything-pattern
                              anything-traverse-current-buffer

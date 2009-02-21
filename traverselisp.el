@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mer fév 11 19:25:12 2009 (+0100)
+;; Last-Updated: ven fév 13 10:18:16 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 663
+;;     Update #: 664
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -273,7 +273,7 @@ Allow traverse to continue replacing operation")
 If abs is non-nil use absolute path."
   (directory-files dirname abs "[^\\.]"))
 
-(defun* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
+(defsubst* traverse-walk-directory (dirname &key file-fn dir-fn exclude-files exclude-dirs)
   "Walk through dirname and use file-fn and/or dir-fn function on each file found.
 `dirname' ==> we start in this directory
 
