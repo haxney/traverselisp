@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: sam fév 21 11:54:05 2009 (+0100)
+;; Last-Updated: sam fév 21 13:42:02 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 33
+;;     Update #: 34
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -112,10 +112,7 @@ in the last chars of line")
                                                              dired-buffers)
                                                      dired-buffers)))
                 (if dired-buffer-name
-                    (progn
-                      (setq anything-c-traverse-diredp-flag t)
-                      (setq anything-traverse-check-only
-                            (split-string (read-string "SearchOnly(.ext): "))))
+                    (setq anything-c-traverse-diredp-flag t)
                     (setq anything-c-traverse-diredp-flag nil)))))
     (candidates . (lambda ()
                     (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
@@ -207,6 +204,9 @@ If we are in another source just go to next/prec line."
 (defun anything-traverse ()
   "Launch anything with traverse separately"
   (interactive)
+  (when current-prefix-arg
+    (setq anything-traverse-check-only
+          (split-string (read-string "SearchOnly(.ext): "))))
   (anything 'anything-c-source-traverse-occur))
 
 (define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
