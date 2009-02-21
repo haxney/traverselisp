@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: sam fév 21 13:42:02 2009 (+0100)
+;; Last-Updated: sam fév 21 15:21:58 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 34
+;;     Update #: 40
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -19,32 +19,45 @@
 ;; modify it under the terms of the GNU General Public License as
 ;; published by the Free Software Foundation; either version 3, or
 ;; (at your option) any later version.
-;; 
+
 ;; This program is distributed in the hope that it will be useful,
 ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
 ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 ;; General Public License for more details.
-;; 
+
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;;
+;;  ==========
 ;;  This is the source and functions to use traverselisp.el
 ;;  with anything. http://www.emacswiki.org/cgi-bin/wiki/Anything.
-;;  You can find traverselisp.el here:
-;;  http://www.emacswiki.org/cgi-bin/emacs/traverselisp.el
-;;  or here using hg (mercurial):
-;;  hg clone http://freehg.org/u/thiedlecques/traverselisp/
-;; 
+;;
 ;;  You will be able to incremental search any regexp in current buffer
 ;;  or in all files of current dired buffer.
 ;;
 ;;  NOTE: You don't need this file to use traverselisp.el if you don't use
 ;;  Anything.
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;; Install:
+;;  =======
+;; You have first to install anything and traverselisp.
+;; Then put this file somewhere in your load-path and:
+;; (require 'anything-traverse)
+
+;;; Usage:
+;;  =====
+;; If you add `anything-c-source-traverse-occur' to `anything-sources'
+;; you will be able to use traverse from the main anything, but the
+;; variable `anything-traverse-check-only' will not be available:
+;; When searching in a dired buffer the search will be performed on ALL files.
+;; If instead you use `anything-traverse' , a prefix arg will be available:
+;; C-u M-x anything-traverse will give you a prompt for the .ext file to use only.
+;; You can give as many .ext file you want at this prompt separated with a space.
+;; Exemple: SearchOnly(.ext):.el .py .sh 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Code:
 
@@ -87,8 +100,8 @@
                                      (when anything-traverse-occur-overlay
                                        (delete-overlay anything-traverse-occur-overlay)
                                        (setq anything-traverse-occur-overlay nil))
-                                     (setq anything-c-traverse-diredp-flag nil)))
-                                       
+                                     (setq anything-traverse-check-only nil)))
+                                     
 (add-hook 'anything-after-persistent-action-hook #'(lambda ()
                                                      (when anything-traverse-occur-overlay
                                                        (delete-overlay anything-traverse-occur-overlay)
@@ -97,10 +110,7 @@
 
 (defvar anything-c-traverse-func 'traverse-buffer-process-ext)
 (defvar anything-c-traverse-length-line 80
-  "Length of the line displayed in anything buffer.
-Set it to a hight value if you parse buffer with long lines
-otherwise, nothing will be displayed if occurence matched is
-in the last chars of line")
+  "Length of the line displayed in anything buffer.")
 (defvar anything-c-traverse-diredp-flag nil)
 (defvar anything-traverse-check-only nil)
 (defvar anything-c-source-traverse-occur
