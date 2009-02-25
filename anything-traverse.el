@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: mer fév 25 11:25:43 2009 (+0100)
+;; Last-Updated: mer fév 25 19:24:18 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 43
+;;     Update #: 46
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -134,7 +134,8 @@
                         (goto-char (point-min))
                         (if anything-c-traverse-diredp-flag
                             (dolist (f (traverse-list-directory (car dired-buffer-name) t))
-                              (if anything-traverse-check-only
+                              (if (and anything-traverse-check-only
+                                       (not (file-directory-p f)))
                                   (when (traverse-check-only-lists f anything-traverse-check-only)
                                     (traverse-file-process-ext
                                      anything-pattern
