@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: ven fév 13 10:18:16 2009 (+0100)
+;; Last-Updated: mer fév 25 11:16:49 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 664
+;;     Update #: 677
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -117,7 +117,10 @@
 ;; thierry dot volpiatto hat gmail dot com
 ;; You can get the developpement version of the file here with hg:
 ;; hg clone http://freehg.org/u/thiedlecques/traverselisp/
-
+;; For the current developpement branch:
+;; hg update -C 1.1.0
+;; or with DVC ==> C-u C-u M-x xhg-update RET 1.1.0 (or last rev number)
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;; Change log:
@@ -126,7 +129,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.0")
+(defconst traverse-version "1.1.1")
 
 ;;; Code:
 
@@ -172,7 +175,11 @@ Special commands:
     ".pdf" ".dvi"
     ".xbm" ".gpg"
     ".svg" ".rej")
-  "Files we want to ignore (extensions)"
+  "Files we want to ignore.
+Are allowed:(examples)
+- extensions file ==> .ext
+- Plain name ==> TAGS
+- Regexp ==> \".*\\(.py\\)$\""
   :group 'traversedir
   :type '(repeat string))
 
@@ -306,14 +313,28 @@ Look at `traverse-ignore-files' and `traverse-ignore-dirs'
                      (not (file-symlink-p name))) ;; don't follow symlinks
                 (when file-fn
                   (if exclude-files
-                      (unless (or (member (file-name-extension name t) exclude-files)
-                                  (member (file-name-nondirectory name) exclude-files))
+                      (unless (traverse-check-only-lists name exclude-files)
                         (funcall file-fn name))
                       (funcall file-fn name)))))))
     (if (or file-fn dir-fn)
         (walk (expand-file-name dirname))
         (error "Error:you must specify at list one function"))))
 
+
+(defun traverse-comp-str-to-list (str lis)
+  "Compare `str' with all elements of list `lis'.
+elements of list `lis' are regexps."
+  (catch 'break
+    (dolist (i lis)
+      (when (string-match i str)
+        (throw 'break t)))))
+
+(defun traverse-check-only-lists (str lis)
+  "Check if `str' match one element of `lis'."
+  (if (or (member (file-name-extension str t) lis)
+          (traverse-comp-str-to-list str lis))
+      t
+      nil))
 
 (defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
   "Return all the lines of a file or buffer matching `regexp'
@@ -554,7 +575,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
           :file-fn #'(lambda (y)
                        (let ((prefarg (not (null current-prefix-arg))))
                          (if only-list
-                             (when (member (file-name-extension y t) only-list)
+                             (when (traverse-check-only-lists y only-list)
                                (funcall traverse-file-function regexp y prefarg 'file))
                              (funcall traverse-file-function regexp y prefarg 'file)))
                        (message "%s [Matches] for %s in [%s]"
@@ -694,10 +715,7 @@ except compressed files and symlinks"
       (when (and (file-regular-p i)
                  (not (file-symlink-p i))
                  (not (file-compressed-p i))
-                 (not (member (file-name-extension i t)
-                              traverse-ignore-files))
-                 (not (member (file-name-nondirectory i)
-                              traverse-ignore-files)))
+                 (not (traverse-check-only-lists i traverse-ignore-files)))
         (traverse-file-process regexp i prefarg 'file)))
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
