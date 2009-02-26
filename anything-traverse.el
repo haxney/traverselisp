@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: mer fév 25 19:24:18 2009 (+0100)
+;; Last-Updated: jeu fév 26 11:15:59 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 46
+;;     Update #: 56
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -211,11 +211,17 @@ If we are in another source just go to next/prec line."
 (defun anything-traverse ()
   "Launch anything with traverse separately"
   (interactive)
-  (when current-prefix-arg
-    (setq anything-traverse-check-only
-          (split-string (read-string "SearchOnly(.ext): "))))
-  (anything 'anything-c-source-traverse-occur))
-
+  (if current-prefix-arg
+      (progn
+        (setq anything-traverse-check-only
+              (split-string
+               (read-string
+                (propertize "SearchOnly: "
+                            'help-echo "You can use here .ext, regexp, or plain_name separated by spaces"))))
+        (anything 'anything-c-source-traverse-occur))
+      (setq anything-traverse-check-only nil)
+      (anything 'anything-c-source-traverse-occur)))
+  
 (define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
 (define-key anything-map (kbd "M-p") #'(lambda ()
                                          (interactive)
