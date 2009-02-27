@@ -6,9 +6,9 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: jeu fév 26 11:15:59 2009 (+0100)
+;; Last-Updated: ven fév 27 09:53:04 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 56
+;;     Update #: 60
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -54,9 +54,13 @@
 ;; variable `anything-traverse-check-only' will not be available:
 ;; When searching in a dired buffer the search will be performed on ALL files.
 ;; If instead you use `anything-traverse' , a prefix arg will be available:
-;; C-u M-x anything-traverse will give you a prompt for the .ext file to use only.
+;; C-u M-x anything-traverse will give you a prompt for the .ext/or regexp matching only files.
 ;; You can give as many .ext file you want at this prompt separated with a space.
-;; Exemple: SearchOnly(.ext):.el .py .sh 
+;; You can add also regexp to this list or plain_word:
+;; Exemple: SearchOnly:.el .sh$ TAGS .\.py~$
+;; Will search only in .el .sh TAGS and .py~ files.
+;; You can also use `anything-traverse' as `re-builder', when regexp in anything-pattern
+;; satisfy you, you can copy it to kill-ring (select in actions).
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Code:
@@ -113,6 +117,7 @@
   "Length of the line displayed in anything buffer.")
 (defvar anything-c-traverse-diredp-flag nil)
 (defvar anything-traverse-check-only nil)
+(defvar anything-traverse-killed-pattern nil)
 (defvar anything-c-source-traverse-occur
   '((name . "Traverse Occur")
     (init . (lambda ()
@@ -125,6 +130,7 @@
                     (setq anything-c-traverse-diredp-flag t)
                     (setq anything-c-traverse-diredp-flag nil)))))
     (candidates . (lambda ()
+                    (setq anything-traverse-killed-pattern anything-pattern)
                     (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
                           (dired-buffer-name (find (rassoc anything-traverse-current-buffer
                                                            dired-buffers)
@@ -154,7 +160,9 @@
                              :lline anything-c-traverse-length-line))
                         (split-string (buffer-string) "\n")))))
     (action . (("Go to Line" . (lambda (elm)
-                                 (anything-c-traverse-default-action elm)))))
+                                 (anything-c-traverse-default-action elm)))
+               ("Copy regexp" . (lambda (elm)
+                                  (kill-new anything-traverse-killed-pattern)))))
     (persistent-action . (lambda (elm)
                            (anything-c-traverse-default-action elm)
                            (anything-traverse-occur-color-current-line)))
