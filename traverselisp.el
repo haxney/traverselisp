@@ -5,9 +5,9 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: mer fév 25 11:16:49 2009 (+0100)
+;; Last-Updated: jeu mar  5 09:48:35 2009 (+0100)
 ;;           By: thierry
-;;     Update #: 677
+;;     Update #: 682
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
@@ -31,8 +31,8 @@
 ;;; Commentary:
 
 ;; Developped and tested on:
-;; GNU Emacs 23.0.60.1 (i686-pc-linux-gnu, GTK+ Version 2.12.11)
-
+;; GNU Emacs 23.0.91.1 (i686-pc-linux-gnu, GTK+ Version 2.14.7)
+ 
 ;; Install:
 ;; =======
 ;; Put this file in your load-path
@@ -53,6 +53,43 @@
 ;; (define-key dired-mode-map (kbd "C-c C-z") 'traverse-dired-browse-archive)
 ;; (define-key dired-mode-map (kbd "C-c t") 'traverse-dired-find-in-all-files)
 ;; (add-to-list 'traverse-ignore-files ".ledger-cache")
+
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `traverselisp-version'
+;;    Give version number of traverselisp
+;;  `traverse-quit'
+;;    Quit and kill traverse buffer
+;;  `traverse-find-in-file'
+;;    Traverse search regex in a single file
+;;  `traverse-deep-rfind'
+;;    Main function that call walk, if only is omitted it
+;;  `traverse-search-in-dired-dir-at-point'
+;;    Launch `traverse-deep-rfind' from `dired-mode'
+;;  `traverse-dired-browse-archive'
+;;    This function use AVFS and FUSE, so be sure
+;;  `traverse-dired-search-in-archive'
+;;    This function use AVFS and FUSE, so be sure
+;;  `traverse-dired-find-in-marked-files'
+;;    Traverse search regex in marked files
+;;  `traverse-dired-find-in-all-files'
+;;    Traverse search regex in all files of current dired buffer
+;;  `traverse-dired-search-regexp-in-anything-at-point'
+;;    Generic function for dired
+;;  `traverse-search-and-replace'
+;;    Replace regex with `str', replacement is
+;;  `traverse-search-and-replace-all'
+;;    Launch search and replace interactively on all occurences
+;;  `traverse-build-tags-in-project'
+;;    Build an etags file in current project.
+;;  `traverse-toggle-split-window-h-v'
+;;    From traverse buffer toggle split window
+;;  `traverse-count-files-in-dir'
+;;    Count files in `directory' and return a message
+;;  `traverse-pprint-tree'
+;;    PPrint all the content of `tree'.
 
 ;; You can use customize to set some variables : (eval with C-x C-e)
 ;; (customize-group "traversedir")
@@ -129,7 +166,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.1")
+(defconst traverse-version "1.1.2")
 
 ;;; Code:
 
@@ -704,18 +741,22 @@ if no marked files use file at point"
       (setq traverse-count-occurences 0)))
   (switch-to-buffer-other-window "*traverse-lisp*"))
 
-(defun traverse-dired-find-in-all-files (regexp &optional full-path)
+(defun traverse-dired-find-in-all-files (regexp only &optional full-path)
   "Traverse search regex in all files of current dired buffer
 except compressed files and symlinks"
-  (interactive (list (traverse-read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp "Regexp: ")
+                     (read-string "CheckOnly: ")))
   (let ((prefarg (not (null current-prefix-arg)))
-        (all-files (traverse-list-directory (dired-current-directory))))
+        (all-files (traverse-list-directory (dired-current-directory)))
+        (only-list (split-string only)))
     (traverse-prepare-buffer)
     (dolist (i all-files)
       (when (and (file-regular-p i)
                  (not (file-symlink-p i))
                  (not (file-compressed-p i))
-                 (not (traverse-check-only-lists i traverse-ignore-files)))
+                 (if only-list
+                     (traverse-check-only-lists i only-list)
+                     (not (traverse-check-only-lists i traverse-ignore-files))))
         (traverse-file-process regexp i prefarg 'file)))
     (goto-char (point-min))
     (when (re-search-forward "^Wait")
