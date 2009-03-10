@@ -80,6 +80,11 @@
   (overlay-put anything-traverse-occur-overlay
                'face anything-c-traverse-overlay-face))
 
+(defface anything-traverse-overlay-face '((t (:background "IndianRed4" :underline t)))
+  "Face for source header in the anything buffer." :group 'traverse-faces)
+
+(setq anything-c-traverse-overlay-face 'anything-traverse-overlay-face)
+
 (defun anything-c-traverse-buffer-action (elm)
   (let (pos-elm)
     (when (string-match "[0-9]+" elm 0)
@@ -235,10 +240,6 @@ If we are in another source just go to next/prec line."
                                          (interactive)
                                          (anything-traverse-next-or-prec-file -1)))
 
-(defface anything-traverse-overlay-face '((t (:background "IndianRed4" :underline t)))
-  "Face for source header in the anything buffer." :group 'anything)
-
-(setq anything-c-traverse-overlay-face 'anything-traverse-overlay-face)
 
 (provide 'anything-traverse)
 
