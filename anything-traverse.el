@@ -235,10 +235,10 @@ If we are in another source just go to next/prec line."
                                          (interactive)
                                          (anything-traverse-next-or-prec-file -1)))
 
-(defface anything-overlay-face '((t (:background "MediumAquamarine" :underline t)))
+(defface anything-traverse-overlay-face '((t (:background "IndianRed4" :underline t)))
   "Face for source header in the anything buffer." :group 'anything)
 
-(setq anything-c-traverse-overlay-face 'anything-overlay-face)
+(setq anything-c-traverse-overlay-face 'anything-traverse-overlay-face)
 
 (provide 'anything-traverse)
 

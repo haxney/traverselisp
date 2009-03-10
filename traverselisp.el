@@ -90,6 +90,29 @@
 ;;    Count files in `directory' and return a message
 ;;  `traverse-pprint-tree'
 ;;    PPrint all the content of `tree'.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+;;  `traverse-ignore-files'
+;;    Files we want to ignore.
+;;    default = (quote (".elc" ".pyc" ".orig" ".bz2" ".gz" ...))
+;;  `traverse-ignore-dirs'
+;;    Directory we don't want to search in
+;;    default = (quote (".hg" ".svn" "RCS" ".bzr" ".git" ...))
+;;  `traverse-length-line'
+;;    Length of the line displayed
+;;    default = 45
+;;  `traverse-file-function'
+;;    Default function to use to process files
+;;    default = (quote traverse-file-process)
+;;  `traverse-use-avfs'
+;;    Enable support for avfs
+;;    default = nil
+;;  `traverse-avfs-default-directory'
+;;    Default directory for avfs
+;;    default = "~/.avfs"
 
 ;; You can use customize to set some variables : (eval with C-x C-e)
 ;; (customize-group "traversedir")
