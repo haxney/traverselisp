@@ -66,9 +66,43 @@
 ;;; Code:
 
 (require 'traverselisp)
+;;; User variables
+(defvar anything-c-traverse-func 'traverse-buffer-process-ext)
+(defvar anything-c-traverse-length-line 80
+  "Length of the line displayed in anything buffer.")
 
+;;; Internals variables
 (defvar anything-c-traverse-overlay-face nil)
 (defvar anything-traverse-occur-overlay nil)
+(defvar anything-c-traverse-diredp-flag nil)
+(defvar anything-traverse-check-only nil)
+(defvar anything-traverse-killed-pattern nil)
+(defvar anything-c-files-in-current-tree-table (make-hash-table :test 'eq))
+
+;;; Types
+(defface anything-traverse-overlay-face '((t (:background "IndianRed4" :underline t)))
+  "Face for source header in the anything buffer." :group 'traverse-faces)
+(setq anything-c-traverse-overlay-face 'anything-traverse-overlay-face)
+
+;;; Hooks
+(add-hook 'anything-cleanup-hook #'(lambda ()
+                                     (when anything-traverse-occur-overlay
+                                       (delete-overlay anything-traverse-occur-overlay)
+                                       (setq anything-traverse-occur-overlay nil))
+                                     (setq anything-traverse-check-only nil)))
+                                     
+(add-hook 'anything-after-persistent-action-hook #'(lambda ()
+                                                     (when anything-traverse-occur-overlay
+                                                       (delete-overlay anything-traverse-occur-overlay)
+                                                       (anything-traverse-occur-color-current-line))))
+
+;;; Keymap
+(define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
+(define-key anything-map (kbd "M-p") #'(lambda ()
+                                         (interactive)
+                                         (anything-traverse-next-or-prec-file -1)))
+
+;;; Functions
 (defun anything-traverse-occur-color-current-line ()
   "Highlight and underline current position"
   (if (not anything-traverse-occur-overlay)
@@ -79,11 +113,6 @@
                     (line-beginning-position) (1+ (line-end-position))))
   (overlay-put anything-traverse-occur-overlay
                'face anything-c-traverse-overlay-face))
-
-(defface anything-traverse-overlay-face '((t (:background "IndianRed4" :underline t)))
-  "Face for source header in the anything buffer." :group 'traverse-faces)
-
-(setq anything-c-traverse-overlay-face 'anything-traverse-overlay-face)
 
 (defun anything-c-traverse-buffer-action (elm)
   (let (pos-elm)
@@ -105,78 +134,19 @@
       (anything-c-traverse-dir-action elm)
       (anything-c-traverse-buffer-action elm)))
 
-(add-hook 'anything-cleanup-hook #'(lambda ()
-                                     (when anything-traverse-occur-overlay
-                                       (delete-overlay anything-traverse-occur-overlay)
-                                       (setq anything-traverse-occur-overlay nil))
-                                     (setq anything-traverse-check-only nil)))
-                                     
-(add-hook 'anything-after-persistent-action-hook #'(lambda ()
-                                                     (when anything-traverse-occur-overlay
-                                                       (delete-overlay anything-traverse-occur-overlay)
-                                                       (anything-traverse-occur-color-current-line))))
+(defun anything-c-files-in-current-tree-init ()
+  (with-current-buffer (anything-candidate-buffer 'local)
+    (let* ((cur-dir (expand-file-name default-directory))
+           (files-list (gethash (intern cur-dir)
+                               anything-c-files-in-current-tree-table)))
+      (unless files-list
+        (setq files-list
+              (puthash (intern cur-dir)
+                       (traverse-list-files-in-tree cur-dir)
+                       anything-c-files-in-current-tree-table)))
+      (dolist (i files-list)
+        (insert (concat i "\n"))))))
 
-
-(defvar anything-c-traverse-func 'traverse-buffer-process-ext)
-(defvar anything-c-traverse-length-line 80
-  "Length of the line displayed in anything buffer.")
-(defvar anything-c-traverse-diredp-flag nil)
-(defvar anything-traverse-check-only nil)
-(defvar anything-traverse-killed-pattern nil)
-(defvar anything-c-source-traverse-occur
-  '((name . "Traverse Occur")
-    (init . (lambda ()
-              (setq anything-traverse-current-buffer
-                    (current-buffer))
-              (let ((dired-buffer-name (find (rassoc anything-traverse-current-buffer
-                                                             dired-buffers)
-                                                     dired-buffers)))
-                (if dired-buffer-name
-                    (setq anything-c-traverse-diredp-flag t)
-                    (setq anything-c-traverse-diredp-flag nil)))))
-    (candidates . (lambda ()
-                    (setq anything-traverse-killed-pattern anything-pattern)
-                    (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
-                          (dired-buffer-name (find (rassoc anything-traverse-current-buffer
-                                                           dired-buffers)
-                                                   dired-buffers)))
-                      (with-current-buffer anything-traverse-buffer
-                        (erase-buffer)
-                        (goto-char (point-min))
-                        (if anything-c-traverse-diredp-flag
-                            (dolist (f (traverse-list-directory (car dired-buffer-name) t))
-                              (if (and anything-traverse-check-only
-                                       (not (file-directory-p f)))
-                                  (when (traverse-check-only-lists f anything-traverse-check-only)
-                                    (traverse-file-process-ext
-                                     anything-pattern
-                                     f))
-                                  (unless (or (file-directory-p f)
-                                              (traverse-check-only-lists f traverse-ignore-files)
-                                              (file-compressed-p f)
-                                              (file-symlink-p f)
-                                              (not (file-regular-p f)))
-                                    (traverse-file-process-ext
-                                     anything-pattern
-                                     f))))
-                            (traverse-buffer-process-ext
-                             anything-pattern
-                             anything-traverse-current-buffer
-                             :lline anything-c-traverse-length-line))
-                        (split-string (buffer-string) "\n")))))
-    (action . (("Go to Line" . (lambda (elm)
-                                 (anything-c-traverse-default-action elm)))
-               ("Copy regexp" . (lambda (elm)
-                                  (kill-new anything-traverse-killed-pattern)))))
-    (persistent-action . (lambda (elm)
-                           (anything-c-traverse-default-action elm)
-                           (anything-traverse-occur-color-current-line)))
-    (requires-pattern . 3)
-    (get-line . buffer-substring)
-    (volatile)
-    (delayed)))
-
-;; (anything 'anything-c-source-traverse-occur)
 
 (defun* anything-traverse-next-or-prec-file (&optional (n 1))
   "When search is performed in dired buffer on all files
@@ -234,13 +204,72 @@ If we are in another source just go to next/prec line."
         (anything 'anything-c-source-traverse-occur))
       (setq anything-traverse-check-only nil)
       (anything 'anything-c-source-traverse-occur)))
-  
-(define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
-(define-key anything-map (kbd "M-p") #'(lambda ()
-                                         (interactive)
-                                         (anything-traverse-next-or-prec-file -1)))
 
+;;; Sources
+(defvar anything-c-source-traverse-occur
+  '((name . "Traverse Occur")
+    (init . (lambda ()
+              (setq anything-traverse-current-buffer
+                    (current-buffer))
+              (let ((dired-buffer-name (find (rassoc anything-traverse-current-buffer
+                                                             dired-buffers)
+                                                     dired-buffers)))
+                (if dired-buffer-name
+                    (setq anything-c-traverse-diredp-flag t)
+                    (setq anything-c-traverse-diredp-flag nil)))))
+    (candidates . (lambda ()
+                    (setq anything-traverse-killed-pattern anything-pattern)
+                    (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
+                          (dired-buffer-name (find (rassoc anything-traverse-current-buffer
+                                                           dired-buffers)
+                                                   dired-buffers)))
+                      (with-current-buffer anything-traverse-buffer
+                        (erase-buffer)
+                        (goto-char (point-min))
+                        (if anything-c-traverse-diredp-flag
+                            (dolist (f (traverse-list-directory (car dired-buffer-name) t))
+                              (if (and anything-traverse-check-only
+                                       (not (file-directory-p f)))
+                                  (when (traverse-check-only-lists f anything-traverse-check-only)
+                                    (traverse-file-process-ext
+                                     anything-pattern
+                                     f))
+                                  (unless (or (file-directory-p f)
+                                              (traverse-check-only-lists f traverse-ignore-files)
+                                              (file-compressed-p f)
+                                              (file-symlink-p f)
+                                              (not (file-regular-p f)))
+                                    (traverse-file-process-ext
+                                     anything-pattern
+                                     f))))
+                            (traverse-buffer-process-ext
+                             anything-pattern
+                             anything-traverse-current-buffer
+                             :lline anything-c-traverse-length-line))
+                        (split-string (buffer-string) "\n")))))
+    (action . (("Go to Line" . (lambda (elm)
+                                 (anything-c-traverse-default-action elm)))
+               ("Copy regexp" . (lambda (elm)
+                                  (kill-new anything-traverse-killed-pattern)))))
+    (persistent-action . (lambda (elm)
+                           (anything-c-traverse-default-action elm)
+                           (anything-traverse-occur-color-current-line)))
+    (requires-pattern . 3)
+    (get-line . buffer-substring)
+    (volatile)
+    (delayed)))
 
+;; (anything 'anything-c-source-traverse-occur)
+
+(defvar anything-c-source-files-in-current-tree
+  '((name . "Files from Current Tree")
+    (init . anything-c-files-in-current-tree-init)
+    (candidates-in-buffer)
+    (type . file)))
+
+;; (anything 'anything-c-source-files-in-current-tree)
+
+;;; Provide
 (provide 'anything-traverse)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

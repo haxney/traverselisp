@@ -189,7 +189,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.2")
+(defconst traverse-version "1.1.3")
 
 ;;; Code:
 
@@ -1180,7 +1180,7 @@ and the number of files. If `quiet' is non-nil don't send message"
                        ignore-dirs))
     (nreverse list-dirs)))
 
-(defun traverse-list-files-in-tree (tree &optional ignore-files only-ext)
+(defun* traverse-list-files-in-tree (tree &optional ignore-files (ignore-dirs traverse-ignore-dirs) only-ext)
   "Return all files in `tree' without directories.
 `ignore-files' is a list of files(and/or).ext to ignore.
 `only-ext' will match only files with .ext.
@@ -1197,7 +1197,8 @@ will take precedence on `ignore-files'."
                       (push x list-files)))
      :exclude-files (unless only-ext
                       (if ignore-files
-                          ignore-files)))
+                          ignore-files))
+     :exclude-dirs ignore-dirs)
     (nreverse list-files)))
 
 (defun traverse-apply-func-on-files (tree fn &optional ext)
