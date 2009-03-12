@@ -205,6 +205,10 @@ If we are in another source just go to next/prec line."
       (setq anything-traverse-check-only nil)
       (anything 'anything-c-source-traverse-occur)))
 
+(defun anything-files-in-current-tree ()
+  (interactive)
+  (anything 'anything-c-source-files-in-current-tree))
+
 ;;; Sources
 (defvar anything-c-source-traverse-occur
   '((name . "Traverse Occur")
