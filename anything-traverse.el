@@ -209,6 +209,38 @@ If we are in another source just go to next/prec line."
   (interactive)
   (anything 'anything-c-source-files-in-current-tree))
 
+
+(defun anything-traverse-init-search ()
+  "Main function that proceed search in current-buffer.
+If current-buffer is a dired buffer search is performed on all files."
+  (setq anything-traverse-killed-pattern anything-pattern)
+  (let ((buf (get-buffer-create "*Anything traverse*"))
+        (anything-traverse-buffer (anything-candidate-buffer 'buf))
+        (dired-buffer-name (find (rassoc anything-traverse-current-buffer
+                                         dired-buffers)
+                                 dired-buffers)))
+    (with-current-buffer anything-traverse-buffer
+      (if anything-c-traverse-diredp-flag
+          (dolist (f (traverse-list-directory (car dired-buffer-name) t))
+            (if (and anything-traverse-check-only
+                     (not (file-directory-p f)))
+                (when (traverse-check-only-lists f anything-traverse-check-only)
+                  (traverse-file-process-ext
+                   anything-pattern
+                   f))
+                (unless (or (file-directory-p f)
+                            (traverse-check-only-lists f traverse-ignore-files)
+                            (file-compressed-p f)
+                            (file-symlink-p f)
+                            (not (file-regular-p f)))
+                  (traverse-file-process-ext
+                   anything-pattern
+                   f))))
+          (traverse-buffer-process-ext
+           anything-pattern
+           anything-traverse-current-buffer
+           :lline anything-c-traverse-length-line)))))
+
 ;;; Sources
 (defvar anything-c-source-traverse-occur
   '((name . "Traverse Occur")
@@ -220,37 +252,9 @@ If we are in another source just go to next/prec line."
                                                      dired-buffers)))
                 (if dired-buffer-name
                     (setq anything-c-traverse-diredp-flag t)
-                    (setq anything-c-traverse-diredp-flag nil)))))
-    (candidates . (lambda ()
-                    (setq anything-traverse-killed-pattern anything-pattern)
-                    (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
-                          (dired-buffer-name (find (rassoc anything-traverse-current-buffer
-                                                           dired-buffers)
-                                                   dired-buffers)))
-                      (with-current-buffer anything-traverse-buffer
-                        (erase-buffer)
-                        (goto-char (point-min))
-                        (if anything-c-traverse-diredp-flag
-                            (dolist (f (traverse-list-directory (car dired-buffer-name) t))
-                              (if (and anything-traverse-check-only
-                                       (not (file-directory-p f)))
-                                  (when (traverse-check-only-lists f anything-traverse-check-only)
-                                    (traverse-file-process-ext
-                                     anything-pattern
-                                     f))
-                                  (unless (or (file-directory-p f)
-                                              (traverse-check-only-lists f traverse-ignore-files)
-                                              (file-compressed-p f)
-                                              (file-symlink-p f)
-                                              (not (file-regular-p f)))
-                                    (traverse-file-process-ext
-                                     anything-pattern
-                                     f))))
-                            (traverse-buffer-process-ext
-                             anything-pattern
-                             anything-traverse-current-buffer
-                             :lline anything-c-traverse-length-line))
-                        (split-string (buffer-string) "\n")))))
+                    (setq anything-c-traverse-diredp-flag nil)))
+              (anything-traverse-init-search)))
+    (candidates-in-buffer)
     (action . (("Go to Line" . (lambda (elm)
                                  (anything-c-traverse-default-action elm)))
                ("Copy regexp" . (lambda (elm)

@@ -459,11 +459,6 @@ like anything"
         (let ((line-to-print (if traverse-keep-indent
                                  (second i)
                                  (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
-          (when (string-match regex line-to-print)
-            (add-text-properties
-             (match-beginning 0) (match-end 0)
-             '(face traverse-regex-face)
-             line-to-print))
           (insert (concat (propertize (file-name-nondirectory fname)
                                       'face 'traverse-path-face
                                       'help-echo line-to-print)
@@ -491,11 +486,6 @@ like anything"
                                                                "\\(^\t*\\)"
                                                                "\\(^ *\\)")
                                                            "" (second i)))))
-          (when (string-match regex line-to-print)
-            (add-text-properties
-             (match-beginning 0) (match-end 0)
-             '(face traverse-regex-face)
-             line-to-print))
           (insert (concat " "
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face
