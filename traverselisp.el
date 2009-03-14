@@ -5,10 +5,6 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; Last-Updated: jeu mar  5 09:48:35 2009 (+0100)
-;;           By: thierry
-;;     Update #: 682
-
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 
 ;; This file is not part of GNU Emacs.
@@ -189,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.3")
+(defconst traverse-version "1.1.4")
 
 ;;; Code:
 

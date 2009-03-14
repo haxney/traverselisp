@@ -214,12 +214,13 @@ If we are in another source just go to next/prec line."
   "Main function that proceed search in current-buffer.
 If current-buffer is a dired buffer search is performed on all files."
   (setq anything-traverse-killed-pattern anything-pattern)
-  (let ((buf (get-buffer-create "*Anything traverse*"))
-        (anything-traverse-buffer (anything-candidate-buffer 'buf))
+  (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
         (dired-buffer-name (find (rassoc anything-traverse-current-buffer
                                          dired-buffers)
                                  dired-buffers)))
     (with-current-buffer anything-traverse-buffer
+      (erase-buffer)
+      (goto-char (point-min))
       (if anything-c-traverse-diredp-flag
           (dolist (f (traverse-list-directory (car dired-buffer-name) t))
             (if (and anything-traverse-check-only
@@ -239,7 +240,8 @@ If current-buffer is a dired buffer search is performed on all files."
           (traverse-buffer-process-ext
            anything-pattern
            anything-traverse-current-buffer
-           :lline anything-c-traverse-length-line)))))
+           :lline anything-c-traverse-length-line))
+      (split-string (buffer-string) "\n"))))
 
 ;;; Sources
 (defvar anything-c-source-traverse-occur
@@ -252,9 +254,8 @@ If current-buffer is a dired buffer search is performed on all files."
                                                      dired-buffers)))
                 (if dired-buffer-name
                     (setq anything-c-traverse-diredp-flag t)
-                    (setq anything-c-traverse-diredp-flag nil)))
-              (anything-traverse-init-search)))
-    (candidates-in-buffer)
+                    (setq anything-c-traverse-diredp-flag nil)))))
+    (candidates . anything-traverse-init-search)
     (action . (("Go to Line" . (lambda (elm)
                                  (anything-c-traverse-default-action elm)))
                ("Copy regexp" . (lambda (elm)
@@ -262,7 +263,7 @@ If current-buffer is a dired buffer search is performed on all files."
     (persistent-action . (lambda (elm)
                            (anything-c-traverse-default-action elm)
                            (anything-traverse-occur-color-current-line)))
-    (requires-pattern . 3)
+    (requires-pattern . 2)
     (get-line . buffer-substring)
     (volatile)
     (delayed)))
