@@ -147,7 +147,6 @@
       (dolist (i files-list)
         (insert (concat i "\n"))))))
 
-
 (defun* anything-traverse-next-or-prec-file (&optional (n 1))
   "When search is performed in dired buffer on all files
 this allow to switch from one file to the other.
@@ -206,8 +205,14 @@ If we are in another source just go to next/prec line."
       (anything 'anything-c-source-traverse-occur)))
 
 (defun anything-files-in-current-tree ()
+  "Show files in current tree.
+with prefix arg refresh data base."
   (interactive)
-  (anything 'anything-c-source-files-in-current-tree))
+  (if current-prefix-arg
+      (progn
+        (remhash (intern default-directory) anything-c-files-in-current-tree-table)
+        (anything 'anything-c-source-files-in-current-tree))
+      (anything 'anything-c-source-files-in-current-tree)))
 
 
 (defun anything-traverse-init-search ()
@@ -270,6 +275,7 @@ If current-buffer is a dired buffer search is performed on all files."
 
 ;; (anything 'anything-c-source-traverse-occur)
 
+;; (find-epp anything-type-attributes)
 (defvar anything-c-source-files-in-current-tree
   '((name . "Files from Current Tree")
     (init . anything-c-files-in-current-tree-init)
