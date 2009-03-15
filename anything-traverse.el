@@ -208,11 +208,12 @@ If we are in another source just go to next/prec line."
   "Show files in current tree.
 with prefix arg refresh data base."
   (interactive)
-  (if current-prefix-arg
-      (progn
-        (remhash (intern default-directory) anything-c-files-in-current-tree-table)
-        (anything 'anything-c-source-files-in-current-tree))
-      (anything 'anything-c-source-files-in-current-tree)))
+  (let ((cur-tree (expand-file-name default-directory)))
+    (if current-prefix-arg
+        (progn
+          (remhash (intern cur-tree) anything-c-files-in-current-tree-table)
+          (anything 'anything-c-source-files-in-current-tree))
+        (anything 'anything-c-source-files-in-current-tree))))
 
 
 (defun anything-traverse-init-search ()
