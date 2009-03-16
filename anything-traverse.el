@@ -191,7 +191,7 @@ If we are in another source just go to next/prec line."
               (anything-previous-line)))))
 
 (defun anything-traverse ()
-  "Launch anything with traverse separately"
+  "Launch anything with traverse separately."
   (interactive)
   (if current-prefix-arg
       (progn
@@ -203,6 +203,12 @@ If we are in another source just go to next/prec line."
         (anything 'anything-c-source-traverse-occur))
       (setq anything-traverse-check-only nil)
       (anything 'anything-c-source-traverse-occur)))
+
+(defun anything-traverse-at-point ()
+  "Launch anything-traverse with `thing-at-point' as input."
+  (interactive)
+  (let ((input (thing-at-point 'sexp)))
+    (anything 'anything-c-source-traverse-occur input)))
 
 (defun anything-files-in-current-tree ()
   "Show files in current tree.
