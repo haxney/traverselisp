@@ -135,18 +135,22 @@
       (anything-c-traverse-dir-action elm)
       (anything-c-traverse-buffer-action elm)))
 
+(defun anything-c-files-in-current-tree-create-db ()
+  (let* ((cur-dir (expand-file-name default-directory))
+         (files-list (gethash (intern cur-dir)
+                              anything-c-files-in-current-tree-table)))
+    (unless files-list
+      (setq files-list
+            (puthash (intern cur-dir)
+                     (traverse-list-files-in-tree
+                      cur-dir
+                      anything-c-files-in-current-tree-ignore-files)
+                     anything-c-files-in-current-tree-table)))
+    files-list))
+
 (defun anything-c-files-in-current-tree-init ()
   (with-current-buffer (anything-candidate-buffer 'local)
-    (let* ((cur-dir (expand-file-name default-directory))
-           (files-list (gethash (intern cur-dir)
-                               anything-c-files-in-current-tree-table)))
-      (unless files-list
-        (setq files-list
-              (puthash (intern cur-dir)
-                       (traverse-list-files-in-tree
-                        cur-dir
-                        anything-c-files-in-current-tree-ignore-files)
-                       anything-c-files-in-current-tree-table)))
+    (let ((files-list (anything-c-files-in-current-tree-create-db)))
       (dolist (i files-list)
         (insert (concat i "\n"))))))
 
