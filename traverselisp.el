@@ -185,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.4")
+(defconst traverse-version "1.1.5")
 
 ;;; Code:
 
@@ -244,7 +244,7 @@ Are allowed:(examples)
     "RCS" ".bzr"
     ".git" ".VirtualBox"
     ".arch-ids" "CVS"
-    "{arch}")
+    "{arch}" "knits")
   "Directory we don't want to search in"
   :group 'traversedir
   :type '(repeat string))

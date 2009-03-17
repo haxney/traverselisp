@@ -70,6 +70,7 @@
 (defvar anything-c-traverse-func 'traverse-buffer-process-ext)
 (defvar anything-c-traverse-length-line 80
   "Length of the line displayed in anything buffer.")
+(defvar anything-c-files-in-current-tree-ignore-files traverse-ignore-files)
 
 ;;; Internals variables
 (defvar anything-c-traverse-overlay-face nil)
@@ -142,7 +143,9 @@
       (unless files-list
         (setq files-list
               (puthash (intern cur-dir)
-                       (traverse-list-files-in-tree cur-dir)
+                       (traverse-list-files-in-tree
+                        cur-dir
+                        anything-c-files-in-current-tree-ignore-files)
                        anything-c-files-in-current-tree-table)))
       (dolist (i files-list)
         (insert (concat i "\n"))))))
