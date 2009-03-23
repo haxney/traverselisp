@@ -214,7 +214,7 @@ If we are in another source just go to next/prec line."
 (defun anything-traverse-at-point ()
   "Launch anything-traverse with `thing-at-point' as input."
   (interactive)
-  (let ((input (thing-at-point 'sexp)))
+  (let ((input (thing-at-point 'symbol)))
     (anything 'anything-c-source-traverse-occur input)))
 
 (defun anything-files-in-current-tree ()
