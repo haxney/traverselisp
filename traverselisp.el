@@ -185,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.5")
+(defconst traverse-version "1.1.6")
 
 ;;; Code:
 
@@ -227,14 +227,15 @@ Special commands:
     ".pbm" ".gif"
     ".xls" ".ppt"
     ".mdb" ".adp"
-    "TAGS" ".tiff"
+    "\\<\\(TAGS\\)\\>"
+    ".tiff" ".img"
     ".pdf" ".dvi"
     ".xbm" ".gpg"
     ".svg" ".rej")
   "Files we want to ignore.
 Are allowed:(examples)
 - extensions file ==> .ext
-- Plain name ==> TAGS
+- Plain name ==> TAGS ; note regexps take precedence on plain names.
 - Regexp ==> \".*\\(.py\\)$\""
   :group 'traversedir
   :type '(repeat string))
@@ -1169,7 +1170,7 @@ and the number of files. If `quiet' is non-nil don't send message"
 (defun* traverse-list-files-in-tree (tree &optional ignore-files (ignore-dirs traverse-ignore-dirs) only-ext)
   "Return all files in `tree' without directories.
 `ignore-files' is a list of files(and/or).ext to ignore.
-`only-ext' will match only files with .ext.
+`only-ext' will match only files with .ext or matching regexp that are in this list.
 NOTE: if both `ignore-files' and `only-ext' are set, `only-ext'
 will take precedence on `ignore-files'."
   (let (list-files)
@@ -1177,8 +1178,7 @@ will take precedence on `ignore-files'."
      tree
      :file-fn #'(lambda (x)
                   (if only-ext
-                      (if (equal (file-name-extension x t)
-                                 only-ext)
+                      (if (traverse-check-only-lists x only-ext)
                           (push x list-files))
                       (push x list-files)))
      :exclude-files (unless only-ext
