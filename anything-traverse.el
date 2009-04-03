@@ -98,8 +98,8 @@
                                                        (anything-traverse-occur-color-current-line))))
 
 ;;; Keymap
-(define-key anything-map (kbd "M-n") #'anything-traverse-next-or-prec-file)
-(define-key anything-map (kbd "M-p") #'(lambda ()
+(define-key anything-map (kbd "M-<down>") #'anything-traverse-next-or-prec-file)
+(define-key anything-map (kbd "M-<up>") #'(lambda ()
                                          (interactive)
                                          (anything-traverse-next-or-prec-file -1)))
 
