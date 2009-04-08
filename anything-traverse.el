@@ -68,6 +68,7 @@
 (defvar anything-c-traverse-length-line 80
   "Length of the line displayed in anything buffer.")
 (defvar anything-c-files-in-current-tree-ignore-files traverse-ignore-files)
+(defvar anything-c-traverse-ignore-files traverse-ignore-files)
 
 ;;; Internals variables
 (defvar anything-c-traverse-overlay-face nil)
@@ -250,7 +251,7 @@ If current-buffer is a dired buffer search is performed on all files."
                      anything-pattern
                      f))
                   (unless (or (file-directory-p f)
-                              (traverse-check-only-lists f traverse-ignore-files)
+                              (traverse-check-only-lists f anything-c-traverse-ignore-files)
                               (file-compressed-p f)
                               (file-symlink-p f)
                               (not (file-regular-p f)))
