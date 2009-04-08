@@ -185,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.6")
+(defconst traverse-version "1.1.7")
 
 ;;; Code:
 
@@ -393,7 +393,7 @@ elements of list `lis' are regexps."
       t
       nil))
 
-(defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
+(defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file) (stop-at-first nil))
   "Return all the lines of a file or buffer matching `regexp'
 with the number of line in a list where each element is a list of the form:
 \\(\"number_of_line\" \"line\")"
@@ -408,9 +408,12 @@ with the number of line in a list where each element is a list of the form:
       (let ((lines-list (split-string (buffer-string) "\n")))
         (dolist (i lines-list)
           (when (string-match regexp i)
-            (push (list (position i lines-list)
-                        (replace-regexp-in-string "\n" "" i))
-                  matched-elm)))))
+            (if stop-at-first
+                (return-from traverse-find-readlines (cons (position i lines-list)
+                                                           bfile))
+                (push (list (position i lines-list)
+                            (replace-regexp-in-string "\n" "" i))
+                      matched-elm))))))
     (nreverse matched-elm)))
 
 
@@ -784,14 +787,23 @@ except compressed files and symlinks"
       (setq traverse-count-occurences 0)))
   (switch-to-buffer-other-window "*traverse-lisp*"))
 
-(defun traverse-dired-get-marked-files ()
+(defun traverse-dired-get-marked-files (&optional strict)
   "Get a list of all marked files for traverse"
-  (let ((fname-list nil))
-    (dolist (i (dired-get-marked-files))
+  (let* ((fname-list nil)
+         (all-marked (dired-get-marked-files nil nil nil t))
+         (dir-marked-list (if strict
+                              (if (symbolp (car all-marked))
+                                  (cdr all-marked)
+                                  (when (> (length all-marked) 1)
+                                    all-marked))
+                              (if (symbolp (car all-marked))
+                                  (cdr all-marked)
+                                  all-marked))))
+    (dolist (i dir-marked-list)
       (when (and (not (file-directory-p i))
                  (not (file-compressed-p i)))
         (push i fname-list)))
-    fname-list))
+    (nreverse fname-list)))
 
 (defun traverse-dired-has-marked-files ()
   "Check if dired has marked files for traverse:

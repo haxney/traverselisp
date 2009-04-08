@@ -6,9 +6,6 @@
 ;; Maintainer: thierry volpiatto
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
-;; Last-Updated: ven fév 27 09:53:04 2009 (+0100)
-;;           By: thierry
-;;     Update #: 60
 
 ;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
 ;; Keywords: data, regexp
@@ -228,7 +225,7 @@ with prefix arg refresh data base."
           (anything 'anything-c-source-files-in-current-tree))
         (anything 'anything-c-source-files-in-current-tree))))
 
-
+;; (find-fline "~/labo/traverse-qpatch-current/traverselisp.el" "traverse-dired-get-marked-files")
 (defun anything-traverse-init-search ()
   "Main function that proceed search in current-buffer.
 If current-buffer is a dired buffer search is performed on all files."
@@ -241,21 +238,25 @@ If current-buffer is a dired buffer search is performed on all files."
       (erase-buffer)
       (goto-char (point-min))
       (if anything-c-traverse-diredp-flag
-          (dolist (f (traverse-list-directory (car dired-buffer-name) t))
-            (if (and anything-traverse-check-only
-                     (not (file-directory-p f)))
-                (when (traverse-check-only-lists f anything-traverse-check-only)
-                  (traverse-file-process-ext
-                   anything-pattern
-                   f))
-                (unless (or (file-directory-p f)
-                            (traverse-check-only-lists f traverse-ignore-files)
-                            (file-compressed-p f)
-                            (file-symlink-p f)
-                            (not (file-regular-p f)))
-                  (traverse-file-process-ext
-                   anything-pattern
-                   f))))
+          (let* ((marked-list (with-current-buffer anything-traverse-current-buffer
+                                (traverse-dired-get-marked-files t)))
+                 (dir-list (or marked-list
+                               (traverse-list-directory (car dired-buffer-name) t))))
+            (dolist (f dir-list)
+              (if (and anything-traverse-check-only
+                       (not (file-directory-p f)))
+                  (when (traverse-check-only-lists f anything-traverse-check-only)
+                    (traverse-file-process-ext
+                     anything-pattern
+                     f))
+                  (unless (or (file-directory-p f)
+                              (traverse-check-only-lists f traverse-ignore-files)
+                              (file-compressed-p f)
+                              (file-symlink-p f)
+                              (not (file-regular-p f)))
+                    (traverse-file-process-ext
+                     anything-pattern
+                     f)))))
           (traverse-buffer-process-ext
            anything-pattern
            anything-traverse-current-buffer
