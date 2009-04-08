@@ -185,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.7")
+(defconst traverse-version "1.1.8")
 
 ;;; Code:
 
@@ -217,21 +217,21 @@ Special commands:
   :group 'text)
 
 (defcustom traverse-ignore-files
-  '(".elc" ".pyc"
-    ".orig" ".bz2"
-    ".gz" ".zip"
-    ".vdi" ".doc"
-    ".jpg" ".avi"
-    ".jpeg" ".png"
-    ".xpm" ".jar"
-    ".pbm" ".gif"
-    ".xls" ".ppt"
-    ".mdb" ".adp"
+  '(".elc$" ".pyc$"
+    ".orig$" ".bz2$"
+    ".gz$" ".zip$"
+    ".vdi$" ".doc$"
+    ".jpg$" ".avi$"
+    ".jpeg$" ".png$"
+    ".xpm$" ".jar$"
+    ".pbm$" ".gif$"
+    ".xls$" ".ppt$"
+    ".mdb$" ".adp$"
     "\\<\\(TAGS\\)\\>"
-    ".tiff" ".img"
-    ".pdf" ".dvi"
-    ".xbm" ".gpg"
-    ".svg" ".rej")
+    ".tiff$" ".img$"
+    ".pdf$" ".dvi$"
+    ".xbm$" ".gpg$"
+    ".svg$" ".rej$")
   "Files we want to ignore.
 Are allowed:(examples)
 - extensions file ==> .ext
