@@ -5,7 +5,7 @@
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data
 
-;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
+;; X-URL: http://mercurial.intuxication.org/hg/traverselisp
 
 ;; This file is not part of GNU Emacs.
 
@@ -172,7 +172,7 @@
 ;; =======
 ;; thierry dot volpiatto hat gmail dot com
 ;; You can get the developpement version of the file here with hg:
-;; hg clone http://freehg.org/u/thiedlecques/traverselisp/
+;; hg clone http://mercurial.intuxication.org/hg/traverselisp
 ;; For the current developpement branch:
 ;; hg update -C 1.1.0
 ;; or with DVC ==> C-u C-u M-x xhg-update RET 1.1.0 (or last rev number)
