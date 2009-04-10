@@ -62,13 +62,22 @@
 
 ;;; Code:
 
+(eval-when-compile (require 'cl))
 (require 'traverselisp)
+
 ;;; User variables
-(defvar anything-c-traverse-func 'traverse-buffer-process-ext)
+(defvar anything-c-traverse-func 'traverse-buffer-process-ext
+  "See `traverse-buffer-process-ext' in traverselisp.el.")
 (defvar anything-c-traverse-length-line 80
   "Length of the line displayed in anything buffer.")
-(defvar anything-c-files-in-current-tree-ignore-files traverse-ignore-files)
-(defvar anything-c-traverse-ignore-files traverse-ignore-files)
+(defvar anything-c-files-in-current-tree-ignore-files traverse-ignore-files
+  "See `traverse-ignore-files' in traverselisp.el.")
+(defvar anything-c-traverse-ignore-files traverse-ignore-files
+  "See `traverse-ignore-files' in traverselisp.el.")
+(defvar anything-c-traverse-fontify-buffer nil
+  "Fontify buffer before starting a search in a buffer.
+This have no effect on searching in files from dired.
+This can SLOW down search when non--nil.")
 
 ;;; Internals variables
 (defvar anything-c-traverse-overlay-face nil)
@@ -258,6 +267,9 @@ If current-buffer is a dired buffer search is performed on all files."
                     (traverse-file-process-ext
                      anything-pattern
                      f)))))
+          (when anything-c-traverse-fontify-buffer
+            (with-current-buffer anything-traverse-current-buffer
+              (font-lock-fontify-region (point-min) (point-max))))
           (traverse-buffer-process-ext
            anything-pattern
            anything-traverse-current-buffer
