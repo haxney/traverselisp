@@ -185,7 +185,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.8")
+(defconst traverse-version "1.1.9")
 
 ;;; Code:
 
@@ -206,13 +206,13 @@
   "Keymap used for traversedir commands.")
 
 (define-derived-mode traversedir-mode text-mode "traversedir"
-                     "Major mode to search regexp in files recursively.
+                     "Major mode to recurse in a tree and perform diverses actions on files.
 
 Special commands:
 \\{traversedir-mode-map}")
 
 (defgroup traversedir nil
-  "Mode to search recursively regex like grep-find"
+  "Mode that allow walking through directories and perform diverses actions on files."
   :prefix "traversedir-"
   :group 'text)
 
@@ -246,31 +246,31 @@ Are allowed:(examples)
     ".git" ".VirtualBox"
     ".arch-ids" "CVS"
     "{arch}" "knits")
-  "Directory we don't want to search in"
+  "Directories we don't want to search in."
   :group 'traversedir
   :type '(repeat string))
 
 (defcustom traverse-length-line
   45
-  "Length of the line displayed"
+  "Length of the line displayed in traverse buffers."
   :group 'traversedir
   :type 'integer)
 
 (defcustom traverse-file-function
   'traverse-file-process
-  "Default function to use to process files"
+  "Default function to use to process files."
   :group 'traversedir
   :type 'symbol)
 
 (defcustom traverse-use-avfs
   nil
-  "Enable support for avfs"
+  "Enable support for avfs."
   :group 'traversedir
   :type 'boolean)
 
 (defcustom traverse-avfs-default-directory
   "~/.avfs"
-  "Default directory for avfs"
+  "Default directory for avfs."
   :group 'traversedir
   :type 'string)
 
@@ -295,36 +295,36 @@ Are allowed:(examples)
 
 ;;; User's variable (you can set these variables)
 (defvar traverse-match-overlay-face 'traverse-overlay-face
-  "Use the default traverse face for overlay")
+  "Use the default traverse face for overlay.")
 (defvar traverse-show-regexp-delay 1
-  "Delay in seconds where regexp found is highlighted")
+  "Delay in seconds where regexp found is highlighted.")
 (defvar traverse-keep-indent nil
-  "Keep indentation in traverse buffer if non nil")
+  "Keep indentation in traverse buffer if non nil.")
 (defvar traverse-occur-use-miniwindow nil
-  "Use a side miniwindow to display results")
+  "Use a side miniwindow to display results.")
 (defvar traverse-miniwindow-width 30
-  "If nil split window equally")
+  "If nil split window equally.")
 
 ;;; Internal use only (DON'T modify)
 (defvar traverse-count-occurences 0
-  "Simple variable to store the number of occurence found")
+  "Simple variable to store the number of occurence found.")
 (defvar traverse-occur-overlay nil)
 (defvar traverse-last-regexp nil
-  "Used in `traverse-search-and-replace'
-remember the regexp used in last search")
+  "Used in `traverse-search-and-replace'.
+remember the regexp used in last search.")
 (defvar traverse-replace-auth nil
-  "Used in `traverse-search-and-replace'
-Allow traverse to continue replacing operation")
+  "Used in `traverse-search-and-replace'.
+Allow traverse to continue replacing operation.")
 
 (defun traverselisp-version ()
-  "Give version number of traverselisp"
+  "Give version number of traverselisp."
   (interactive)
   (message "traverse-lisp-version-%s" traverse-version))
 
 ;;; Main backend functions
 
 (defun traverse-quit ()
-  "Quit and kill traverse buffer"
+  "Quit and kill traverse buffer."
   (interactive)
   (when traverse-occur-overlay
     (delete-overlay traverse-occur-overlay))
@@ -394,7 +394,7 @@ elements of list `lis' are regexps."
       nil))
 
 (defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file) (stop-at-first nil))
-  "Return all the lines of a file or buffer matching `regexp'
+  "Return all the lines of a file or buffer matching `regexp'.
 with the number of line in a list where each element is a list of the form:
 \\(\"number_of_line\" \"line\")"
   (let* ((matched-elm)
@@ -418,8 +418,7 @@ with the number of line in a list where each element is a list of the form:
 
 
 (defun traverse-file-process (regex fname &optional full-path insert-fn)
-  "Default function to process files  and insert matched lines
-in *traverse-lisp* buffer"
+  "Default function to process files and insert matched lines in *traverse-lisp* buffer."
   (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
@@ -451,8 +450,7 @@ in *traverse-lisp* buffer"
                                        (length matched-lines)))))
 
 (defun traverse-file-process-ext (regex fname &optional insert-fn)
-  "Function to process files in external program
-like anything"
+  "Function to process files in external program like anything."
   (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
@@ -475,8 +473,7 @@ like anything"
                           "\n")))))))
 
 (defun* traverse-buffer-process-ext (regex buffer &key (lline traverse-length-line))
-  "Function to process buffer in external program
-like anything"
+  "Function to process buffer in external program like anything."
   (let ((matched-lines (traverse-find-readlines buffer regex :insert-fn 'buffer)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
@@ -501,7 +498,7 @@ like anything"
 
 ;;;###autoload
 (defun traverse-find-in-file (fname regexp &optional full-path)
-  "Traverse search regex in a single file"
+  "Traverse search regex in a single file."
   (interactive (list (read-file-name "FileName: ")
                      (traverse-read-regexp "Regexp: ")))
   (traverse-prepare-buffer)
@@ -528,7 +525,7 @@ like anything"
   (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-occur-color-current-line ()
-  "Highlight and underline current position"
+  "Highlight and underline current position."
   (if (not traverse-occur-overlay)
       (setq traverse-occur-overlay
             (make-overlay
@@ -539,7 +536,7 @@ like anything"
                'face traverse-match-overlay-face))
 
 (defun traverse-button-func (button)
-  "The function called by buttons in traverse buffer"
+  "The function called by buttons in traverse buffers."
   (let* ((list-line (split-string (thing-at-point 'line)))
          (nline (nth 1 list-line))
          (regex)
@@ -565,7 +562,7 @@ like anything"
 
 
 (defun traverse-prepare-buffer ()
-  "Prepare traverse buffer"
+  "Prepare a traverse buffer."
   (set-buffer (get-buffer-create "*traverse-lisp*"))
   (erase-buffer)
   (hi-lock-mode 1)
@@ -579,7 +576,7 @@ like anything"
 
 
 (defun traverse-read-regexp (&rest args)
-  "For compatibility with emacs-22
+  "For compatibility with emacs-22.
 Use `read-string' in emacs-22 instead of using `read-regexp'.
 Use the same args as `read-string' or `read-regexp'
 depending of what emacs version you use.
@@ -592,6 +589,7 @@ may not be displayed correctly to traverselisp"
 
 ;;;###autoload
 (defun traverse-occur-current-buffer (regexp)
+  "Search regexp in current buffer."
   (interactive (list
                 (traverse-read-regexp "Regexp: ")))
   (let ((buf-fname (buffer-file-name (current-buffer))))
@@ -608,7 +606,8 @@ may not be displayed correctly to traverselisp"
 
 ;;;###autoload
 (defun traverse-deep-rfind (tree regexp &optional only)
-  "Main function that call walk, if only is omitted it
+  "Search for regexp in all files of dirs and subdirs of current tree.
+Main function that call walk, if only is omitted it
 will be set as nil and search will be proceeded on all files
 except on files that are in `traverse-ignore-files'
 Called with prefix-argument (C-u) absolute path is displayed"
@@ -673,7 +672,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 ;;; Dired functions
 ;;;###autoload
 (defun traverse-search-in-dired-dir-at-point (regex &optional only)
-  "Launch `traverse-deep-rfind' from `dired-mode'"
+  "Search for regexp in all files of directory at point in a dired buffer."
   (interactive (list (traverse-read-regexp "Regexp: ")
                      (read-string "CheckOnly: ")))
   (if (eq major-mode 'dired-mode)
@@ -685,6 +684,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 
 ;;;###autoload
 (defun traverse-search-in-dired-file-at-point (regex)
+  "Search for regexp in file at point in a dired buffer."
   (interactive (list (traverse-read-regexp "Regexp: ")))
   (if (eq major-mode 'dired-mode)
       (let ((fname (dired-get-filename)))
@@ -695,8 +695,9 @@ Called with prefix-argument (C-u) absolute path is displayed"
 
 ;;;###autoload
 (defun traverse-dired-browse-archive ()
-  "This function use AVFS and FUSE, so be sure
-to have these programs and modules installed on your system"
+  "Open compressed archive at point in a dired buffer.
+This function use AVFS and FUSE, so be sure
+to have these programs and modules installed on your system."
   (interactive)
   (when traverse-use-avfs
     (let ((file-at-point (dired-get-filename)))
@@ -709,7 +710,8 @@ to have these programs and modules installed on your system"
 
 ;;;###autoload
 (defun traverse-dired-search-in-archive (regexp &optional only)
-  "This function use AVFS and FUSE, so be sure
+  "Search for regexp in compressed archive at point in a dired buffer.
+This function use AVFS and FUSE, so be sure
 to have these programs installed on your system and FUSE module
 enabled in your kernel.
 This function is disabled by default, enable it setting
@@ -729,9 +731,9 @@ traverse-use-avfs to non--nil"
 
 ;;;###autoload
 (defun traverse-dired-find-in-marked-files (regexp &optional full-path)
-  "Traverse search regex in marked files
+  "Search for regexp in all marked files of a dired buffer.
 if some of the marked files are directories ignore them
-if no marked files use file at point"
+if no marked files use file at point."
   (interactive (list (traverse-read-regexp "Regexp: ")))
   (let ((prefarg (not (null current-prefix-arg)))
         (fname-list (traverse-dired-get-marked-files)))
@@ -755,7 +757,7 @@ if no marked files use file at point"
   (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-find-in-all-files (regexp only &optional full-path)
-  "Traverse search regex in all files of current dired buffer
+  "Search for regexp in all files of current dired buffer.
 except compressed files and symlinks"
   (interactive (list (traverse-read-regexp "Regexp: ")
                      (read-string "CheckOnly: ")))
@@ -788,7 +790,7 @@ except compressed files and symlinks"
   (switch-to-buffer-other-window "*traverse-lisp*"))
 
 (defun traverse-dired-get-marked-files (&optional strict)
-  "Get a list of all marked files for traverse"
+  "Get a list of all marked files in a dired buffer for traverse."
   (let* ((fname-list nil)
          (all-marked (dired-get-marked-files nil nil nil t))
          (dir-marked-list (if strict
@@ -806,9 +808,8 @@ except compressed files and symlinks"
     (nreverse fname-list)))
 
 (defun traverse-dired-has-marked-files ()
-  "Check if dired has marked files for traverse:
-not compressed
-not directory"
+  "Check if dired has marked files for traverse.
+remove compressed files and directories from the list."
   (let ((fm-list (traverse-dired-get-marked-files)))
     (if fm-list
         t
@@ -816,7 +817,7 @@ not directory"
 
 ;;;###autoload
 (defun traverse-dired-search-regexp-in-anything-at-point (regexp &optional only)
-  "Generic function for dired
+  "Use the right function in dired depending on context.
 Search in:
 file at point
 or
@@ -824,7 +825,7 @@ marked files
 or
 directory at point (recursion)
 or
-in compressed archive at point if traverse-use-avfs is non--nil"
+in compressed archive at point if traverse-use-avfs is non--nil."
   (interactive
    (let ((f-or-d-name (dired-get-filename)))
      (cond ((traverse-dired-has-marked-files)
@@ -845,6 +846,7 @@ in compressed archive at point if traverse-use-avfs is non--nil"
 
 ;;;; Navigate in traverse
 (defun traverse-go-forward-or-backward (num)
+  "Go to next or precedent occurence in a traverse buffer."
   (other-window -1)
   (when (buffer-file-name (current-buffer))
     (save-buffer)
@@ -855,20 +857,24 @@ in compressed archive at point if traverse-use-avfs is non--nil"
   (other-window -1))
 
 (defun traverse-go-forward (&optional num)
+  "Go to next occurence and open file with point at the right place in other window."
   (interactive "p")
   (traverse-go-forward-or-backward (or num 1)))
 
 (defun traverse-go-backward (&optional num)
+  "Go to next occurence and open file with point at the right place in other window."
   (interactive "p")
   (traverse-go-forward-or-backward (- (or num 1))))
 
 (defun traverse-scroll-down-other-window ()
+  "Scroll other window down from a traverse buffer."
   (interactive)
   (when (equal (current-buffer)
                (get-buffer "*traverse-lisp*"))
     (scroll-other-window 1)))
 
 (defun traverse-scroll-up-other-window ()
+  "Scroll other window up from a traverse buffer."
   (interactive)
   (when (equal (current-buffer)
                (get-buffer "*traverse-lisp*"))
@@ -877,8 +883,7 @@ in compressed archive at point if traverse-use-avfs is non--nil"
 ;;;; Replace functions
 ;;;###autoload
 (defun traverse-search-and-replace (str &optional regex)
-  "Replace regex with `str', replacement is
-performed only on current line"
+  "Replace current regexp with `str', replacement is performed only on current line."
   (interactive "sNewstring: ")
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
       (progn
@@ -946,7 +951,7 @@ performed only on current line"
 
 ;;;###autoload
 (defun traverse-search-and-replace-all (str)
-  "Launch search and replace interactively on all occurences
+  "Launch search and replace interactively on all occurences found in current traverse buffer.
 commands provided here are: (n)ext (a)ll (s)kip (x)stop"
   (interactive "sNewstring: ")
   (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
@@ -1047,7 +1052,7 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
 ;;;; Utils
 
 (defun file-compressed-p (fname)
-  "Return t if fname is a compressed file"
+  "Return t if fname is a compressed file."
   (let ((ext (file-name-extension fname)))
     (cond ((equal ext "gz")
            t)
@@ -1093,7 +1098,7 @@ found in `tree'"
 ;; Experimental ==> Huge projects not supported (Tags files become to big)
 ;;;###autoload
 (defun traverse-build-tags-in-project (dir ext &optional new-file)
-  "Build an etags file in current project.
+  "Build an etags file at root of current project.
 If `new-file' is non-nil (do it with C-u) build a new file
 instead of appending to the current one.
 Many file extensions can be enter at `ext' prompt.
@@ -1122,15 +1127,13 @@ Tag file will be build in `dir'"
 
 
 (defun traverse-window-split-h-or-t ()
-  "Give current split window position under
-symbol form.
-Possible value: 'hor or 'ver"
+  "Give current split window state under symbol form.
+Possible value are 'hor or 'ver"
   (cdr (assoc 'dir (bw-get-tree))))
 
 ;;;###autoload
 (defun traverse-toggle-split-window-h-v ()
-  "From traverse buffer toggle split window
-horizontally or vertically ala ediff"
+  "From traverse buffer toggle split window horizontally or vertically ala ediff."
   (interactive)
   (when (eq (count-windows) 2)
     (balance-windows)
@@ -1149,8 +1152,9 @@ horizontally or vertically ala ediff"
 
 ;;;###autoload
 (defun traverse-count-files-in-dir (tree &optional quiet)
-  "Count files in `directory' and return a message
-and the number of files. If `quiet' is non-nil don't send message"
+  "Count files in `tree'.
+and return a message and the number of files.
+If `quiet' is non-nil don't send message."
   (interactive "DDirectory: ")
   (let ((count-files 0))
     (traverse-walk-directory
@@ -1218,7 +1222,7 @@ If `ext' apply func only on files with .`ext'."
 
 ;;;###autoload
 (defun traverse-pprint-tree (tree)
-  "PPrint all the content of `tree'.
+  "PPrint the content of `tree'.
 NOTE: for a better output, be sure to have
 http://www.emacswiki.org/emacs/align.el
 installed on your emacs even if that work without."
