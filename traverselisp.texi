@@ -11,7 +11,7 @@
 
 @titlepage
 @title traverselisp
-@author thierry
+@author 
 @end titlepage
 
 
@@ -100,6 +100,28 @@ Write in your init-file (.emacs):
 @chapter Keymap
 
 Use C-h m as usual while in a traverse buffer.
+
+Special commands:
+key             binding
+----------
+
+ESC             Prefix Command
+
+N               traverse-go-forward
+
+P               traverse-go-backward
+
+R               traverse-search-and-replace-all
+
+S               traverse-search-and-replace
+
+q               traverse-quit
+
+|               traverse-toggle-split-window-h-v
+
+<S-down>        traverse-scroll-down-other-window
+
+<S-up>          traverse-scroll-up-other-window
 
 @sp 1
 
@@ -272,9 +294,15 @@ S ==> replace regexp in current line with new regexp.
 @node Replace in just one line, Replace all, Replacing, Replacing
 @subsection Replace in just one line
 
+From a traverse buffer use S
+
 
 @node Replace all,  , Replace in just one line, Replacing
 @subsection Replace all
+
+From a traverse buffer use R
+
+To stop the replace process use C-g
 
 
 
@@ -338,9 +366,89 @@ In a Dired buffer
 
 Search will be performed on ALL files of current-directory (no recursion in subdir)
 
+unless you mark files in this dired buffer.
+
+If you mark only one file, the search is performed in this only file.
+
 You can navigate from file to file in anything-buffer. (M-n/M-p)
 
+
+@itemize @bullet
+@item
+anything-traverse find all files of current tree
+@end itemize
+
+You can have all the files of current tree in anything.
+
+@menu
+* Anything-traverse variables::  
+* Anything-traverse configuration::  
+@end menu
+
+@node Anything-traverse variables, Anything-traverse configuration, Using traverselisp in anything, Using traverselisp in anything
+@section Anything-traverse variables
+
+`anything-c-traverse-func' default: `traverse-buffer-process-ext'
+
+See `traverse-buffer-process-ext' in traverselisp.el
+
+`anything-c-traverse-length-line' default: 80
+
+Length of the line displayed in anything buffer.
+
+`anything-c-files-in-current-tree-ignore-files' default: `traverse-ignore-files'
+
+See `traverse-ignore-files' in traverselisp.el.
+
+`anything-c-traverse-ignore-files' default: traverse-ignore-files
+
+See `traverse-ignore-files' in traverselisp.el.
+
+`anything-c-traverse-fontify-buffer' default:nil
+
+Fontify buffer before starting a search in a buffer.
+
+This have no effect on searching in files from dired.
+
+This can SLOW down search when non---nil but if you don't perform search in
+
+huge buffers it can be set to t.
+
+
+@node Anything-traverse configuration,  , Anything-traverse variables, Using traverselisp in anything
+@section Anything-traverse configuration
+
+(require 'anything-traverse)
+
+Example config
+
+@itemize @bullet
+@item
+For `anything-c-files-in-current-tree':
+@end itemize
+
+(global-set-key (kbd ``C-c C-f'') 'anything-files-in-current-tree)
+
+(setq anything-c-files-in-current-tree-ignore-files '(``.elc$'' ``.pyc$''
+@quotation
+``.orig$'' ``.rej$''))
+@end quotation
+
+
+@itemize @bullet
+@item
+For `anything-c-source-traverse-occur':
+@end itemize
+
+(global-set-key (kbd ``C-c M-g'') 'anything-traverse)
+
+(global-set-key (kbd ``C-c C-s'') 'anything-traverse-at-point)
+
+
+
+
 @sp 1
+
 
 
 

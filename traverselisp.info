@@ -53,6 +53,11 @@ Replacing
 * Replace in just one line::
 * Replace all::
 
+Using traverselisp in anything
+
+* Anything-traverse variables::
+* Anything-traverse configuration::
+
 
 
 
@@ -144,6 +149,28 @@ Keymap
 ******
 
 Use C-h m as usual while in a traverse buffer.
+
+Special commands:
+key             binding
+----------
+
+ESC Prefix Command
+
+N traverse-go-forward
+
+P traverse-go-backward
+
+R traverse-search-and-replace-all
+
+S traverse-search-and-replace
+
+q traverse-quit
+
+| traverse-toggle-split-window-h-v
+
+<S-down> traverse-scroll-down-other-window
+
+<S-up> traverse-scroll-up-other-window
 
 
 
@@ -352,6 +379,8 @@ File: traverselisp.info, Node: Replace in just one line, Next: Replace all, Prev
 Replace in just one line
 ------------------------
 
+From a traverse buffer use S
+
 
 
 
@@ -359,6 +388,10 @@ File: traverselisp.info, Node: Replace all, Prev: Replace in just one line, Up: 
 
 Replace all
 -----------
+
+From a traverse buffer use R
+
+To stop the replace process use C-g
 
 
 
@@ -428,30 +461,107 @@ it will search for regex in this buffer.
 Search will be performed on ALL files of current-directory (no
 recursion in subdir)
 
+unless you mark files in this dired buffer.
+
+If you mark only one file, the search is performed in this only file.
+
 You can navigate from file to file in anything-buffer. (M-n/M-p)
+
+
+   * anything-traverse find all files of current tree
+
+You can have all the files of current tree in anything.
+
+* Menu:
+
+* Anything-traverse variables::
+* Anything-traverse configuration::
+
+
+
+File: traverselisp.info, Node: Anything-traverse variables, Next: Anything-traverse configuration, Prev: Using traverselisp in anything, Up: Using traverselisp in anything
+
+Anything-traverse variables
+===========================
+
+`anything-c-traverse-func' default: `traverse-buffer-process-ext'
+
+See `traverse-buffer-process-ext' in traverselisp.el
+
+`anything-c-traverse-length-line' default: 80
+
+Length of the line displayed in anything buffer.
+
+`anything-c-files-in-current-tree-ignore-files' default:
+`traverse-ignore-files'
+
+See `traverse-ignore-files' in traverselisp.el.
+
+`anything-c-traverse-ignore-files' default: traverse-ignore-files
+
+See `traverse-ignore-files' in traverselisp.el.
+
+`anything-c-traverse-fontify-buffer' default:nil
+
+Fontify buffer before starting a search in a buffer.
+
+This have no effect on searching in files from dired.
+
+This can SLOW down search when non--nil but if you don't perform
+search in
+
+huge buffers it can be set to t.
+
+
+
+
+File: traverselisp.info, Node: Anything-traverse configuration, Prev: Anything-traverse variables, Up: Using traverselisp in anything
+
+Anything-traverse configuration
+===============================
+
+(require 'anything-traverse)
+
+Example config
+
+   * For `anything-c-files-in-current-tree':
+
+(global-set-key (kbd "C-c C-f") 'anything-files-in-current-tree)
+
+(setq anything-c-files-in-current-tree-ignore-files '(".elc$"
+.pyc$" ".orig$" ".rej$"))
+
+
+   * For `anything-c-source-traverse-occur':
+
+(global-set-key (kbd "C-c M-g") 'anything-traverse)
+
+(global-set-key (kbd "C-c C-s") 'anything-traverse-at-point)
 
 Tag table:
 Node: Top191
-Node: Installation928
-Node: Configuration1160
-Node: Exemple of Config1330
-Node: Variables2016
-Node: Functions2130
-Node: Keymap2243
-Node: Usage2391
-Node: Settings2669
-Node: Searching3062
-Node: Search in a Whole tree3320
-Node: Search in a file3796
-Node: Search in a buffer4088
-Node: Search from Dired4321
-Node: Search in archives5065
-Node: Navigating From traverse buffer5595
-Node: Replacing6000
-Node: Replace in just one line6207
-Node: Replace all6370
-Node: Creating Tag file in project6491
-Node: Moving files of all subdirs to one dir6976
-Node: Using traverselisp in anything7848
+Node: Installation1029
+Node: Configuration1261
+Node: Exemple of Config1431
+Node: Variables2117
+Node: Functions2231
+Node: Keymap2344
+Node: Usage2816
+Node: Settings3094
+Node: Searching3487
+Node: Search in a Whole tree3745
+Node: Search in a file4221
+Node: Search in a buffer4513
+Node: Search from Dired4746
+Node: Search in archives5490
+Node: Navigating From traverse buffer6020
+Node: Replacing6425
+Node: Replace in just one line6632
+Node: Replace all6825
+Node: Creating Tag file in project7013
+Node: Moving files of all subdirs to one dir7498
+Node: Using traverselisp in anything8370
+Node: Anything-traverse variables9200
+Node: Anything-traverse configuration10168
 
 End tag table

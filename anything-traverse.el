@@ -35,6 +35,13 @@
 ;;  You will be able to incremental search any regexp in current buffer
 ;;  or in all files of current dired buffer.
 ;;
+;;  Two sources are available:
+;;  `anything-c-source-traverse-occur'
+;;       Search for regexp in all files or marked files of a dired buffer
+;;       or for regexp in current buffer.
+;;  `anything-c-source-files-in-current-tree'
+;;       Display all files of current directory and his subdirectories.
+;;
 ;;  NOTE: You don't need this file to use traverselisp.el if you don't use
 ;;  Anything.
 
@@ -49,7 +56,9 @@
 ;; If you add `anything-c-source-traverse-occur' to `anything-sources'
 ;; you will be able to use traverse from the main anything, but the
 ;; variable `anything-traverse-check-only' will not be available:
-;; When searching in a dired buffer the search will be performed on ALL files.
+;; When searching in a dired buffer the search will be performed on ALL files
+;; unless you mark files in this buffer.
+;; You can mark only one file and the search will be performed in this file only.
 ;; If instead you use `anything-traverse' , a prefix arg will be available:
 ;; C-u M-x anything-traverse will give you a prompt for the .ext/or regexp matching only files.
 ;; You can give as many .ext file you want at this prompt separated with a space.
