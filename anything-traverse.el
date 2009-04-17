@@ -269,7 +269,8 @@ If current-buffer is a dired buffer search is performed on all files."
                      f)))))
           (when anything-c-traverse-fontify-buffer
             (with-current-buffer anything-traverse-current-buffer
-              (font-lock-fontify-region (point-min) (point-max))))
+              (jit-lock-fontify-now)))
+              ;(font-lock-fontify-region (point-min) (point-max))))
           (traverse-buffer-process-ext
            anything-pattern
            anything-traverse-current-buffer
