@@ -257,10 +257,12 @@ If current-buffer is a dired buffer search is performed on all files."
       (erase-buffer)
       (goto-char (point-min))
       (if anything-c-traverse-diredp-flag
+          ;; search is performed on files from this dired buffer
           (let* ((marked-list (with-current-buffer anything-traverse-current-buffer
                                 (traverse-dired-get-marked-files t)))
                  (dir-list (or marked-list
                                (traverse-list-directory (car dired-buffer-name) t))))
+            ;; walk files of current dir
             (dolist (f dir-list)
               (if (and anything-traverse-check-only
                        (not (file-directory-p f)))
@@ -276,10 +278,11 @@ If current-buffer is a dired buffer search is performed on all files."
                     (traverse-file-process-ext
                      anything-pattern
                      f)))))
+          ;; search in current-buffer
+          ;; fontify buffer
           (when anything-c-traverse-fontify-buffer
             (with-current-buffer anything-traverse-current-buffer
               (jit-lock-fontify-now)))
-              ;(font-lock-fontify-region (point-min) (point-max))))
           (traverse-buffer-process-ext
            anything-pattern
            anything-traverse-current-buffer
