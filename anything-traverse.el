@@ -218,12 +218,15 @@ If we are in another source just go to next/prec line."
   (interactive)
   (if current-prefix-arg
       (progn
-        (setq anything-traverse-check-only
-              (split-string
-               (read-string
-                (propertize "SearchOnly: "
-                            'help-echo "You can use here .ext, regexp, or plain_name separated by spaces"))))
-        (anything 'anything-c-source-traverse-occur))
+        (if (car (rassq (current-buffer) dired-buffers))
+            (progn
+              (setq anything-traverse-check-only
+                    (split-string
+                     (read-string
+                      (propertize "SearchOnly: "
+                                  'help-echo "You can use here .ext, regexp, or plain_name separated by spaces"))))
+              (anything 'anything-c-source-traverse-occur))
+            (anything-traverse-at-point)))
       (setq anything-traverse-check-only nil)
       (anything 'anything-c-source-traverse-occur)))
 
