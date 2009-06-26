@@ -89,6 +89,7 @@ This have no effect on searching in files from dired.
 This can SLOW down search when non--nil.")
 
 ;;; Internals variables
+(defvar anything-traverse-current-buffer)
 (defvar anything-c-traverse-overlay-face nil)
 (defvar anything-traverse-occur-overlay nil)
 (defvar anything-c-traverse-diredp-flag nil)
@@ -151,8 +152,8 @@ This can SLOW down search when non--nil.")
       (anything-c-traverse-dir-action elm)
       (anything-c-traverse-buffer-action elm)))
 
-(defun anything-c-files-in-current-tree-create-db ()
-  (let* ((cur-dir (expand-file-name default-directory))
+(defun anything-c-files-in-current-tree-create-db (&optional tree)
+  (let* ((cur-dir (or tree (expand-file-name default-directory)))
          (files-list (gethash (intern cur-dir)
                               anything-c-files-in-current-tree-table)))
     (unless files-list
@@ -169,6 +170,17 @@ This can SLOW down search when non--nil.")
     (let ((files-list (anything-c-files-in-current-tree-create-db)))
       (dolist (i files-list)
         (insert (concat i "\n"))))))
+
+(defun anything-files-in-current-tree ()
+  "Show files in current tree.
+with prefix arg refresh data base."
+  (interactive)
+  (let ((cur-tree (expand-file-name default-directory)))
+    (if current-prefix-arg
+        (progn
+          (remhash (intern cur-tree) anything-c-files-in-current-tree-table)
+          (anything 'anything-c-source-files-in-current-tree))
+        (anything 'anything-c-source-files-in-current-tree))))
 
 (defun* anything-traverse-next-or-prec-file (&optional (n 1))
   "When search is performed in dired buffer on all files
@@ -235,17 +247,6 @@ If we are in another source just go to next/prec line."
   (interactive)
   (let ((input (thing-at-point 'symbol)))
     (anything 'anything-c-source-traverse-occur input)))
-
-(defun anything-files-in-current-tree ()
-  "Show files in current tree.
-with prefix arg refresh data base."
-  (interactive)
-  (let ((cur-tree (expand-file-name default-directory)))
-    (if current-prefix-arg
-        (progn
-          (remhash (intern cur-tree) anything-c-files-in-current-tree-table)
-          (anything 'anything-c-source-files-in-current-tree))
-        (anything 'anything-c-source-files-in-current-tree))))
 
 ;; (find-fline "~/labo/traverse-qpatch-current/traverselisp.el" "traverse-dired-get-marked-files")
 (defun anything-traverse-init-search ()
