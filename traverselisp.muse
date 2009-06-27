@@ -121,7 +121,7 @@ M-x traverse-find-in-file
 
 </code>
 
-=(traverse-find-in-file fname regexp &optional full-path)=
+"=(traverse-find-in-file fname regexp &optional full-path)"=
 
 Traverse search regex in a single file
 
@@ -155,7 +155,7 @@ NOTE: if directories are marked, they are ignored.
  - *traverse-dired-find-in-all-files*
 
 
-=(traverse-dired-find-in-all-files regexp &optional full-path)=
+"=(traverse-dired-find-in-all-files regexp &optional full-path)"=
 
 Traverse search regex in all files of current dired buffer
 
@@ -172,7 +172,7 @@ http://sourceforge.net/projects/avf
 
 Then you can open and browse archive in dired with:
 
-=(traverse-dired-browse-archive)=
+"=(traverse-dired-browse-archive)"=
 
 This function use AVFS and FUSE, so be sure
 to have these programs and modules installed on your system
@@ -182,13 +182,13 @@ to have these programs and modules installed on your system
 
 Principal command are:
 
-N ==> find next occurence in other buffer.
+"N ==> find next occurence in other buffer."
 
-P ==> find precedent occurence in other buffer.
+"P ==> find precedent occurence in other buffer."
 
-R ==> call another menu for interactive replacement.
+"R ==> call another menu for interactive replacement."
 
-S ==> replace regexp in current line with new regexp.
+"S ==> replace regexp in current line with new regexp."
 
 
 ** Replacing
@@ -239,6 +239,24 @@ found in `tree'
 
 Using traverselisp in anything is great and fast.
 
+You have only one command to remember:
+
+M-x anything-traverse
+
+Thats all!
+
+You can use with this command a prefix arg: (C-u)
+
+C-u will not have the same meaning depending you are in a dired-buffer
+
+or in a buffer:
+
+
+ - In a buffer "C-u M-x anything-traverse" will use as input symbol at point.
+ 
+ - In Dired "C-u M-x anything-traverse" will prompt you for a regexp to match file (e.g .el$)
+
+  
 It provide two methods:
 
  - In a buffer
@@ -253,14 +271,36 @@ Search will be performed on ALL files of current-directory (no recursion in subd
 
 unless you mark files in this dired buffer.
 
-If you mark only one file, the search is performed in this only file.
+If you mark one or more file(s), the search is performed on this/these file(s).
 
 You can navigate from file to file in anything-buffer. (M-n/M-p)
 
 
- - anything-traverse find all files of current tree
+** anything-traverse find all files in current tree
 
 You can have all the files of current tree in anything.
+
+Anything-traverse will recurse throught current tree and get all the files of
+
+Directories and subdirectories of this tree.
+
+Use command: `anything-files-in-current-tree'
+
+If you launch that in a big tree (e.g your home directory)
+
+it can take a long time to load, but once it will be loaded, the next
+
+searchs will be fast.
+
+For information, on my laptop with 1.87GHZ cpu (duo), it take 11s to load
+
+my entire /home/$USER that is actually 19GB
+
+When it is loaded it take only 2 second to load all files in anything.
+
+There is no cache file (at the moment) so it mean the data are not persistent.
+
+That is on next session of emacs you will have to reload all the data.
 
 ** Anything-traverse variables
 
@@ -307,9 +347,6 @@ Example config
  - For `anything-c-source-traverse-occur':
 
 (global-set-key (kbd "C-c M-g") 'anything-traverse)
-
-(global-set-key (kbd "C-c C-s") 'anything-traverse-at-point)
-
 
 
 
