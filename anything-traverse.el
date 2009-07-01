@@ -87,6 +87,10 @@
   "Fontify buffer before starting a search in a buffer.
 This have no effect on searching in files from dired.
 This can SLOW down search when non--nil.")
+(defvar anything-c-files-in-current-tree-allow-tagging t
+  "Allow create and use anything tags files for persistent data.")
+(defvar anything-c-files-in-current-tree-tag-file-name "ANYTHING-TAG-FILE"
+  "The name your anything tags files will have.")
 
 ;;; Internals variables
 (defvar anything-traverse-current-buffer)
@@ -165,11 +169,34 @@ This can SLOW down search when non--nil.")
                      anything-c-files-in-current-tree-table)))
     files-list))
 
+(defun anything-files-in-current-tree-tag-tree (&optional update)
+  (interactive)
+  (let ((cur-tree (expand-file-name default-directory)))
+    (when update
+      (remhash (intern cur-tree)
+               anything-c-files-in-current-tree-table)))
+  (let ((tag-fname (expand-file-name anything-c-files-in-current-tree-tag-file-name
+                                     default-directory))
+        (files-list (anything-c-files-in-current-tree-create-db)))
+    (with-current-buffer (find-file-noselect tag-fname)
+      (erase-buffer)
+      (goto-char (point-min))
+      (dolist (i files-list)
+        (insert (concat i "\n")))
+      (save-buffer) (kill-buffer (current-buffer)))))
+        
+                
 (defun anything-c-files-in-current-tree-init ()
   (with-current-buffer (anything-candidate-buffer 'local)
-    (let ((files-list (anything-c-files-in-current-tree-create-db)))
-      (dolist (i files-list)
-        (insert (concat i "\n"))))))
+    (let ((tag-file (expand-file-name anything-c-files-in-current-tree-tag-file-name
+                                      default-directory))
+          files-list)
+      (if (and anything-c-files-in-current-tree-allow-tagging
+               (file-exists-p tag-file))
+          (insert-file-contents tag-file)
+          (setq files-list (anything-c-files-in-current-tree-create-db))
+          (dolist (i files-list)
+            (insert (concat i "\n")))))))
 
 (defun anything-files-in-current-tree ()
   "Show files in current tree.
@@ -178,7 +205,9 @@ with prefix arg refresh data base."
   (let ((cur-tree (expand-file-name default-directory)))
     (if current-prefix-arg
         (progn
-          (remhash (intern cur-tree) anything-c-files-in-current-tree-table)
+          (if anything-c-files-in-current-tree-allow-tagging
+              (anything-files-in-current-tree-tag-tree 'update)
+              (remhash (intern cur-tree) anything-c-files-in-current-tree-table))
           (anything 'anything-c-source-files-in-current-tree))
         (anything 'anything-c-source-files-in-current-tree))))
 
