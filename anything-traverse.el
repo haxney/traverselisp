@@ -53,6 +53,10 @@
 
 ;;; Usage:
 ;;  =====
+;; `anything-traverse':
+;;
+;; M-x anything-traverse
+;;
 ;; If you add `anything-c-source-traverse-occur' to `anything-sources'
 ;; you will be able to use traverse from the main anything, but the
 ;; variable `anything-traverse-check-only' will not be available:
@@ -67,6 +71,15 @@
 ;; Will search only in .el .sh TAGS and .py~ files.
 ;; You can also use `anything-traverse' as `re-builder', when regexp in anything-pattern
 ;; satisfy you, you can copy it to kill-ring (select in actions).
+;;
+;; `anything-files-in-current-tree':
+;;
+;; M-x anything-files-in-current-tree
+;; If you use  a prefix arg, the database will be updated.
+;; If you have `anything-c-files-in-current-tree-allow-tagging' to a non--nil value
+;; (the default) the anything tag file (`anything-c-files-in-current-tree-tag-file-name')
+;; will be rewrited.
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;;; Code:
@@ -170,7 +183,6 @@ This can SLOW down search when non--nil.")
     files-list))
 
 (defun anything-files-in-current-tree-tag-tree (&optional update)
-  (interactive)
   (let ((cur-tree (expand-file-name default-directory)))
     (when update
       (remhash (intern cur-tree)
@@ -202,14 +214,21 @@ This can SLOW down search when non--nil.")
   "Show files in current tree.
 with prefix arg refresh data base."
   (interactive)
-  (let ((cur-tree (expand-file-name default-directory)))
+  (let* ((cur-tree (expand-file-name default-directory))
+         (tag-file (expand-file-name anything-c-files-in-current-tree-tag-file-name
+                                    cur-tree)))
     (if current-prefix-arg
         (progn
           (if anything-c-files-in-current-tree-allow-tagging
               (anything-files-in-current-tree-tag-tree 'update)
               (remhash (intern cur-tree) anything-c-files-in-current-tree-table))
           (anything 'anything-c-source-files-in-current-tree))
-        (anything 'anything-c-source-files-in-current-tree))))
+        (if (and anything-c-files-in-current-tree-allow-tagging
+                 (not (file-exists-p tag-file)))
+            (progn
+              (anything-files-in-current-tree-tag-tree)
+              (anything 'anything-c-source-files-in-current-tree))
+            (anything 'anything-c-source-files-in-current-tree)))))
 
 (defun* anything-traverse-next-or-prec-file (&optional (n 1))
   "When search is performed in dired buffer on all files
