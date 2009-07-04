@@ -89,21 +89,21 @@
 
 ;;; User variables
 (defvar anything-c-traverse-func 'traverse-buffer-process-ext
-  "See `traverse-buffer-process-ext' in traverselisp.el.")
+  "*See `traverse-buffer-process-ext' in traverselisp.el.")
 (defvar anything-c-traverse-length-line 80
-  "Length of the line displayed in anything buffer.")
+  "*Length of the line displayed in anything buffer.")
 (defvar anything-c-files-in-current-tree-ignore-files traverse-ignore-files
-  "See `traverse-ignore-files' in traverselisp.el.")
+  "*See `traverse-ignore-files' in traverselisp.el.")
 (defvar anything-c-traverse-ignore-files traverse-ignore-files
-  "See `traverse-ignore-files' in traverselisp.el.")
+  "*See `traverse-ignore-files' in traverselisp.el.")
 (defvar anything-c-traverse-fontify-buffer nil
-  "Fontify buffer before starting a search in a buffer.
+  "*Fontify buffer before starting a search in a buffer.
 This have no effect on searching in files from dired.
 This can SLOW down search when non--nil.")
 (defvar anything-c-files-in-current-tree-allow-tagging t
-  "Allow create and use anything tags files for persistent data.")
+  "*Allow create and use anything tags files for persistent data.")
 (defvar anything-c-files-in-current-tree-tag-file-name "ANYTHING-TAG-FILE"
-  "The name your anything tags files will have.")
+  "*The name your anything tags files will have.")
 
 ;;; Internals variables
 (defvar anything-traverse-current-buffer)
