@@ -174,6 +174,7 @@ This can SLOW down search when non--nil.")
          (files-list (gethash (intern cur-dir)
                               anything-c-files-in-current-tree-table)))
     (unless files-list
+      (message "Please Wait, creating database ...")
       (setq files-list
             (puthash (intern cur-dir)
                      (traverse-list-files-in-tree
@@ -299,7 +300,7 @@ If we are in another source just go to next/prec line."
   (let ((input (thing-at-point 'symbol)))
     (anything 'anything-c-source-traverse-occur input)))
 
-;; (find-fline "~/labo/traverse-qpatch-current/traverselisp.el" "traverse-dired-get-marked-files")
+;; (find-fline "~/labo/traverse-qpatch/traverselisp.el" "traverse-dired-get-marked-files")
 (defun anything-traverse-init-search ()
   "Main function that proceed search in current-buffer.
 If current-buffer is a dired buffer search is performed on all files."
