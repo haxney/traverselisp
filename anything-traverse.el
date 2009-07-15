@@ -408,13 +408,15 @@ If current-buffer is a dired buffer search is performed on all files."
 (make-variable-buffer-local 'anything-traverse-buffer-positions-ring)
 (defun anything-traverse-record-pos ()
   (interactive)
-  (let* ((str-at-pos    (buffer-substring-no-properties (point-at-bol) (point-at-eol)))
-         (line-number   (int-to-string (line-number-at-pos)))
+  (let* ((str-at-pos    (buffer-substring (point-at-bol) (point-at-eol)))
+         (line-number   (propertize (int-to-string (line-number-at-pos))
+                                    'face 'traverse-match-face))
          (line-to-store (concat line-number ":" str-at-pos "\n")))
-    (when (not (member line-to-store anything-traverse-buffer-positions-ring))
-      (push line-to-store anything-traverse-buffer-positions-ring)
-      (message "Marked Position at line %s" line-number))))
-
+    (if (not (member line-to-store anything-traverse-buffer-positions-ring))
+        (progn
+          (push line-to-store anything-traverse-buffer-positions-ring)
+          (message "Marked Position at line %s" line-number))
+        (message "Position at line %s is already recorded" line-number))))
 
 (defvar anything-traverse-c-source-record-positions
   '((name . "Traverse Mark Pos")
@@ -447,10 +449,10 @@ If current-buffer is a dired buffer search is performed on all files."
                ("Clear Ring" . (lambda (elm)
                                  (with-current-buffer anything-current-buffer
                                    (setq anything-traverse-buffer-positions-ring nil))))))
+    (get-line . buffer-substring)
     (persistent-action . (lambda (elm)
                            (anything-c-traverse-default-action elm)
                            (anything-traverse-occur-color-current-line)))))
-
     
 (defun anything-traverse-positions-ring ()
   "Preconfigured anything to retrieve positions in current-buffer."
