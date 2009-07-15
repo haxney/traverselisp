@@ -29,21 +29,41 @@
 
 ;;; Commentary:
 ;;  ==========
-;;  This is the source and functions to use traverselisp.el
+;;  This is the sources and functions to use traverselisp.el
 ;;  with anything. http://www.emacswiki.org/cgi-bin/wiki/Anything.
 ;;
 ;;  You will be able to incremental search any regexp in current buffer
 ;;  or in all files of current dired buffer.
 ;;
-;;  Two sources are available:
+;;  Three sources are available:
 ;;  `anything-c-source-traverse-occur'
 ;;       Search for regexp in all files or marked files of a dired buffer
 ;;       or for regexp in current buffer.
 ;;  `anything-c-source-files-in-current-tree'
 ;;       Display all files of current directory and his subdirectories.
+;;  `anything-traverse-c-source-record-positions'
+;;       Retrieve recorded position in current buffer.
 ;;
 ;;  NOTE: You don't need this file to use traverselisp.el if you don't use
 ;;  Anything.
+
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `anything-files-in-current-tree'
+;;    Show files in current tree.
+;;  `anything-traverse-next-or-prec-file'
+;;    Go to next or precedent file in anything buffer.
+;;  `anything-traverse'
+;;    Launch anything with traverse separately.
+;;  `anything-traverse-positions-ring'
+;;    Preconfigured anything to retrieve positions in current-buffer.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
 
 ;;; Install:
 ;;  =======
@@ -235,7 +255,8 @@ with prefix arg refresh data base."
             (anything 'anything-c-source-files-in-current-tree)))))
 
 (defun* anything-traverse-next-or-prec-file (&optional (n 1))
-  "When search is performed in dired buffer on all files
+  "Go to next or precedent file in anything buffer.
+When search is performed in dired buffer on all files
 this allow to switch from one file to the other.
 If we are in another source just go to next/prec line."
   (interactive)
@@ -296,7 +317,6 @@ If we are in another source just go to next/prec line."
 
 (defun anything-traverse-at-point ()
   "Launch anything-traverse with `thing-at-point' as input."
-  (interactive)
   (let ((input (thing-at-point 'symbol)))
     (anything 'anything-c-source-traverse-occur input)))
 
@@ -432,6 +452,7 @@ If current-buffer is a dired buffer search is performed on all files."
 
     
 (defun anything-traverse-positions-ring ()
+  "Preconfigured anything to retrieve positions in current-buffer."
   (interactive)
   (anything 'anything-traverse-c-source-record-positions))
 
