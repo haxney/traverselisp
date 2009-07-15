@@ -412,7 +412,8 @@ If current-buffer is a dired buffer search is performed on all files."
          (line-number   (int-to-string (line-number-at-pos)))
          (line-to-store (concat line-number ":" str-at-pos "\n")))
     (when (not (member line-to-store anything-traverse-buffer-positions-ring))
-      (push line-to-store anything-traverse-buffer-positions-ring))))
+      (push line-to-store anything-traverse-buffer-positions-ring)
+      (message "Marked Position at line %s" line-number))))
 
 
 (defvar anything-traverse-c-source-record-positions
