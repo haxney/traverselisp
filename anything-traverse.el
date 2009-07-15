@@ -301,6 +301,8 @@ If we are in another source just go to next/prec line."
     (anything 'anything-c-source-traverse-occur input)))
 
 ;; (find-fline "~/labo/traverse-qpatch/traverselisp.el" "traverse-dired-get-marked-files")
+;; (find-fline "~/labo/traverse-qpatch/traverselisp.el" "defun* traverse-buffer-process-ext")
+;; (find-fline "~/labo/traverse-qpatch/traverselisp.el" "defun traverse-file-process-ext")
 (defun anything-traverse-init-search ()
   "Main function that proceed search in current-buffer.
 If current-buffer is a dired buffer search is performed on all files."
@@ -380,6 +382,60 @@ If current-buffer is a dired buffer search is performed on all files."
     (type . file)))
 
 ;; (anything 'anything-c-source-files-in-current-tree)
+
+;; Anything record positions
+(defvar anything-traverse-buffer-positions-ring nil)
+(make-variable-buffer-local 'anything-traverse-buffer-positions-ring)
+(defun anything-traverse-record-pos ()
+  (interactive)
+  (let* ((str-at-pos    (buffer-substring-no-properties (point-at-bol) (point-at-eol)))
+         (line-number   (int-to-string (line-number-at-pos)))
+         (line-to-store (concat line-number ":" str-at-pos "\n")))
+    (when (not (member line-to-store anything-traverse-buffer-positions-ring))
+      (push line-to-store anything-traverse-buffer-positions-ring))))
+
+
+(defvar anything-traverse-c-source-record-positions
+  '((name . "Traverse Mark Pos")
+    (init . (lambda ()
+              (setq anything-traverse-current-buffer
+                    (current-buffer))
+              (let ((cand-list anything-traverse-buffer-positions-ring))
+                (with-current-buffer (anything-candidate-buffer 'local)
+                  (dolist (i cand-list)
+                    (when (with-current-buffer anything-current-buffer
+                            (goto-char (point-min))
+                            (search-forward (replace-regexp-in-string "[0-9]*:" "" i) (point-max) t))
+                      (insert i)))))))
+    (candidates-in-buffer)
+    (action . (("Go to Line" . (lambda (elm)
+                                 (anything-c-traverse-default-action elm)))
+               ("Refresh Ring" . (lambda (elm)
+                                   (with-current-buffer anything-current-buffer
+                                     (goto-char (point-min))
+                                     (dolist (i anything-traverse-buffer-positions-ring)
+                                       (let ((regex-only (replace-regexp-in-string "[0-9]*:" "" i)))
+                                         (when (not (search-forward regex-only (point-max) t))
+                                           (setq anything-traverse-buffer-positions-ring
+                                                 (remove i anything-traverse-buffer-positions-ring))))))))
+               ("Remove Entry" . (lambda (elm)
+                                   (let ((elm-mod (concat elm "\n")))
+                                     (with-current-buffer anything-current-buffer
+                                       (setq anything-traverse-buffer-positions-ring
+                                             (remove elm-mod anything-traverse-buffer-positions-ring))))))
+               ("Clear Ring" . (lambda (elm)
+                                 (with-current-buffer anything-current-buffer
+                                   (setq anything-traverse-buffer-positions-ring nil))))))
+    (persistent-action . (lambda (elm)
+                           (anything-c-traverse-default-action elm)
+                           (anything-traverse-occur-color-current-line)))))
+
+    
+(defun anything-traverse-positions-ring ()
+  (interactive)
+  (anything 'anything-traverse-c-source-record-positions))
+
+;; (anything 'anything-traverse-c-source-record-positions)
 
 ;;; Provide
 (provide 'anything-traverse)
