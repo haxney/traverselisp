@@ -289,8 +289,9 @@ with prefix arg refresh data base."
         (goto-char new-pos)
         (forward-line 0)
         (anything-traverse-record-pos)))
-    (push (pop (nthcdr pos-in-list anything-traverse-buffer-positions-ring))
-          anything-traverse-buffer-positions-ring)))
+    (unless new-pos
+      (push (pop (nthcdr pos-in-list anything-traverse-buffer-positions-ring))
+            anything-traverse-buffer-positions-ring))))
 
           
 (defun anything-traverse-positions-ring ()
