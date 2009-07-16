@@ -273,9 +273,10 @@ with prefix arg refresh data base."
         (message "Position at line %s is already recorded" line-number))))
 
 (defun anything-traverse-position-relocate-maybe (elm)
-  (let ((elm-mod (concat elm "\n"))
-        (new-pos nil)
-        (dry-elm (replace-regexp-in-string "[0-9]*:" "" elm)))
+  (let* ((elm-mod (concat elm "\n"))
+         (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
+         (new-pos nil)
+         (dry-elm (replace-regexp-in-string "[0-9]*:" "" elm)))
     (anything-c-traverse-default-action elm)
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
       (save-excursion
@@ -287,7 +288,9 @@ with prefix arg refresh data base."
       (when new-pos
         (goto-char new-pos)
         (forward-line 0)
-        (anything-traverse-record-pos)))))
+        (anything-traverse-record-pos)))
+    (push (pop (nthcdr pos-in-list anything-traverse-buffer-positions-ring))
+          anything-traverse-buffer-positions-ring)))
 
           
 (defun anything-traverse-positions-ring ()
