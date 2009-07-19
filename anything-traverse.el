@@ -179,8 +179,8 @@ This can SLOW down search when non--nil.")
       (goto-line pos-elm))))
 
 (defun anything-c-traverse-dir-action (elm)
-  (let* ((elm-split (split-string elm " "))
-         (fname (nth 0 elm-split))
+  (let* ((elm-split   (split-string elm " "))
+         (fname       (nth 0 elm-split))
          (line-number (first (split-string (nth 1 elm-split)
                                            ":"))))
     (find-file fname)
@@ -207,7 +207,7 @@ This can SLOW down search when non--nil.")
     files-list))
 
 (defun anything-files-in-current-tree-tag-tree (&optional update)
-  (let ((cur-tree (expand-file-name default-directory))
+  (let ((cur-tree  (expand-file-name default-directory))
         (tag-fname (expand-file-name anything-c-files-in-current-tree-tag-file-name
                                      default-directory)))
     (when update
@@ -245,7 +245,7 @@ with prefix arg refresh data base."
   (interactive)
   (let* ((cur-tree (expand-file-name default-directory))
          (tag-file (expand-file-name anything-c-files-in-current-tree-tag-file-name
-                                    cur-tree)))
+                                     cur-tree)))
     (if current-prefix-arg
         (progn
           (if anything-c-files-in-current-tree-allow-tagging
@@ -273,10 +273,10 @@ with prefix arg refresh data base."
         (message "Position at line %s is already recorded" line-number))))
 
 (defun anything-traverse-position-relocate-maybe (elm)
-  (let* ((elm-mod (concat elm "\n"))
+  (let* ((elm-mod     (concat elm "\n"))
          (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
-         (new-pos nil)
-         (dry-elm (replace-regexp-in-string "[0-9]*:" "" elm)))
+         (new-pos     nil)
+         (dry-elm     (replace-regexp-in-string "[0-9]*:" "" elm)))
     (anything-c-traverse-default-action elm)
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
       (save-excursion
@@ -309,17 +309,17 @@ If we are in another source just go to next/prec line."
   (with-anything-window
       (if anything-c-traverse-diredp-flag
           (progn
-            (let* ((current-line-list (split-string
-                                       (buffer-substring
-                                        (point-at-bol)
-                                        (point-at-eol))))  
-                   (current-fname (nth 0 current-line-list))
+            (let* ((current-line-list  (split-string
+                                        (buffer-substring
+                                         (point-at-bol)
+                                         (point-at-eol))))  
+                   (current-fname      (nth 0 current-line-list))
                    ;; Don't use file names like "somename+.el"
                    (current-fname-less (replace-regexp-in-string "\+"
                                                                  ""
                                                                  (file-name-sans-extension
                                                                   current-fname)))
-                   (fn-b-o-f (if (eq n 1) 'eobp 'bobp))) ; func back or forward
+                   (fn-b-o-f           (if (eq n 1) 'eobp 'bobp))) ; func back or forward
               (catch 'break
                 (while (not (funcall fn-b-o-f))
                   (forward-line n)
@@ -374,9 +374,9 @@ If we are in another source just go to next/prec line."
 If current-buffer is a dired buffer search is performed on all files."
   (setq anything-traverse-killed-pattern anything-pattern)
   (let ((anything-traverse-buffer (get-buffer-create "*Anything traverse*"))
-        (dired-buffer-name (find (rassoc anything-traverse-current-buffer
-                                         dired-buffers)
-                                 dired-buffers)))
+        (dired-buffer-name        (find (rassoc anything-traverse-current-buffer
+                                                dired-buffers)
+                                        dired-buffers)))
     (with-current-buffer anything-traverse-buffer
       (erase-buffer)
       (goto-char (point-min))
@@ -384,8 +384,8 @@ If current-buffer is a dired buffer search is performed on all files."
           ;; search is performed on files from this dired buffer
           (let* ((marked-list (with-current-buffer anything-traverse-current-buffer
                                 (traverse-dired-get-marked-files t)))
-                 (dir-list (or marked-list
-                               (traverse-list-directory (car dired-buffer-name) t))))
+                 (dir-list    (or marked-list
+                                  (traverse-list-directory (car dired-buffer-name) t))))
             ;; walk files of current dir
             (dolist (f dir-list)
               (if (and anything-traverse-check-only

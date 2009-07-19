@@ -32,7 +32,7 @@ Traverse is a library of recursive search functions in Emacs.
 * Functions::                   
 * Keymap::                      
 * Usage::                       
-* Using traverselisp in anything::  
+* Using traverselisp with anything::  
 @end menu
 
 @node Installation, Configuration, Top, Top
@@ -127,7 +127,7 @@ q               traverse-quit
 
 
 
-@node Usage, Using traverselisp in anything, Keymap, Top
+@node Usage, Using traverselisp with anything, Keymap, Top
 @chapter Usage
 
 @menu
@@ -343,8 +343,8 @@ found in `tree'
 
 
 
-@node Using traverselisp in anything,  , Usage, Top
-@chapter Using traverselisp in anything
+@node Using traverselisp with anything,  , Usage, Top
+@chapter Using traverselisp with anything
 
 Using traverselisp in anything is great and fast.
 
@@ -401,10 +401,14 @@ You can navigate from file to file in anything-buffer. (M-n/M-p)
 * Anything-traverse configuration::  
 @end menu
 
-@node anything-traverse find all files in current tree, Anything-traverse variables, Using traverselisp in anything, Using traverselisp in anything
+@node anything-traverse find all files in current tree, Anything-traverse variables, Using traverselisp with anything, Using traverselisp with anything
 @section anything-traverse find all files in current tree
 
-You can have all the files of current tree in anything.
+That is a good alternative to `locate' to search files because you will search
+
+in the current tree instead of searching in the whole system.
+
+You will have a mini data base for each tree where you launch a search in.
 
 Anything-traverse will recurse throught current tree and get all the files of
 
@@ -420,16 +424,20 @@ searchs will be fast.
 
 For information, on my laptop with 1.87GHZ cpu (duo), it take 11s to load
 
-my entire /home/$USER that is actually 19GB
+my entire /home/$USER that is actually 19GB (about 35000 files recorded).
 
 When it is loaded it take only 2 second to load all files in anything.
 
-There is no cache file (at the moment) so it mean the data are not persistent.
+If `anything-c-files-in-current-tree-allow-tagging' is non---nil (the default)
 
-That is on next session of emacs you will have to reload all the data.
+the list of files in this tree will be saved to a file named by default `ANYTHING-TAG-FILE'
+
+so it will not have to make another search if you restart emacs.
+
+If you call `anything-files-in-current-tree' with a prefix arg (C-u), the data-base will be updated.
 
 
-@node Anything-traverse variables, Anything-traverse configuration, anything-traverse find all files in current tree, Using traverselisp in anything
+@node Anything-traverse variables, Anything-traverse configuration, anything-traverse find all files in current tree, Using traverselisp with anything
 @section Anything-traverse variables
 
 `anything-c-traverse-func' default: `traverse-buffer-process-ext'
@@ -459,7 +467,7 @@ This can SLOW down search when non---nil but if you don't perform search in
 huge buffers it can be set to t.
 
 
-@node Anything-traverse configuration,  , Anything-traverse variables, Using traverselisp in anything
+@node Anything-traverse configuration,  , Anything-traverse variables, Using traverselisp with anything
 @section Anything-traverse configuration
 
 (require 'anything-traverse)
@@ -475,9 +483,9 @@ For `anything-c-files-in-current-tree':
 
 (setq anything-c-files-in-current-tree-ignore-files '(''.elc$`` ''.pyc$``
 @quotation
-''.orig$`` ''.rej$``))
+''.orig$`` ''.rej$``
+''ANYTHING-TAG-FILE``))
 @end quotation
-
 
 @itemize @bullet
 @item
@@ -486,6 +494,14 @@ For `anything-c-source-traverse-occur':
 
 (global-set-key (kbd ''C-c M-g``) 'anything-traverse)
 
+@itemize @bullet
+@item
+For `anything-traverse-c-source-record-positions':
+@end itemize
+
+(global-set-key (kbd ''C-c <SPC>``) 'anything-traverse-record-pos)
+
+(global-set-key (kbd ''C-c j p``) 'anything-traverse-positions-ring)
 
 
 @sp 1

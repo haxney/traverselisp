@@ -235,7 +235,7 @@ found in `tree'
 
 -----
  
-* Using traverselisp in anything
+* Using traverselisp with anything
 
 Using traverselisp in anything is great and fast.
 
@@ -278,7 +278,11 @@ You can navigate from file to file in anything-buffer. (M-n/M-p)
 
 ** anything-traverse find all files in current tree
 
-You can have all the files of current tree in anything.
+That is a good alternative to `locate' to search files because you will search
+
+in the current tree instead of searching in the whole system.
+
+You will have a mini data base for each tree where you launch a search in.
 
 Anything-traverse will recurse throught current tree and get all the files of
 
@@ -294,13 +298,17 @@ searchs will be fast.
 
 For information, on my laptop with 1.87GHZ cpu (duo), it take 11s to load
 
-my entire /home/$USER that is actually 19GB
+my entire /home/$USER that is actually 19GB (about 35000 files recorded).
 
 When it is loaded it take only 2 second to load all files in anything.
 
-There is no cache file (at the moment) so it mean the data are not persistent.
+If `anything-c-files-in-current-tree-allow-tagging' is non--nil (the default)
 
-That is on next session of emacs you will have to reload all the data.
+the list of files in this tree will be saved to a file named by default `ANYTHING-TAG-FILE'
+
+so it will not have to make another search if you restart emacs.
+
+If you call `anything-files-in-current-tree' with a prefix arg (C-u), the data-base will be updated.
 
 ** Anything-traverse variables
 
@@ -341,13 +349,18 @@ Example config
 (global-set-key (kbd "C-c C-f") 'anything-files-in-current-tree)
 
 (setq anything-c-files-in-current-tree-ignore-files '(".elc$" ".pyc$"
-                                                      ".orig$" ".rej$"))
-
+                                                      ".orig$" ".rej$"
+                                                      "ANYTHING-TAG-FILE"))
 
  - For `anything-c-source-traverse-occur':
 
 (global-set-key (kbd "C-c M-g") 'anything-traverse)
 
+ - For `anything-traverse-c-source-record-positions':
+
+(global-set-key (kbd "C-c <SPC>") 'anything-traverse-record-pos)
+
+(global-set-key (kbd "C-c j p") 'anything-traverse-positions-ring)
 
 
 -----

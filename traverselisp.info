@@ -22,7 +22,7 @@ Traverse is a library of recursive search functions in Emacs.
 * Functions::
 * Keymap::
 * Usage::
-* Using traverselisp in anything::
+* Using traverselisp with anything::
 
  -- The Detailed Node Listing ---
 
@@ -53,7 +53,7 @@ Replacing
 * Replace in just one line::
 * Replace all::
 
-Using traverselisp in anything
+Using traverselisp with anything
 
 * anything-traverse find all files in current tree::
 * Anything-traverse variables::
@@ -179,7 +179,7 @@ q traverse-quit
 
 
 
-File: traverselisp.info, Node: Usage, Next: Using traverselisp in anything, Prev: Keymap, Up: Top
+File: traverselisp.info, Node: Usage, Next: Using traverselisp with anything, Prev: Keymap, Up: Top
 
 Usage
 *****
@@ -442,10 +442,10 @@ files found in `tree'
 
 
 
-File: traverselisp.info, Node: Using traverselisp in anything, Prev: Usage, Up: Top
+File: traverselisp.info, Node: Using traverselisp with anything, Prev: Usage, Up: Top
 
-Using traverselisp in anything
-******************************
+Using traverselisp with anything
+********************************
 
 Using traverselisp in anything is great and fast.
 
@@ -498,12 +498,18 @@ You can navigate from file to file in anything-buffer. (M-n/M-p)
 
 
 
-File: traverselisp.info, Node: anything-traverse find all files in current tree, Next: Anything-traverse variables, Prev: Using traverselisp in anything, Up: Using traverselisp in anything
+File: traverselisp.info, Node: anything-traverse find all files in current tree, Next: Anything-traverse variables, Prev: Using traverselisp with anything, Up: Using traverselisp with anything
 
 anything-traverse find all files in current tree
 ================================================
 
-You can have all the files of current tree in anything.
+That is a good alternative to `locate' to search files because you
+will search
+
+in the current tree instead of searching in the whole system.
+
+You will have a mini data base for each tree where you launch a search
+in.
 
 Anything-traverse will recurse throught current tree and get all the
 files of
@@ -521,19 +527,26 @@ searchs will be fast.
 For information, on my laptop with 1.87GHZ cpu (duo), it take 11s to
 load
 
-my entire /home/$USER that is actually 19GB
+my entire /home/$USER that is actually 19GB (about 35000 files
+recorded).
 
 When it is loaded it take only 2 second to load all files in anything.
 
-There is no cache file (at the moment) so it mean the data are not
-persistent.
+If `anything-c-files-in-current-tree-allow-tagging' is non--nil (the
+default)
 
-That is on next session of emacs you will have to reload all the data.
+the list of files in this tree will be saved to a file named by
+default `ANYTHING-TAG-FILE'
+
+so it will not have to make another search if you restart emacs.
+
+If you call `anything-files-in-current-tree' with a prefix arg (C-u),
+the data-base will be updated.
 
 
 
 
-File: traverselisp.info, Node: Anything-traverse variables, Next: Anything-traverse configuration, Prev: anything-traverse find all files in current tree, Up: Using traverselisp in anything
+File: traverselisp.info, Node: Anything-traverse variables, Next: Anything-traverse configuration, Prev: anything-traverse find all files in current tree, Up: Using traverselisp with anything
 
 Anything-traverse variables
 ===========================
@@ -569,7 +582,7 @@ huge buffers it can be set to t.
 
 
 
-File: traverselisp.info, Node: Anything-traverse configuration, Prev: Anything-traverse variables, Up: Using traverselisp in anything
+File: traverselisp.info, Node: Anything-traverse configuration, Prev: Anything-traverse variables, Up: Using traverselisp with anything
 
 Anything-traverse configuration
 ===============================
@@ -583,38 +596,43 @@ Example config
 (global-set-key (kbd "C-c C-f") 'anything-files-in-current-tree)
 
 (setq anything-c-files-in-current-tree-ignore-files '(".elc$"
-.pyc$" ".orig$" ".rej$"))
-
+.pyc$" ".orig$" ".rej$" "ANYTHING-TAG-FILE"))
 
    * For `anything-c-source-traverse-occur':
 
 (global-set-key (kbd "C-c M-g") 'anything-traverse)
+
+   * For `anything-traverse-c-source-record-positions':
+
+(global-set-key (kbd "C-c <SPC>") 'anything-traverse-record-pos)
+
+(global-set-key (kbd "C-c j p") 'anything-traverse-positions-ring)
 
 Tag table:
 Node: Top191
-Node: Installation1082
-Node: Configuration1314
-Node: Exemple of Config1484
-Node: Variables2170
-Node: Functions2284
-Node: Keymap2397
-Node: Usage2869
-Node: Settings3147
-Node: Searching3540
-Node: Search in a Whole tree3798
-Node: Search in a file4274
-Node: Search in a buffer4568
-Node: Search from Dired4801
-Node: Search in archives5547
-Node: Navigating From traverse buffer6079
-Node: Replacing6492
-Node: Replace in just one line6699
-Node: Replace all6892
-Node: Creating Tag file in project7080
-Node: Moving files of all subdirs to one dir7565
-Node: Using traverselisp in anything8437
-Node: anything-traverse find all files in current tree9623
-Node: Anything-traverse variables10643
-Node: Anything-traverse configuration11629
+Node: Installation1086
+Node: Configuration1318
+Node: Exemple of Config1488
+Node: Variables2174
+Node: Functions2288
+Node: Keymap2401
+Node: Usage2873
+Node: Settings3153
+Node: Searching3546
+Node: Search in a Whole tree3804
+Node: Search in a file4280
+Node: Search in a buffer4574
+Node: Search from Dired4807
+Node: Search in archives5553
+Node: Navigating From traverse buffer6085
+Node: Replacing6498
+Node: Replace in just one line6705
+Node: Replace all6898
+Node: Creating Tag file in project7086
+Node: Moving files of all subdirs to one dir7571
+Node: Using traverselisp with anything8443
+Node: anything-traverse find all files in current tree9635
+Node: Anything-traverse variables11039
+Node: Anything-traverse configuration12027
 
 End tag table
