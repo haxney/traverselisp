@@ -276,7 +276,7 @@ with prefix arg refresh data base."
   (let* ((elm-mod     (concat elm "\n"))
          (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
          (new-pos     nil)
-         (dry-elm     (replace-regexp-in-string "[0-9]*:" "" elm)))
+         (dry-elm     (replace-regexp-in-string "\\(^[0-9]+:\\)" "" elm)))
     (anything-c-traverse-default-action elm)
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
       (save-excursion
@@ -459,7 +459,7 @@ If current-buffer is a dired buffer search is performed on all files."
                   (dolist (i cand-list)
                     (when (with-current-buffer anything-current-buffer
                             (goto-char (point-min))
-                            (search-forward (replace-regexp-in-string "[0-9]*:" "" i) (point-max) t))
+                            (search-forward (replace-regexp-in-string "\\(^[0-9]+:\\)" "" i) (point-max) t))
                       (insert i)))))))
     (candidates-in-buffer)
     (action . (("Go to Line" . (lambda (elm)
