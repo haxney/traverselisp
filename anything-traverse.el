@@ -7,7 +7,7 @@
 
 ;; Created: lun jan 12 11:23:02 2009 (+0100)
 
-;; X-URL: http://freehg.org/u/thiedlecques/traverselisp/
+;; X-URL: http://mercurial.intuxication.org/hg/traverselisp
 ;; Keywords: data, regexp
 
 ;; This file is not part of GNU Emacs.
