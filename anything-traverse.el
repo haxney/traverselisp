@@ -277,7 +277,7 @@ with prefix arg refresh data base."
          (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
          (new-pos     nil)
          (dry-elm     (replace-regexp-in-string "\\(^[0-9]+:\\)" "" elm)))
-    (anything-c-traverse-default-action elm)
+    (anything-c-traverse-buffer-action elm)
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
       (save-excursion
         (when (or (search-backward dry-elm (point-min) t)
