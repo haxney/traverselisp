@@ -272,6 +272,7 @@ with prefix arg refresh data base."
           (message "Record new marked position at line %s" line-number))
         (message "Position at line %s is already recorded" line-number))))
 
+
 (defun anything-traverse-position-relocate-maybe (elm)
   (let* ((elm-mod     (concat elm "\n"))
          (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
@@ -279,12 +280,11 @@ with prefix arg refresh data base."
          (dry-elm     (replace-regexp-in-string "\\(^[0-9]+:\\)" "" elm)))
     (anything-c-traverse-buffer-action elm)
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
-      (save-excursion
-        (when (or (search-backward dry-elm (point-min) t)
-                  (search-forward dry-elm (point-max) t))
-          (setq new-pos (point))
-          (setq anything-traverse-buffer-positions-ring
-                (remove elm-mod anything-traverse-buffer-positions-ring))))
+      (when (or (search-backward dry-elm (point-min) t)
+                (search-forward dry-elm (point-max) t))
+        (setq new-pos (point))
+        (setq anything-traverse-buffer-positions-ring
+              (remove elm-mod anything-traverse-buffer-positions-ring)))
       (when new-pos
         (goto-char new-pos)
         (forward-line 0)
