@@ -278,17 +278,22 @@ with prefix arg refresh data base."
          (pos-in-list (position elm-mod anything-traverse-buffer-positions-ring :test 'equal))
          (new-pos     nil)
          (dry-elm     (replace-regexp-in-string "\\(^[0-9]+:\\)" "" elm)))
+    ;; Goto line position
     (anything-c-traverse-buffer-action elm)
+    ;; If line have changed, try to relocate it.
     (unless (string= dry-elm (buffer-substring (point-at-bol) (point-at-eol)))
       (when (or (search-backward dry-elm (point-min) t)
                 (search-forward dry-elm (point-max) t))
         (setq new-pos (point))
+        ;; If success, remove old elm.
         (setq anything-traverse-buffer-positions-ring
               (remove elm-mod anything-traverse-buffer-positions-ring)))
+      ;; Record new position.
       (when new-pos
         (goto-char new-pos)
         (forward-line 0)
         (anything-traverse-record-pos)))
+    ;; put this candidate at top of stack in ring.
     (unless new-pos
       (push (pop (nthcdr pos-in-list anything-traverse-buffer-positions-ring))
             anything-traverse-buffer-positions-ring))))
@@ -457,10 +462,13 @@ If current-buffer is a dired buffer search is performed on all files."
               (let ((cand-list anything-traverse-buffer-positions-ring))
                 (with-current-buffer (anything-candidate-buffer 'local)
                   (dolist (i cand-list)
-                    (when (with-current-buffer anything-current-buffer
-                            (goto-char (point-min))
-                            (search-forward (replace-regexp-in-string "\\(^[0-9]+:\\)" "" i) (point-max) t))
-                      (insert i)))))))
+                    (if (with-current-buffer anything-current-buffer
+                          (goto-char (point-min))
+                          (search-forward (replace-regexp-in-string "\\(^[0-9]+:\\)" "" i) (point-max) t))
+                        (insert i)
+                        (insert
+                         (propertize i 'face '((:foreground "red"))
+                                     'help-echo "WARNING:Line has been modified, you should relocate it or remove it"))))))))
     (candidates-in-buffer)
     (action . (("Go to Line" . (lambda (elm)
                                  (anything-traverse-position-relocate-maybe elm)))
