@@ -132,7 +132,7 @@ This can SLOW down search when non--nil.")
   "*The name your anything tags files will have.")
 
 (defvar anything-c-traverse-browse-regexp-lisp "\(def\\(un\\|subst\\|macro\\|ine\\|var\\|custom\\|const\\)"
-  "*Regexp used to parse lisp buffer when browsing code."
+  "*Regexp used to parse lisp buffer when browsing code.")
 
 (defvar anything-c-traverse-browse-regexp-python "\\<def\\>\\|\\<class\\>"
   "*Regexp used to parse python buffer when browsing code.")
