@@ -185,12 +185,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.10")
+(defconst traverse-version "1.1.11")
 
 ;;; Code:
 
 (require 'derived)
-(eval-and-compile (require 'cl))
+(eval-when-compile (require 'cl))
+
 
 (defvar traversedir-mode-map
   (let ((map (make-sparse-keymap)))
@@ -1220,53 +1221,56 @@ If `ext' apply func only on files with .`ext'."
     (dolist (i dirs-list)
       (funcall fn i))))
 
-(defun* traverse-auto-document-lisp-buffer (&key type prefix)
-  (let* ((boundary-regexp "^;;=*LIMIT.*")
-         (regexp          (case type
-                            ('nested "^ +\(def\\(un\\|subst\\|advice\\)")
-                            ('command "\(def\\(un\\|subst\\)")
-                            ('internal-variable "\(defvar")
-                            ('user-variable "\(defcustom")
-                            ('faces "\(defface")
-                            ('function "\(def\\(un\\|subst\\|advice\\)")
-                            (t (error "Unknow type"))))
-         (fn-list         (traverse-find-readlines
-                           (current-buffer)
-                           regexp
-                           :insert-fn 'buffer))
-         beg end)
-    (insert "\n") (setq beg (point))
-    (save-excursion (when (re-search-forward boundary-regexp)
-                      (forward-line -1) (setq end (point))))
-    (delete-region beg end)
-    (dolist (i fn-list)
-      (let* ((elm     (cadr i))
-             (elm-mod (replace-regexp-in-string regexp "" elm))
-             (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
-        (cond ((eq type 'command)
-               (when (commandp (intern elm-fin))
-                 (if prefix
-                     (when (string-match prefix elm-fin)
-                       (insert (concat ";; \`" elm-fin "\'\n")))
-                     (insert (concat ";; \`" elm-fin "\'\n")))))
-              ((eq type 'function)
-               (when (not (commandp (intern elm-fin)))
-                 (if prefix
-                     (when (string-match prefix elm-fin)
-                       (insert (concat ";; \`" elm-fin "\'\n")))
-                     (insert (concat ";; \`" elm-fin "\'\n")))))
-              ((eq type 'internal-variable)
-               (if prefix
-                   (when (string-match prefix elm-fin)
-                     (insert (concat ";; \`" elm-fin "\'\n")))
-                   (insert (concat ";; \`" elm-fin "\'\n"))))
-              ((eq type 'nested)
-               (if prefix
-                   (when (string-match prefix elm-fin)
-                     (insert (concat ";; \`" elm-fin "\'\n")))
-                   (insert (concat ";; \`" elm-fin "\'\n"))))
-              (t
-               (insert (concat ";; \`" elm-fin "\'\n"))))))))
+
+(defmacro* traverse-auto-document-lisp-buffer (&key type prefix)
+  "Auto document tool for lisp code."
+  `(let* ((boundary-regexp "^;;=*LIMIT.*")
+          (regexp          (case ,type
+                             ('nested "^ +\(def\\(un\\|subst\\|advice\\)")
+                             ('command "\(def\\(un\\|subst\\)")
+                             ('internal-variable "\(defvar")
+                             ('user-variable "\(defcustom")
+                             ('faces "\(defface")
+                             ('function "\(def\\(un\\|subst\\|advice\\)")
+                             (t (error "Unknow type"))))
+          (fn-list         (traverse-find-readlines
+                            (current-buffer)
+                            regexp
+                            :insert-fn 'buffer))
+          beg end)
+     (insert "\n") (setq beg (point))
+     (save-excursion (when (re-search-forward boundary-regexp)
+                       (forward-line -1) (setq end (point))))
+     (delete-region beg end)
+     (dolist (i fn-list)
+       (let* ((elm     (cadr i))
+              (elm-mod (replace-regexp-in-string regexp "" elm))
+              (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
+         (cond ((eq ,type 'command)
+                (when (commandp (intern elm-fin))
+                  (if ,prefix
+                      (when (string-match ,prefix elm-fin)
+                        (insert (concat ";; \`" elm-fin "\'\n")))
+                      (insert (concat ";; \`" elm-fin "\'\n")))))
+               ((eq ,type 'function)
+                (when (not (commandp (intern elm-fin)))
+                  (if ,prefix
+                      (when (string-match ,prefix elm-fin)
+                        (insert (concat ";; \`" elm-fin "\'\n")))
+                      (insert (concat ";; \`" elm-fin "\'\n")))))
+               ((eq ,type 'internal-variable)
+                (if ,prefix
+                    (when (string-match ,prefix elm-fin)
+                      (insert (concat ";; \`" elm-fin "\'\n")))
+                    (insert (concat ";; \`" elm-fin "\'\n"))))
+               ((eq ,type 'nested)
+                (if ,prefix
+                    (when (string-match ,prefix elm-fin)
+                      (insert (concat ";; \`" elm-fin "\'\n")))
+                    (insert (concat ";; \`" elm-fin "\'\n"))))
+               (t
+                (insert (concat ";; \`" elm-fin "\'\n"))))))))
+
 
 ;; TODO use align-regexp here that is now part of emacs.
 ;;;###autoload
