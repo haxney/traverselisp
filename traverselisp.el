@@ -190,7 +190,7 @@
 ;;; Code:
 
 (require 'derived)
-(eval-when-compile (require 'cl))
+(eval-and-compile (require 'cl))
 
 (defvar traversedir-mode-map
   (let ((map (make-sparse-keymap)))
