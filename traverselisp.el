@@ -1220,7 +1220,6 @@ If `ext' apply func only on files with .`ext'."
     (dolist (i dirs-list)
       (funcall fn i))))
 
-;;;###autoload
 (defun* traverse-auto-document-lisp-buffer (&key type prefix)
   (let* ((boundary-regexp "^;;=*LIMIT.*")
          (regexp          (case type
