@@ -1309,6 +1309,16 @@ If `ext' apply func only on files with .`ext'."
     (end-of-line) (eval-last-sexp t)
     (while (not (bolp)) (delete-char -1))))
 
+;;;###autoload
+(defun traverse-auto-documentation-insert-header (title &optional nstar)
+  (interactive "sTitle: \np")
+  (let ((ttype (completing-read "Type: " '("command " "nested-command "
+                                           "function " "nested-function "
+                                           "macro " "internal-variable "
+                                           "nested-variable " "faces ") nil t)))
+    (insert (concat ";;  " (make-string nstar ?*) " " title "\n"
+                    ";; [EVAL] (traverse-auto-document-lisp-buffer :type \'" ttype ":prefix \"\")"))))
+
 ;; TODO use align-regexp here that is now part of emacs.
 ;;;###autoload
 (defun traverse-pprint-tree (tree)
