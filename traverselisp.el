@@ -1254,64 +1254,60 @@ If `ext' apply func only on files with .`ext'."
 
 (defmacro* traverse-auto-document-lisp-buffer (&key type prefix)
   "Auto document tool for lisp code."
-  `(let* ((boundary-regexp "^;;=*LIMIT.*")
+  `(let* ((boundary-regexp "^;; +\\*+ .*");"^;;=*LIMIT.*")
           (regexp          (case ,type
-                             ('nested "^ +\(def\\(un\\|subst\\|advice\\)")
-                             ('command "\(def\\(un\\|subst\\)")
-                             ('internal-variable "\(defvar")
-                             ('user-variable "\(defcustom")
-                             ('faces "\(defface")
-                             ('function "\(def\\(un\\|subst\\|advice\\)")
-                             (t (error "Unknow type"))))
+                             ('command           "^\(def\\(un\\|subst\\)")
+                             ('nested-command    "^ +\(def\\(un\\|subst\\)")
+                             ('function          "^\(def\\(un\\|subst\\|advice\\)")
+                             ('nested-function   "^ +\(def\\(un\\|subst\\|advice\\)")
+                             ('macro             "^\(defmacro")
+                             ('internal-variable "^\(defvar")
+                             ('nested-variable   "^ +\(defvar")
+                             ('user-variable     "\(defcustom")
+                             ('faces             "\(defface")
+                             (t (error           "Unknow type"))))
           (fn-list         (traverse-find-readlines
                             (current-buffer)
                             regexp
                             :insert-fn 'buffer))
           beg end)
-     (insert "\n") (setq beg (point))
-     (save-excursion (when (re-search-forward boundary-regexp)
-                       (forward-line -1) (setq end (point))))
-     (delete-region beg end)
-     (dolist (i fn-list)
-       (let* ((elm     (cadr i))
-              (elm1    (replace-regexp-in-string "\*" "" elm))
-              (elm-mod (replace-regexp-in-string regexp "" elm1))
-              (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
-         (cond ((eq ,type 'command)
-                (when (commandp (intern elm-fin))
-                  (if ,prefix
-                      (when (string-match ,prefix elm-fin)
-                        (insert (concat ";; \`" elm-fin "\'\n")))
-                      (insert (concat ";; \`" elm-fin "\'\n")))))
-               ((eq ,type 'function)
-                (when (not (commandp (intern elm-fin)))
-                  (if ,prefix
-                      (when (string-match ,prefix elm-fin)
-                        (insert (concat ";; \`" elm-fin "\'\n")))
-                      (insert (concat ";; \`" elm-fin "\'\n")))))
-               ((eq ,type 'internal-variable)
-                (if ,prefix
-                    (when (string-match ,prefix elm-fin)
-                      (insert (concat ";; \`" elm-fin "\'\n")))
-                    (insert (concat ";; \`" elm-fin "\'\n"))))
-               ((eq ,type 'user-variable)
-                (if ,prefix
-                    (when (string-match ,prefix elm-fin)
-                      (insert (concat ";; \`" elm-fin "\'\n")))
-                    (insert (concat ";; \`" elm-fin "\'\n"))))
-               ((eq ,type 'faces)
-                (if ,prefix
-                    (when (string-match ,prefix elm-fin)
-                      (insert (concat ";; \`" elm-fin "\'\n")))
-                    (insert (concat ";; \`" elm-fin "\'\n"))))
-               ((eq ,type 'nested)
-                (if ,prefix
-                    (when (string-match ,prefix elm-fin)
-                      (insert (concat ";; \`" elm-fin "\'\n")))
-                    (insert (concat ";; \`" elm-fin "\'\n"))))
-               (t
-                (insert (concat ";; \`" elm-fin "\'\n"))))))))
-
+     (flet ((maybe-insert-with-prefix (name)
+              (if ,prefix
+                  (when (string-match ,prefix name)
+                    (insert (concat ";; \`" name "\'\n")))
+                  (insert (concat ";; \`" name "\'\n")))))
+       (insert "\n") (setq beg (point))
+       (save-excursion (when (re-search-forward boundary-regexp)
+                         (forward-line -1) (setq end (point))))
+       (delete-region beg end)
+       (dolist (i fn-list)
+         (let* ((elm     (cadr i))
+                (elm1    (replace-regexp-in-string "\*" "" elm))
+                (elm-mod (replace-regexp-in-string regexp "" elm1))
+                (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
+           (case ,type
+             ('command
+              (when (commandp (intern elm-fin))
+                (maybe-insert-with-prefix elm-fin)))
+             ('nested-command
+              (when (commandp (intern elm-fin))
+                (maybe-insert-with-prefix elm-fin)))
+             ('function
+              (when (not (commandp (intern elm-fin)))
+                (maybe-insert-with-prefix elm-fin)))
+             ('nested-function
+              (when (not (commandp (intern elm-fin)))
+                (maybe-insert-with-prefix elm-fin)))
+             (t
+              (maybe-insert-with-prefix elm-fin))))))))
+          
+;;;###autoload
+(defun traverse-auto-update-documentation ()
+  (interactive)
+  (goto-char (point-min))
+  (while (search-forward "[EVAL]" nil t)
+    (end-of-line) (eval-last-sexp t)
+    (while (not (bolp)) (delete-char -1))))
 
 ;; TODO use align-regexp here that is now part of emacs.
 ;;;###autoload
