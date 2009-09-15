@@ -53,7 +53,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;; * Commands defined here:
+;;  Traverse auto documentation
+;;  ---------------------------
+;;
+;;  * Commands defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'command)
 ;; `traverselisp-version'
 ;; `traverse-quit'
@@ -77,11 +80,11 @@
 ;; `traverse-build-tags-in-project'
 ;; `traverse-toggle-split-window-h-v'
 ;; `traverse-count-files-in-dir'
+;; `traverse-auto-update-documentation'
+;; `traverse-auto-documentation-insert-header'
 ;; `traverse-pprint-tree'
 
-;;========LIMIT=========(DONT REMOVE!)
-;;
-;;;  * Non--interactive functions defined here:
+;;  * Non--interactive functions defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'function :prefix "traverse")
 ;; `traverse-list-directory'
 ;; `traverse-walk-directory'
@@ -104,9 +107,7 @@
 ;; `traverse-apply-func-on-files'
 ;; `traverse-apply-func-on-dirs'
 
-;;========LIMIT=========(DONT REMOVE!)
-;;
-;;;  * Internal variables defined here:
+;;  * Internal variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'internal-variable :prefix "traverse")
 ;; `traversedir-mode-map'
 ;; `traverse-match-overlay-face'
@@ -119,18 +120,14 @@
 ;; `traverse-last-regexp'
 ;; `traverse-replace-auth'
 
-;;========LIMIT=========(DONT REMOVE!)
-;;
-;;;  * Faces defined here:
+;;  * Faces defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'faces :prefix "traverse")
 ;; `traverse-match-face'
 ;; `traverse-regex-face'
 ;; `traverse-path-face'
 ;; `traverse-overlay-face'
 
-;;========LIMIT=========(DONT REMOVE!)
-;;
-;;;  * User variables defined here:
+;;  * User variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'user-variable :prefix "^traverse")
 ;; `traverse-ignore-files'
 ;; `traverse-ignore-dirs'
@@ -139,8 +136,7 @@
 ;; `traverse-use-avfs'
 ;; `traverse-avfs-default-directory'
 
-;;========LIMIT=========(DONT REMOVE!)
-;;
+;;  *** END auto-documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Usage:
@@ -1305,7 +1301,7 @@ If `ext' apply func only on files with .`ext'."
 (defun traverse-auto-update-documentation ()
   (interactive)
   (goto-char (point-min))
-  (while (search-forward "[EVAL]" nil t)
+  (while (re-search-forward "^;; +\\[EVAL\\]" nil t)
     (end-of-line) (eval-last-sexp t)
     (while (not (bolp)) (delete-char -1))))
 
