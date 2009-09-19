@@ -106,6 +106,7 @@
 ;; `traverse-list-files-in-tree'
 ;; `traverse-apply-func-on-files'
 ;; `traverse-apply-func-on-dirs'
+;; `traverse-auto-document-lisp-buffer'
 
 ;;  * Internal variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'internal-variable :prefix "traverse")
@@ -211,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.12")
+(defconst traverse-version "1.1.13")
 
 ;;; Code:
 
