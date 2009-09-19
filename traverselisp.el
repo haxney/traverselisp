@@ -1261,6 +1261,7 @@ If `ext' apply func only on files with .`ext'."
                              ('nested-variable   "^ +\(defvar")
                              ('user-variable     "\(defcustom")
                              ('faces             "\(defface")
+                             ('anything-source   "^\(defvar anything-c-source")
                              (t (error           "Unknow type"))))
           (fn-list         (traverse-find-readlines
                             (current-buffer)
@@ -1276,6 +1277,7 @@ If `ext' apply func only on files with .`ext'."
        (save-excursion (when (re-search-forward boundary-regexp)
                          (forward-line -1) (setq end (point))))
        (delete-region beg end)
+       (when (eq ,type 'anything-source) (setq regexp "\(defvar"))
        (dolist (i fn-list)
          (let* ((elm     (cadr i))
                 (elm1    (replace-regexp-in-string "\*" "" elm))
@@ -1294,6 +1296,9 @@ If `ext' apply func only on files with .`ext'."
              ('nested-function
               (when (not (commandp (intern elm-fin)))
                 (maybe-insert-with-prefix elm-fin)))
+             ('internal-variable
+              (unless (string-match "anything-c-source" elm-fin)
+                (maybe-insert-with-prefix elm-fin)))
              (t
               (maybe-insert-with-prefix elm-fin))))))))
           
@@ -1311,7 +1316,8 @@ If `ext' apply func only on files with .`ext'."
   (let ((ttype (completing-read "Type: " '("command " "nested-command "
                                            "function " "nested-function "
                                            "macro " "internal-variable "
-                                           "nested-variable " "faces ") nil t)))
+                                           "nested-variable " "faces "
+                                           "anything-source ") nil t)))
     (insert (concat ";;  " (make-string nstar ?*) " " title "\n"
                     ";; [EVAL] (traverse-auto-document-lisp-buffer :type \'" ttype ":prefix \"\")"))))
 
