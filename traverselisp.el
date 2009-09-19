@@ -420,7 +420,7 @@ elements of list `lis' are regexps."
       t
       nil))
 
-(defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file) (stop-at-first nil))
+(defun* traverse-find-readlines (bfile regexp &key (insert-fn 'file) (stop-at-first nil))
   "Return all the lines of a file or buffer matching `regexp'.
 with the number of line in a list where each element is a list of the form:
 \\(\"number_of_line\" \"line\")"
@@ -1248,10 +1248,10 @@ If `ext' apply func only on files with .`ext'."
       (funcall fn i))))
 
 
-(defmacro* traverse-auto-document-lisp-buffer (&key type prefix)
+(defun* traverse-auto-document-lisp-buffer (&key type prefix)
   "Auto document tool for lisp code."
-  `(let* ((boundary-regexp "^;; +\\*+ .*");"^;;=*LIMIT.*")
-          (regexp          (case ,type
+  (let* ((boundary-regexp "^;; +\\*+ .*");"^;;=*LIMIT.*")
+          (regexp          (case type
                              ('command           "^\(def\\(un\\|subst\\)")
                              ('nested-command    "^ +\(def\\(un\\|subst\\)")
                              ('function          "^\(def\\(un\\|subst\\|advice\\)")
@@ -1269,21 +1269,21 @@ If `ext' apply func only on files with .`ext'."
                             :insert-fn 'buffer))
           beg end)
      (flet ((maybe-insert-with-prefix (name)
-              (if ,prefix
-                  (when (string-match ,prefix name)
+              (if prefix
+                  (when (string-match prefix name)
                     (insert (concat ";; \`" name "\'\n")))
                   (insert (concat ";; \`" name "\'\n")))))
        (insert "\n") (setq beg (point))
        (save-excursion (when (re-search-forward boundary-regexp)
                          (forward-line -1) (setq end (point))))
        (delete-region beg end)
-       (when (eq ,type 'anything-source) (setq regexp "\(defvar"))
+       (when (eq type 'anything-source) (setq regexp "\(defvar"))
        (dolist (i fn-list)
          (let* ((elm     (cadr i))
                 (elm1    (replace-regexp-in-string "\*" "" elm))
                 (elm-mod (replace-regexp-in-string regexp "" elm1))
                 (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
-           (case ,type
+           (case type
              ('command
               (when (commandp (intern elm-fin))
                 (maybe-insert-with-prefix elm-fin)))
@@ -1301,7 +1301,7 @@ If `ext' apply func only on files with .`ext'."
                 (maybe-insert-with-prefix elm-fin)))
              (t
               (maybe-insert-with-prefix elm-fin))))))))
-          
+
 ;;;###autoload
 (defun traverse-auto-update-documentation ()
   (interactive)
