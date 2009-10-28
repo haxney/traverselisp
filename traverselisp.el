@@ -212,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.13")
+(defconst traverse-version "1.1.14")
 
 ;;; Code:
 
@@ -610,9 +610,7 @@ Use the same args as `read-string' or `read-regexp'
 depending of what emacs version you use.
 NOTE:When using `read-string' some regexp (complex)
 may not be displayed correctly to traverselisp"
-  (apply #'funcall (if (fboundp 'read-regexp)
-                       'read-regexp
-                       'read-string)
+  (apply #'funcall (if (fboundp 'read-regexp) 'read-regexp 'read-string)
          args))
 
 ;;;###autoload
@@ -641,7 +639,7 @@ except on files that are in `traverse-ignore-files'
 Called with prefix-argument (C-u) absolute path is displayed"
   (interactive
    (list (read-directory-name "Tree: ")
-         (traverse-read-regexp "Regexp: ")
+         (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))
          (read-string "CheckOnly: ")))
   (traverse-prepare-buffer)
   (let ((init-time (cadr (current-time)))
@@ -701,7 +699,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 ;;;###autoload
 (defun traverse-search-in-dired-dir-at-point (regex &optional only)
   "Search for regexp in all files of directory at point in a dired buffer."
-  (interactive (list (traverse-read-regexp "Regexp: ")
+  (interactive (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))
                      (read-string "CheckOnly: ")))
   (if (eq major-mode 'dired-mode)
       (let ((tree (dired-get-filename)))
@@ -713,7 +711,7 @@ Called with prefix-argument (C-u) absolute path is displayed"
 ;;;###autoload
 (defun traverse-search-in-dired-file-at-point (regex)
   "Search for regexp in file at point in a dired buffer."
-  (interactive (list (traverse-read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))))
   (if (eq major-mode 'dired-mode)
       (let ((fname (dired-get-filename)))
         (if (file-regular-p fname)
@@ -744,7 +742,7 @@ to have these programs installed on your system and FUSE module
 enabled in your kernel.
 This function is disabled by default, enable it setting
 traverse-use-avfs to non--nil"
-  (interactive (list (traverse-read-regexp "Regexp: ")
+  (interactive (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))
                      (read-string "CheckOnly: ")))
   (when traverse-use-avfs
     (let ((file-at-point (dired-get-filename)))
@@ -762,7 +760,7 @@ traverse-use-avfs to non--nil"
   "Search for regexp in all marked files of a dired buffer.
 if some of the marked files are directories ignore them
 if no marked files use file at point."
-  (interactive (list (traverse-read-regexp "Regexp: ")))
+  (interactive (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))))
   (let ((prefarg (not (null current-prefix-arg)))
         (fname-list (traverse-dired-get-marked-files)))
     (traverse-prepare-buffer)
@@ -787,7 +785,7 @@ if no marked files use file at point."
 (defun traverse-dired-find-in-all-files (regexp only &optional full-path)
   "Search for regexp in all files of current dired buffer.
 except compressed files and symlinks"
-  (interactive (list (traverse-read-regexp "Regexp: ")
+  (interactive (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))
                      (read-string "CheckOnly: ")))
   (let ((prefarg (not (null current-prefix-arg)))
         (all-files (traverse-list-directory (dired-current-directory)))
@@ -857,11 +855,11 @@ in compressed archive at point if traverse-use-avfs is non--nil."
   (interactive
    (let ((f-or-d-name (dired-get-filename)))
      (cond ((traverse-dired-has-marked-files)
-            (list (traverse-read-regexp "Regexp: ")))
+            (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))))
            ((or (file-directory-p f-or-d-name)
                 (and (file-regular-p f-or-d-name)
                      (file-compressed-p f-or-d-name)))
-            (list (traverse-read-regexp "Regexp: ")
+            (list (traverse-read-regexp (if (fboundp 'read-regexp) "Regexp " "Regexp: "))
                   (read-string "CheckOnly: "))))))
   (let ((fname (dired-get-filename)))
     (cond ((traverse-dired-has-marked-files)
