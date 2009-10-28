@@ -212,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.15")
+(defconst traverse-version "1.1.16")
 
 ;;; Code:
 
@@ -582,6 +582,8 @@ with the number of line in a list where each element is a list of the form:
           (switch-to-buffer-other-window (get-buffer fname))
           (find-file-other-window fname))
       (goto-line (string-to-number nline))
+      (let ((line (string-to-number nline)))
+        (goto-char (point-min)) (forward-line (1- line)))
       (setq case-fold-search t)
       (beginning-of-line)
       (when (re-search-forward regex nil nil)
