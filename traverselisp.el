@@ -212,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.16")
+(defconst traverse-version "1.1.17")
 
 ;;; Code:
 
@@ -1248,6 +1248,23 @@ If `ext' apply func only on files with .`ext'."
     (dolist (i dirs-list)
       (funcall fn i))))
 
+(defmacro traverse-collect-files-in-tree-if (tree pred)
+  "Return a list of files matching PRED in TREE.
+PRED is a function that take one arg."
+  `(lexical-let ((flist ()))
+     (traverse-walk-directory
+      ,tree
+      :file-fn #'(lambda (x) (when (funcall ,pred x) (push x flist))))
+     flist))
+
+(defmacro traverse-collect-files-in-tree-if-not (tree pred)
+  "Return a list of files not matching PRED in TREE.
+PRED is a function that take one arg."
+  `(lexical-let ((flist ()))
+     (traverse-walk-directory
+      ,tree
+      :file-fn #'(lambda (x) (unless (funcall ,pred x) (push x flist))))
+     flist))
 
 (defun* traverse-auto-document-lisp-buffer (&key type prefix)
   "Auto document tool for lisp code."
