@@ -56,6 +56,8 @@
 ;;  Traverse auto documentation
 ;;  ---------------------------
 ;;
+;;  [UPDATE ALL EVAL] (traverse-auto-update-documentation)
+;;
 ;;  * Commands defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'command)
 ;; `traverselisp-version'
@@ -107,6 +109,11 @@
 ;; `traverse-apply-func-on-files'
 ;; `traverse-apply-func-on-dirs'
 ;; `traverse-auto-document-lisp-buffer'
+
+;;  * Macros defined here:
+;; [EVAL] (traverse-auto-document-lisp-buffer :type 'macro :prefix "traverse")
+;; `traverse-collect-files-in-tree-if'
+;; `traverse-collect-files-in-tree-if-not'
 
 ;;  * Internal variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'internal-variable :prefix "traverse")
@@ -212,7 +219,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.17")
+(defconst traverse-version "1.1.18")
 
 ;;; Code:
 
