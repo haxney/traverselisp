@@ -219,7 +219,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.18")
+(defconst traverse-version "1.1.19")
 
 ;;; Code:
 
@@ -428,28 +428,23 @@ elements of list `lis' are regexps."
       t
       nil))
 
-(defun* traverse-find-readlines (bfile regexp &key (insert-fn 'file) (stop-at-first nil))
+(defun* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
   "Return all the lines of a file or buffer matching `regexp'.
 with the number of line in a list where each element is a list of the form:
 \\(\"number_of_line\" \"line\")"
-  (let* ((matched-elm)
-         (fn (cond ((eq insert-fn 'file)
-                    'insert-file-contents)
-                   ((eq insert-fn 'buffer)
-                    'insert-buffer-substring))))
+  (let ((count 0)
+        (fn    (case insert-fn
+                 ('file 'insert-file-contents)
+                 ('buffer 'insert-buffer-substring))))
     (with-temp-buffer
       (funcall fn bfile) ; call insert function
       (goto-char (point-min))
-      (let ((lines-list (split-string (buffer-string) "\n")))
-        (dolist (i lines-list)
-          (when (string-match regexp i)
-            (if stop-at-first
-                (return-from traverse-find-readlines (cons (position i lines-list)
-                                                           bfile))
-                (push (list (position i lines-list)
-                            (replace-regexp-in-string "\n" "" i))
-                      matched-elm))))))
-    (nreverse matched-elm)))
+      (loop
+         with lines-list = (split-string (buffer-string) "\n")
+         for i in lines-list when (string-match regexp i)
+         collect (list count (replace-regexp-in-string "\n" "" i)) into lis
+         do (incf count)
+         finally return lis))))
 
 
 (defun traverse-file-process (regex fname &optional full-path insert-fn)
