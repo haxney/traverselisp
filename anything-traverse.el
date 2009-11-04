@@ -369,21 +369,12 @@ If we are in another source just go to next/prec line."
                                          (point-at-bol)
                                          (point-at-eol))))  
                    (current-fname      (nth 0 current-line-list))
-                   ;; Don't use file names like "somename+.el"
-                   (current-fname-less (replace-regexp-in-string "\+"
-                                                                 ""
-                                                                 (file-name-sans-extension
-                                                                  current-fname)))
                    (fn-b-o-f           (if (eq n 1) 'eobp 'bobp))) ; func back or forward
               (catch 'break
                 (while (not (funcall fn-b-o-f))
                   (forward-line n)
                   (beginning-of-line)
-                  (when (not (or (re-search-forward current-fname
-                                                    (point-at-eol) t)
-                                 (when (string-match "\+" current-fname)
-                                   (re-search-forward current-fname-less
-                                                      (point-at-eol) t))))
+                  (when (not (search-forward current-fname (point-at-eol) t))
                     (anything-mark-current-line)
                     (throw 'break nil))))
               (if (eq n 1)
