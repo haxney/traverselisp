@@ -76,15 +76,10 @@
 ;; `traverse-go-backward'
 ;; `traverse-scroll-down-other-window'
 ;; `traverse-scroll-up-other-window'
-;; `traverse-search-and-replace'
-;; `traverse-search-and-replace-all'
-;; `traverse-cp-or-mv-extfiles-in-dir'
-;; `traverse-build-tags-in-project'
 ;; `traverse-toggle-split-window-h-v'
 ;; `traverse-count-files-in-dir'
 ;; `traverse-auto-update-documentation'
 ;; `traverse-auto-documentation-insert-header'
-;; `traverse-pprint-tree'
 
 ;;  * Non--interactive functions defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'function :prefix "traverse")
@@ -151,7 +146,7 @@
 ;; =====
 ;; M-x `traverse-deep-rfind'
 ;; When searching is done and you are in traverse buffer
-;; some interactive actions are provided for navigate and for replacing regexps
+;; some interactive actions are provided for navigate
 ;; Use "C-h m" for more info while in traverse-buffer.
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -162,8 +157,6 @@
 ;; ESC             Prefix Command
 ;; N               traverse-go-forward
 ;; P               traverse-go-backward
-;; R               traverse-search-and-replace-all ==> [interactive menu]
-;; S               traverse-search-and-replace
 ;; q               traverse-quit
 ;; <S-down>        traverse-scroll-down-other-window
 ;; <S-up>          traverse-scroll-up-other-window
@@ -219,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.19")
+(defconst traverse-version "1.1.20")
 
 ;;; Code:
 
@@ -230,8 +223,6 @@
 (defvar traversedir-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [?q] 'traverse-quit)
-    (define-key map [?S] 'traverse-search-and-replace)
-    (define-key map [?R] 'traverse-search-and-replace-all)
     (define-key map [?N] 'traverse-go-forward)
     (define-key map [?P] 'traverse-go-backward)
     (define-key map [(shift down)] 'traverse-scroll-down-other-window)
@@ -323,7 +314,7 @@ Are allowed:(examples)
 (defface traverse-path-face '((t (:foreground "green")))
   "TRAVERSEDIR face."
   :group 'traverse-faces)
-(defface traverse-overlay-face '((t (:background "MediumAquamarine" :underline t)))
+(defface traverse-overlay-face '((t (:background "Indianred4" :underline t)))
   "Face for highlight line in matched buffer."
   :group 'traverse-faces)
 
@@ -911,174 +902,6 @@ in compressed archive at point if traverse-use-avfs is non--nil."
                (get-buffer "*traverse-lisp*"))
     (scroll-other-window -1)))
 
-;;;; Replace functions
-;;;###autoload
-(defun traverse-search-and-replace (str &optional regex)
-  "Replace current regexp with `str', replacement is performed only on current line."
-  (interactive "sNewstring: ")
-  (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
-      (progn
-        (let ((pos (point)))
-          (goto-char (point-min))
-          (when (not regex)
-            (when (re-search-forward "for ")
-              (setq regex
-                    (buffer-substring (point)
-                                      (- (line-end-position) 1)))))
-          (goto-char pos)
-          (if (button-at (point))
-              (progn
-                (save-window-excursion
-                  (let ((fname (button-label (button-at (point))))
-                        (flag-w nil))
-                    (setq fname (replace-regexp-in-string "\\[" "" fname))
-                    (setq fname (replace-regexp-in-string "\\]" "" fname))
-                    (setq fname (expand-file-name fname))
-                    (push-button)
-                    ;; We are now in the file buffer
-                    (with-current-buffer (find-buffer-visiting fname) 
-                      (if (and (file-writable-p fname)
-                               (not (backup-file-name-p fname)))
-                          (when (re-search-forward regex)
-                            (setq traverse-last-regexp (match-string 0))
-                            (if (not traverse-replace-auth)
-                                (if (y-or-n-p (format "Replace all occurences of [%s] with [%s]? "
-                                                      (propertize traverse-last-regexp
-                                                                  'face 'traverse-match-face)
-                                                      (propertize str
-                                                                  'face 'traverse-match-face)))
-                                    (setq traverse-replace-auth t)
-                                    (throw 'break
-                                      (error "Operation Aborted"))))
-                            
-                            (let ((line (thing-at-point 'line))
-                                  (new-line))
-                              (delete-region (line-beginning-position)
-                                             (line-end-position))
-                              (setq new-line (replace-regexp-in-string regex str line))
-                              (insert new-line)
-                              (delete-blank-lines)
-                              (save-buffer)
-                              (highlight-regexp str 'hi-pink)
-                              (sit-for traverse-show-regexp-delay)
-                              (setq flag-w t))
-                            (kill-buffer (current-buffer)))))
-                    ;; We are back in traverse-buffer
-                    (beginning-of-line)
-                    (delete-region (point) (line-end-position))
-                    (delete-blank-lines)
-                    (forward-line 1)
-                    (if flag-w
-                        (message "<%s> Replaced by <%s> in [%s]"
-                                 (propertize regex
-                                             'face 'traverse-regex-face)
-                                 (propertize str
-                                             'face 'traverse-match-face)
-                                 fname)
-                        (message "Skipping: File not writable or under vc")))))
-              (message "We are not on a button!"))))
-      (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
-
-
-;;;###autoload
-(defun traverse-search-and-replace-all (str)
-  "Launch search and replace interactively on all occurences found in current traverse buffer.
-commands provided here are: (n)ext (a)ll (s)kip (x)stop"
-  (interactive "sNewstring: ")
-  (if (eq (current-buffer) (get-buffer "*traverse-lisp*"))
-      (progn
-        (goto-char (point-min))
-        (let ((mem-srd traverse-show-regexp-delay)
-              (action "")
-              (count 0)
-              (regex (when (re-search-forward "for ")
-                       (buffer-substring (point)
-                                         (- (line-end-position) 1)))))
-          (unwind-protect
-               (progn
-                 (setq traverse-show-regexp-delay 0)
-                 (when (not (button-at (point)))
-                   (goto-char (point-min))
-                   (forward-button 1))
-                 (catch 'break
-                   (while (button-at (point))
-                     (catch 'continue
-                       (if (eq action '?a)
-                           ;; replace all without asking
-                           (progn
-                             (traverse-search-and-replace str regex)
-                             (incf count))
-                           ;; ask for next action and set it
-                           (setq action (read-event (concat (propertize "Next("
-                                                                        'face 'traverse-match-face)
-                                                            (propertize "n "
-                                                                        'face 'traverse-path-face)
-                                                            (propertize ") All("
-                                                                        'face 'traverse-match-face)
-                                                            (propertize "a"
-                                                                        'face 'traverse-path-face)
-                                                            (propertize ") Skip("
-                                                                        'face 'traverse-match-face)
-                                                            (propertize "s"
-                                                                        'face 'traverse-path-face)
-                                                            (propertize ") Stop("
-                                                                        'face 'traverse-match-face)
-                                                            (propertize "x"
-                                                                        'face 'traverse-path-face)
-                                                            (propertize ") :"
-                                                                        'face 'traverse-match-face))))
-                           (case action
-                             ('?n (progn
-                                    (setq traverse-show-regexp-delay 1)
-                                    (traverse-search-and-replace str regex)
-                                    (incf count)
-                                    (throw 'continue nil)))
-                             ('?a (progn
-                                    (message "Replacing all, you can %s at any time with %s"
-                                             (propertize "STOP"
-                                                         'face 'traverse-match-face)
-                                             (propertize "<C-g>"
-                                                         'face 'traverse-match-face))
-                                    (setq traverse-show-regexp-delay 0.1)
-                                    (sit-for 3)
-                                    (traverse-search-and-replace str regex)
-                                    (incf count)
-                                    (throw 'continue nil)))
-                             ('?s (progn
-                                    (delete-region (point) (line-end-position))
-                                    (delete-blank-lines)
-                                    (forward-button 1)
-                                    (throw 'continue nil)))
-                             ('?x (progn
-                                    (throw 'break nil)))
-                             (t (progn
-                                  (error "Unknow command, operation Aborted")
-                                  (throw 'break nil)))))))))
-            (if (eq action '?x)
-                ;; action is stopped
-                (progn
-                  (setq traverse-show-regexp-delay mem-srd)
-                  (message "[%s] Occurences of %s replaced by <%s>"
-                           (propertize (int-to-string count)
-                                       'face 'traverse-match-face)
-                           (propertize regex
-                                       'face 'traverse-regex-face)
-                           (propertize str
-                                       'face 'traverse-path-face)))
-                ;; action is finish
-                (setq traverse-replace-auth nil)
-                (setq traverse-show-regexp-delay mem-srd)
-                (when (re-search-backward "^Found")
-                  (beginning-of-line)
-                  (delete-region (point) (line-end-position))
-                  (highlight-regexp str "hi-pink")
-                  (highlight-regexp "^\\[.\\]" "hi-green")
-                  (insert (format "[%s] Occurences of <%s> replaced by <%s>"
-                                  count
-                                  regex
-                                  str))))
-            (setq traverse-replace-auth nil))))
-      (error "You are not in a traverse-buffer, run first traverse-deep-rfind")))
 
 ;;;; Utils
 
@@ -1090,69 +913,6 @@ commands provided here are: (n)ext (a)ll (s)kip (x)stop"
       ("bz2" t)
       ("zip" t)
       (t     nil))))
-
-;;;###autoload
-(defun* traverse-cp-or-mv-extfiles-in-dir (tree ext dir &optional (fn 'copy-file))
-  "Recurse in `tree' and copy/move all files with `ext' in `dir'.
-Default is copying, called with prefix-arg (C-u) Move files with `ext' in `Dir'.
-`func' is a symbol when called non-interactively.
-
-Note: `dir' will be use as target and NO search inside it will be performed.
-If you want to move/copy files that are nested in subdir(s) of `dir'
-It will fail silently.==> So use another dir target
-
-If `dir' exists and is not empty, it will be synch with the newest files
-found in `tree'"
-  (interactive "DTree: \nsExt(with dot): \nGTargetDirectory: ")
-  (let ((igndir (file-name-nondirectory dir)))
-    (unless (file-directory-p dir)
-      (make-directory dir t))
-    (when current-prefix-arg
-      (setq fn 'rename-file))
-    (traverse-walk-directory
-     tree
-     :file-fn #'(lambda (x)
-                  (when (equal (file-name-extension x t) ext)
-                    ;; should i recurse in dir at this point ?
-                    ;; would implement synch completely.
-                    (if (file-exists-p (concat dir (file-name-nondirectory x)))
-                        (when (file-newer-than-file-p (expand-file-name x)
-                                                      (concat dir
-                                                              (file-name-nondirectory x)))
-                          (funcall fn (expand-file-name x) dir 'overwrite))
-                        (funcall fn (expand-file-name x) dir 'overwrite))))
-     :exclude-dirs `(,igndir))))
-
-
-;; Experimental ==> Huge projects not supported (Tags files become to big)
-;;;###autoload
-(defun traverse-build-tags-in-project (dir ext &optional new-file)
-  "Build an etags file at root of current project.
-If `new-file' is non-nil (do it with C-u) build a new file
-instead of appending to the current one.
-Many file extensions can be enter at `ext' prompt.
-Tag file will be build in `dir'"
-  (interactive "Ddir: \nsExt: ")
-  (let ((ext-list (split-string ext))
-        (count 0))
-    (when current-prefix-arg
-      (setq new-file t))
-    (when new-file
-      (delete-file (expand-file-name "TAGS" dir)))
-    (dolist (i ext-list)
-      (traverse-walk-directory
-       dir
-       :file-fn #'(lambda (x)
-                    (when (equal (file-name-extension x t) i)
-                      (message "Tagging [%s]" (propertize x
-                                                          'face 'traverse-path-face))
-                      (incf count)
-                      (call-process-shell-command (format "etags %s -a %s"
-                                                          x
-                                                          (expand-file-name "TAGS" dir)))))
-       :exclude-dirs traverse-ignore-dirs))
-    (message "%s Files tagged" (propertize (int-to-string count)
-                                           'face 'traverse-match-face))))
 
 
 (defun traverse-window-split-h-or-t ()
@@ -1360,53 +1120,9 @@ See headers of traverselisp.el for example."
     (insert (concat ";;  " (make-string nstar ?*) " " title "\n"
                     ";; [EVAL] (traverse-auto-document-lisp-buffer :type \'" ttype ":prefix \"\")"))))
 
-;; TODO use align-regexp here that is now part of emacs.
-;;;###autoload
-(defun traverse-pprint-tree (tree)
-  "PPrint the content of `tree'.
-NOTE: for a better output, be sure to have
-http://www.emacswiki.org/emacs/align.el
-installed on your emacs even if that work without."
-  (interactive "DTree: ")
-  (switch-to-buffer "*traverse-ls*")
-  (erase-buffer)
-  (let ((dirs-list (traverse-list-directories-in-tree tree))
-        (beg)
-        (end))
-    (loop for i in dirs-list
-       do
-         (insert (propertize (format "%s\n" i)
-                             'face 'traverse-match-face))
-         (setq beg (point))
-         (loop for x in (traverse-list-directory i t) 
-            do
-              (let* ((attr (file-attributes x))
-                     (time-stamp (format-time-string "%Y-%m-%d %H:%M" (nth 6 attr)))
-                     (size (int-to-string (nth 7 attr)))
-                     (mode (nth 8 attr)))
-                (if (file-directory-p x)
-                    (insert (propertize (format "    %s %s %s %s\n"
-                                                mode
-                                                size
-                                                time-stamp
-                                                (file-name-nondirectory x))
-                                        'face 'traverse-regex-face))
-                    (insert (propertize (format "    %s %s %s %s\n"
-                                                mode
-                                                size
-                                                time-stamp
-                                                (file-name-nondirectory x))
-                                        'face 'traverse-path-face)))))
-         (setq end (point))
-         (unless (eq beg end)
-           (if (fboundp 'align-cols)
-               (align-cols beg end 4)))))
-  (goto-char (point-min))
-  (traversedir-mode))
 
+;; Provide
 (provide 'traverselisp)
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; (emacswiki-post "traverselisp.el")
