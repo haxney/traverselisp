@@ -212,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.20")
+(defconst traverse-version "1.1.21")
 
 ;;; Code:
 
@@ -411,14 +411,15 @@ See `traverse-ignore-files' and `traverse-ignore-dirs'."
 
 (defun traverse-comp-str-to-list (str lis)
   "Compare STR with all elements of list LIS.
-elements of list LIS are regexps."
+All the elements of list LIS are regexps issued from prompt.
+Each element of LIS is compared with the filename STR."
   (catch 'break
     (dolist (i lis)
       (when (string-match i str)
         (throw 'break t)))))
 
 (defun traverse-check-only-lists (str lis)
-  "Check if STR match one element of LIS'."
+  "Check if STR match one element of LIS."
   (or (member (file-name-extension str t) lis)
       (traverse-comp-str-to-list str lis)))
 
@@ -458,14 +459,10 @@ elements of list LIS are regexps."
                       (insert-button (format "[%s]" (buffer-name fname))
                                      'action 'traverse-button-func
                                      'face "hi-green")))
-               (insert (concat " "
-                               (int-to-string (+ (first i) 1))
+               (insert (concat " " (int-to-string (+ (first i) 1))
                                ":"
-                               (if (> (length line-to-print)
-                                      traverse-length-line)
-                                   (substring line-to-print
-                                              0
-                                              traverse-length-line)
+                               (if (> (length line-to-print) traverse-length-line)
+                                   (substring line-to-print 0 traverse-length-line)
                                    line-to-print)
                                "\n"))))))
     (setq traverse-count-occurences (+ traverse-count-occurences
@@ -476,9 +473,9 @@ elements of list LIS are regexps."
   (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let ((line-to-print (if traverse-keep-indent
-                                 (second i)
-                                 (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
+        (let* ((ltp           (second i))
+               (new-ltp       (replace-regexp-in-string "\\(^ *\\)" "" ltp))
+               (line-to-print (if traverse-keep-indent ltp new-ltp)))
           (insert (concat (propertize (file-name-nondirectory fname)
                                       'face 'traverse-path-face
                                       'help-echo line-to-print)
@@ -486,11 +483,8 @@ elements of list LIS are regexps."
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face)
                           ":"
-                          (if (> (length line-to-print)
-                                 traverse-length-line)
-                              (substring line-to-print
-                                         0
-                                         traverse-length-line)
+                          (if (> (length line-to-print) traverse-length-line)
+                              (substring line-to-print 0 traverse-length-line)
                               line-to-print)
                           "\n")))))))
 
@@ -499,22 +493,16 @@ elements of list LIS are regexps."
   (let ((matched-lines (traverse-find-readlines buffer regex :insert-fn 'buffer)))
     (when matched-lines 
       (dolist (i matched-lines) ;; each element is of the form '(key value)
-        (let ((line-to-print (if traverse-keep-indent
-                                 (second i)
-                                 (replace-regexp-in-string (if (string-match "^\t" (second i))
-                                                               "\\(^\t*\\)"
-                                                               "\\(^ *\\)")
-                                                           "" (second i)))))
-          (insert (concat " "
-                          (propertize (int-to-string (+ (first i) 1))
-                                      'face 'traverse-match-face
-                                      'help-echo line-to-print)
+        (let* ((ltp           (second i))
+               (replace-reg   (if (string-match "^\t" ltp) "\\(^\t*\\)" "\\(^ *\\)"))
+               (new-ltp       (replace-regexp-in-string replace-reg "" ltp)) 
+               (line-to-print (if traverse-keep-indent ltp new-ltp)))
+          (insert (concat " " (propertize (int-to-string (+ (first i) 1))
+                                          'face 'traverse-match-face
+                                          'help-echo line-to-print)
                           ":"
-                          (if (> (length line-to-print)
-                                 lline)
-                              (substring line-to-print
-                                         0
-                                         lline)
+                          (if (> (length line-to-print) lline)
+                              (substring line-to-print 0 lline)
                               line-to-print)
                           "\n")))))))
 
