@@ -212,7 +212,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.21")
+(defconst traverse-version "1.1.22")
 
 ;;; Code:
 
@@ -335,12 +335,7 @@ Are allowed:(examples)
 (defvar traverse-count-occurences 0
   "Simple variable to store the number of occurence found.")
 (defvar traverse-occur-overlay nil)
-(defvar traverse-last-regexp nil
-  "Used in `traverse-search-and-replace'.
-remember the regexp used in last search.")
-(defvar traverse-replace-auth nil
-  "Used in `traverse-search-and-replace'.
-Allow traverse to continue replacing operation.")
+
 
 (defun traverselisp-version ()
   "Give version number of traverselisp."
@@ -465,8 +460,7 @@ Each element of LIS is compared with the filename STR."
                                    (substring line-to-print 0 traverse-length-line)
                                    line-to-print)
                                "\n"))))))
-    (setq traverse-count-occurences (+ traverse-count-occurences
-                                       (length matched-lines)))))
+    (setq traverse-count-occurences (+ traverse-count-occurences (length matched-lines)))))
 
 (defun traverse-file-process-ext (regex fname &optional insert-fn)
   "Function to process files in external program like anything."
