@@ -941,7 +941,7 @@ Possible value are 'hor or 'ver"
 
 ;;;###autoload
 (defun traverse-count-files-in-dir (tree &optional quiet)
-  "Count files in `tree'.
+  "Count files in TREE.
 and return a message and the number of files.
 If `quiet' is non-nil don't send message."
   (interactive "DDirectory: ")
@@ -972,7 +972,11 @@ IGNORE-DIRS is a list of directories to ignore."
                        ignore-dirs))
     (nreverse list-dirs)))
 
-(defun* traverse-list-files-in-tree (tree &optional ignore-files (ignore-dirs traverse-ignore-dirs) only-ext)
+(defun* traverse-list-files-in-tree (tree
+                                     &optional
+                                     (ignore-files traverse-ignore-files)
+                                     (ignore-dirs traverse-ignore-dirs)
+                                     only-ext)
   "Return all files in TREE without directories.
 IGNORE-FILES is a list of files(and/or).ext to ignore.
 ONLY-EXT will match only files with .ext or matching regexp that are in this list.
@@ -991,27 +995,11 @@ NOTE: if both IGNORE-FILES and ONLY-EXT' are set, ONLY-EXT will take precedence 
      :exclude-dirs ignore-dirs)
     (nreverse list-files)))
 
-(defun traverse-apply-func-on-files (tree fn &optional ext)
-  "Exec function FN on all files of TREE.
-If EXT apply func only on files with extension EXT."
-  (let ((files-list (traverse-list-files-in-tree tree)))
-    (dolist (i files-list)
-      (if ext
-          (when (equal (file-name-extension i t) ext)
-            (funcall fn i))
-          (funcall fn i)))))
-
-(defun traverse-apply-func-on-dirs (tree fn &optional ignore-dirs)
-  "Exec function FN on all directories of TREE.
-`ignore-dirs' is a list of directories to ignore."
-  (let ((dirs-list (traverse-list-directories-in-tree tree ignore-dirs)))
-    (dolist (i dirs-list)
-      (funcall fn i))))
 
 (defmacro traverse-collect-files-in-tree-if (tree pred)
   "Return a list of files matching PRED in TREE.
 PRED is a function that take one arg."
-  `(lexical-let ((flist ()))
+  `(let ((flist ()))
      (traverse-walk-directory
       ,tree
       :file-fn #'(lambda (x) (when (funcall ,pred x) (push x flist))))
@@ -1020,7 +1008,7 @@ PRED is a function that take one arg."
 (defmacro traverse-collect-files-in-tree-if-not (tree pred)
   "Return a list of files not matching PRED in TREE.
 PRED is a function that take one arg."
-  `(lexical-let ((flist ()))
+  `(let ((flist ()))
      (traverse-walk-directory
       ,tree
       :file-fn #'(lambda (x) (unless (funcall ,pred x) (push x flist))))
