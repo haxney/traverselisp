@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.29")
+(defconst traverse-version "1.1.30")
 
 ;;; Code:
 
@@ -1186,7 +1186,7 @@ Special commands:
     
 (defun traverse-incremental-scroll (n)
   "Scroll other buffer and move overlay accordingly."
-  (forward-line n)
+  (traverse-incremental-forward-line n)
   (traverse-incremental-occur-color-current-line)
   (when (traverse-incremental-jump)
     (other-window 1)))
