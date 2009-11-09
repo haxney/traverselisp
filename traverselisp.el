@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.30")
+(defconst traverse-version "1.1.31")
 
 ;;; Code:
 
@@ -1204,13 +1204,16 @@ Special commands:
   (traverse-incremental-scroll -1))
 
 
-(defun traverse-incremental-read-search-input ()
+(defun traverse-incremental-read-search-input (initial-input)
   "Read each keyboard input and add it to `traverse-incremental-search-pattern'."
-  (setq traverse-incremental-search-pattern "")    ; Always reset pattern to empty string
-  (let ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
-        (inhibit-quit t)
-        (tmp-list     ())
-        char)
+  (let* ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
+         (inhibit-quit t)
+         (tmp-list     ())
+         char)
+    (unless (string= initial-input "")
+      (loop for char across initial-input
+         do (push (text-char-description char) tmp-list)))
+    (setq traverse-incremental-search-pattern initial-input)
     (catch 'break
       (while 1
         (catch 'continue
@@ -1231,13 +1234,13 @@ Special commands:
             (?\C-n ; Next line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
-             (traverse-incremental-next-line);(forward-line 1)
+             (traverse-incremental-next-line)
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Is it needed?
             (?\C-p ; precedent line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
-             (traverse-incremental-precedent-line);(forward-line -1)
+             (traverse-incremental-precedent-line)
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Is it needed?
             (?\C-z ; persistent action
@@ -1254,7 +1257,7 @@ Special commands:
   "Print all lines matching REGEXP to buffer BUFFER-NAME."
   (let ((title (propertize "Traverse Incremental occur" 'face '((:background "Dodgerblue4")))))
     (if (string= regexp "")
-        (progn (erase-buffer) (insert (concat title "\n\n") (traverse-incremental-mode)))
+        (progn (erase-buffer) (insert (concat title "\n\n")))
         (erase-buffer) (insert (concat title "\n\n"))
         (traverse-buffer-process-ext regexp buffer-name)
         (goto-char (point-min)) (forward-line 2)
@@ -1277,24 +1280,30 @@ Special commands:
   (setq traverse-incremental-current-buffer (buffer-name (current-buffer)))
   (with-current-buffer traverse-incremental-current-buffer
     (jit-lock-fontify-now))
-  (pop-to-buffer (get-buffer-create "*traverse search*"))
-  (unwind-protect
-       (progn
-         (traverse-incremental-start-timer)
-         (traverse-incremental-read-search-input))
-    (progn
-      (traverse-incremental-cancel-search)
-      (when (equal (buffer-substring (point-at-bol) (point-at-eol)) "")
-        (setq traverse-incremental-quit-flag t))
-      (if traverse-incremental-quit-flag
-          (progn
-            (kill-buffer "*traverse search*")
-            (switch-to-buffer traverse-incremental-current-buffer)
-            (when traverse-occur-overlay
-              (delete-overlay traverse-occur-overlay))
-            (delete-other-windows))
-          (traverse-incremental-jump) (other-window 1))
-      (setq traverse-incremental-quit-flag nil))))
+  (let* ((init-str (if current-prefix-arg (thing-at-point 'symbol) ""))
+         (len      (length init-str))
+         str-no-prop)
+    (set-text-properties 0 len nil init-str)
+    (setq str-no-prop init-str)
+    (pop-to-buffer (get-buffer-create "*traverse search*"))
+    (traverse-incremental-mode)
+    (unwind-protect
+         (progn
+           (traverse-incremental-start-timer)
+           (traverse-incremental-read-search-input str-no-prop))
+      (progn
+        (traverse-incremental-cancel-search)
+        (when (equal (buffer-substring (point-at-bol) (point-at-eol)) "")
+          (setq traverse-incremental-quit-flag t))
+        (if traverse-incremental-quit-flag
+            (progn
+              (kill-buffer "*traverse search*")
+              (switch-to-buffer traverse-incremental-current-buffer)
+              (when traverse-occur-overlay
+                (delete-overlay traverse-occur-overlay))
+              (delete-other-windows))
+            (traverse-incremental-jump) (other-window 1))
+        (setq traverse-incremental-quit-flag nil)))))
 
 (defun traverse-incremental-cancel-search ()
   "Cancel timer used for traverse incremental searching."
