@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.28")
+(defconst traverse-version "1.1.29")
 
 ;;; Code:
 
@@ -1145,17 +1145,22 @@ Special commands:
   "Non--interactive version of `goto-line.'"
   (goto-char (point-min)) (forward-line (1- numline)))
 
+(defun traverse-incremental-forward-line (n)
+  (let (pos)
+    (save-excursion
+      (forward-line n) (forward-line 0)
+      (when (looking-at "^ [0-9]+") (forward-line 0) (setq pos (point)))) 
+  (when pos (goto-char pos) (traverse-incremental-occur-color-current-line))))
+
 ;;;###autoload
 (defun traverse-incremental-next-line ()
   (interactive)
-  (forward-line 1)
-  (traverse-incremental-occur-color-current-line))
+  (traverse-incremental-forward-line 1))
 
 ;;;###autoload
 (defun traverse-incremental-precedent-line ()
   (interactive)
-  (forward-line -1)
-  (traverse-incremental-occur-color-current-line))
+  (traverse-incremental-forward-line -1))
 
 (defun traverse-incremental-jump ()
   "Jump to line in other buffer and put an overlay on it."
@@ -1226,13 +1231,13 @@ Special commands:
             (?\C-n ; Next line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
-             (forward-line 1)
+             (traverse-incremental-next-line);(forward-line 1)
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Is it needed?
             (?\C-p ; precedent line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
-             (forward-line -1)
+             (traverse-incremental-precedent-line);(forward-line -1)
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Is it needed?
             (?\C-z ; persistent action
