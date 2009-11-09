@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.27")
+(defconst traverse-version "1.1.28")
 
 ;;; Code:
 
@@ -1285,6 +1285,8 @@ Special commands:
           (progn
             (kill-buffer "*traverse search*")
             (switch-to-buffer traverse-incremental-current-buffer)
+            (when traverse-occur-overlay
+              (delete-overlay traverse-occur-overlay))
             (delete-other-windows))
           (traverse-incremental-jump) (other-window 1))
       (setq traverse-incremental-quit-flag nil))))
