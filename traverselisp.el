@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.26")
+(defconst traverse-version "1.1.27")
 
 ;;; Code:
 
@@ -1198,6 +1198,7 @@ Special commands:
   (interactive)
   (traverse-incremental-scroll -1))
 
+
 (defun traverse-incremental-read-search-input ()
   "Read each keyboard input and add it to `traverse-incremental-search-pattern'."
   (setq traverse-incremental-search-pattern "")    ; Always reset pattern to empty string
@@ -1209,36 +1210,39 @@ Special commands:
       (while 1
         (catch 'continue
           (condition-case nil
-              (setq char (read-char (concat prompt traverse-incremental-search-pattern)))
+              (setq char (read-char (concat prompt traverse-incremental-search-pattern
+                                            "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")))
             (error (throw 'break nil)))
           (case char
             ((or ?\e ?\r) (throw 'break nil))    ; RET or ESC break and exit code.
-            (?\d
+            (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL
              (unless traverse-incremental-search-timer
                (traverse-incremental-start-timer))
-             (pop tmp-list)         ; Delete last char of `traverse-incremental-search-pattern' with DEL
+             (pop tmp-list)         
              (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) ""))
              (throw 'continue nil))
-            (?\C-g (setq traverse-incremental-quit-flag t) (throw 'break nil))
-            (?\C-n
+            (?\C-g ; Quit and restore buffers.
+             (setq traverse-incremental-quit-flag t) (throw 'break nil))
+            (?\C-n ; Next line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
              (forward-line 1)
              (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil))
-            (?\C-p
+             (throw 'continue nil)) ; Is it needed?
+            (?\C-p ; precedent line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
              (forward-line -1)
              (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil))
+             (throw 'continue nil)) ; Is it needed?
+            (?\C-z ; persistent action
+             (traverse-incremental-jump) (other-window 1))
             (t
              (unless traverse-incremental-search-timer
                (traverse-incremental-start-timer))
              (push (text-char-description char) tmp-list)
              (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) ""))
              (throw 'continue nil))))))))
-
 
 
 (defun traverse-incremental-filter-alist-by-regexp (regexp buffer-name)
