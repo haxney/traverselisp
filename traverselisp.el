@@ -222,7 +222,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.25")
+(defconst traverse-version "1.1.26")
 
 ;;; Code:
 
@@ -1247,7 +1247,9 @@ Special commands:
     (if (string= regexp "")
         (progn (erase-buffer) (insert (concat title "\n\n") (traverse-incremental-mode)))
         (erase-buffer) (insert (concat title "\n\n"))
-        (traverse-buffer-process-ext regexp buffer-name) (goto-char (point-min)) (forward-line 2))))
+        (traverse-buffer-process-ext regexp buffer-name)
+        (goto-char (point-min)) (forward-line 2)
+        (traverse-incremental-occur-color-current-line))))
 
 
 (defun traverse-incremental-start-timer ()
