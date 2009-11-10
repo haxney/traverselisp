@@ -3,7 +3,7 @@
 ;; Copyright (C) 2008, 2009 Thierry Volpiatto
 ;; Author:     Thierry Volpiatto 
 ;; Maintainer: Thierry Volpiatto
-;; Keywords:   data
+;; Keywords:   data, regexp
 
 ;; X-URL: http://mercurial.intuxication.org/hg/traverselisp
 
@@ -25,32 +25,44 @@
 ;; Floor, Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
+;;  ==========
 
 ;; Developped and tested on:
-;; GNU Emacs 23.0.91.1 (i686-pc-linux-gnu, GTK+ Version 2.14.7)
- 
+;; GNU Emacs 23.1.50.1 (i686-pc-linux-gnu, GTK+ Version 2.18.3) of 2009-11-07 on tux
+
+;; Compatibility: Emacs23.*
+;; =============
+
 ;; Install:
 ;; =======
-;; Put this file in your load-path
-;; And Byte-compile it.(If you don't do that you will have error)
+;;
+;; Put this file in your load-path And Byte-compile it.
+;; (If you don't do that you will have error as traverse
+;; use code that work only at compile time.)
+;;
 ;; Add to your .emacs:
 ;;
 ;; (require 'traverselisp)
 ;;
-;; Set up your prefered keys for dired and globals as usual
+;; Set up your prefered keys for dired and globals as usual.
 ;;
-;; Here is my config with version-1.16:
-;; ===================================
+;; Here is my config with version-1.1.31:
+;; =====================================
+;;
 ;; (require 'traverselisp)
 ;; (setq traverse-use-avfs t)
 ;; (global-set-key (kbd "<f5> f") 'traverse-deep-rfind)
-;; (global-set-key (kbd "<f5> u") 'traverse-build-tags-in-project)
-;; (global-set-key (kbd "C-c C-o") 'traverse-occur-current-buffer)
+;; (global-set-key (kbd "C-c o") 'traverse-incremental-occur)
 ;; (define-key dired-mode-map (kbd "A") 'traverse-dired-search-regexp-in-anything-at-point)
 ;; (define-key dired-mode-map (kbd "C-c C-z") 'traverse-dired-browse-archive)
 ;; (define-key dired-mode-map (kbd "C-c t") 'traverse-dired-find-in-all-files)
-;; (add-to-list 'traverse-ignore-files ".ledger-cache")
-
+;; (mapc #'(lambda (x)
+;;           (add-to-list 'traverse-ignore-files x))
+;;       '(".ledger-cache"  "ANYTHING-TAG-FILE"))
+;; (add-to-list 'traverse-ignore-dirs "emacs_backup")
+;; (global-set-key (kbd "C-c C-f") 'anything-traverse)
+;; (global-set-key (kbd "C-M-|") 'traverse-toggle-split-window-h-v)
+;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;;  Traverse auto documentation
@@ -80,6 +92,8 @@
 ;; `traverse-count-files-in-dir'
 ;; `traverse-auto-update-documentation'
 ;; `traverse-auto-documentation-insert-header'
+;; `traverse-incremental-next-line'
+;; `traverse-incremental-precedent-line'
 ;; `traverse-incremental-jump-and-quit'
 ;; `traverse-incremental-scroll-down'
 ;; `traverse-incremental-scroll-up'
@@ -107,11 +121,14 @@
 ;; `traverse-list-files-in-tree'
 ;; `traverse-auto-document-lisp-buffer'
 ;; `traverse-goto-line'
+;; `traverse-incremental-forward-line'
 ;; `traverse-incremental-jump'
 ;; `traverse-incremental-scroll'
 ;; `traverse-incremental-read-search-input'
 ;; `traverse-incremental-filter-alist-by-regexp'
+;; `traverse-incremental-start-timer'
 ;; `traverse-incremental-cancel-search'
+;; `traverse-incremental-occur-color-current-line'
 
 ;;  * Macros defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'macro :prefix "traverse")
@@ -133,6 +150,8 @@
 ;; `traverse-incremental-search-timer'
 ;; `traverse-incremental-quit-flag'
 ;; `traverse-incremental-current-buffer'
+;; `traverse-incremental-occur-overlay'
+;; `traverse-incremental-face'
 
 ;;  * Faces defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'faces :prefix "traverse")
@@ -140,6 +159,7 @@
 ;; `traverse-regex-face'
 ;; `traverse-path-face'
 ;; `traverse-overlay-face'
+;; `traverse-incremental-overlay-face'
 
 ;;  * User variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'user-variable :prefix "^traverse")
@@ -157,58 +177,61 @@
 
 ;; Usage:
 ;; =====
+;;
 ;; M-x `traverse-deep-rfind'
+;; That is the interactive recursive function of traverse.
+;; It will search for a regexp in all files of a directory
+;; tree and his subdirectories.
+;;
 ;; When searching is done and you are in traverse buffer
 ;; some interactive actions are provided for navigate
 ;; Use "C-h m" for more info while in traverse-buffer.
 ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Special commands:
-;; key             binding
-;; ---             -------
-
-;; ESC             Prefix Command
-;; N               traverse-go-forward
-;; P               traverse-go-backward
-;; q               traverse-quit
-;; <S-down>        traverse-scroll-down-other-window
-;; <S-up>          traverse-scroll-up-other-window
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;
 ;; You can also use traverse from DIRED:
 ;; M-x `traverse-dired-search-regexp-in-anything-at-point'
+;;
 ;; This function work on directory, files, (1)compressed files (AVFS)
 ;; and marked files:
-;; If you have marked files search will be performed on these files.
+;;
+;; If you have marked files search will be performed only on these files.
+;; (No recursion will be performed on marked directories, so don't mark directories.)
+;;
 ;; If no files are marked, traverse will search in element at point
 ;; with appropriate function.
+;;
 ;; However, you can use specialized functions, check this file to see all
 ;; the interactives functions.
 ;;
 ;; M-x `traverse-dired-find-in-all-files'
-;; Search in all regular files in the current dired buffer
+;; Search in all regular files in the current dired buffer (no recursion).
 ;;
 ;; M-x `traverse-occur-current-buffer'
 ;; Just like occur but with traverse engine.
 ;;
 ;; M-x `traverse-incremental-occur'
-;; occur current buffer incrementally
+;; occur current buffer incrementally.(C-u to have thing-at-point as default prompt).
 ;;
 ;; M-x `traverse-dired-browse-archive'
 ;; This function use (1)AVFS to browse archive tar.gz, bz2 etc..
 ;;
 ;; (1)NOTE: You have to install AVFS and enable fuse in your kernel if
 ;; you want to browse and search in archives.
-;; Please see the doc of your distrib.
-;; and the doc of AVFS
+;; Please see the doc of your DISTRIB and the doc of AVFS here:
 ;; http://sourceforge.net/projects/avf
-;; If you don't want to use AVFS in traverse, set `traverse-use-avfs'
-;; to nil (or do nothing because it's the default)
-;; 
-;; Contact:
+;;
+;; If you want to use AVFS in traverse, set `traverse-use-avfs' to non--nil.
+;;
+;; Traverse provide also diverses functions to use in your programs.
+;; (especially for recursion like `traverse-walk-directory'.)
+;;
+;; You will find also some functions to auto document list of functions,
+;; macros, commands, etc..., see headers above.
+;;
+;; Contact: thierry dot volpiatto hat gmail dot com
 ;; =======
-;; thierry dot volpiatto hat gmail dot com
+;;
 ;; You can get the developpement version of the file here with hg:
+;;
 ;; hg clone http://mercurial.intuxication.org/hg/traverselisp
 ;; For the current developpement branch:
 ;; hg update -C 1.1.0
@@ -222,7 +245,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.31")
+(defconst traverse-version "1.1.32")
 
 ;;; Code:
 
