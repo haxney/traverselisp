@@ -245,7 +245,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.33")
+(defconst traverse-version "1.1.34")
 
 ;;; Code:
 
@@ -1234,6 +1234,7 @@ Special commands:
   (let* ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
          (inhibit-quit t)
          (tmp-list     ())
+         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")
          char)
     (unless (string= initial-input "")
       (loop for char across initial-input
@@ -1242,11 +1243,25 @@ Special commands:
     (catch 'break
       (while 1
         (catch 'continue
-          (condition-case nil
-              (setq char (read-char (concat prompt traverse-incremental-search-pattern
-                                            "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")))
-            (error (throw 'break nil)))
+          (setq char
+                (let* ((chr (condition-case nil
+                                (read-char (concat prompt traverse-incremental-search-pattern doc))
+                              (error nil)))
+                       (evt (unless chr (read-event))))
+                  (or chr evt)))
           (case char
+            (down ; Next line
+             (when traverse-incremental-search-timer
+               (traverse-incremental-cancel-search))
+             (traverse-incremental-next-line)
+             (traverse-incremental-occur-color-current-line)
+             (throw 'continue nil)) ; Is it needed?
+            (up ; precedent line
+             (when traverse-incremental-search-timer
+               (traverse-incremental-cancel-search))
+             (traverse-incremental-precedent-line)
+             (traverse-incremental-occur-color-current-line)
+             (throw 'continue nil)) ; Is it needed?
             ((or ?\e ?\r) (throw 'break nil))    ; RET or ESC break and exit code.
             (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL
              (unless traverse-incremental-search-timer
