@@ -576,15 +576,14 @@ Each element of LIS is compared with the filename STR."
 (defun traverse-button-func (button)
   "The function called by buttons in traverse buffers."
   (let* ((list-line (split-string (thing-at-point 'line)))
-         (nline (nth 1 list-line))
-         (regex)
-         (fname (button-label (button-at (point)))))
+         (nline     (nth 1 list-line))
+         regex
+         (fname     (button-label (button-at (point)))))
     (save-excursion
       (goto-char (point-min))
       (when (re-search-forward "for ")
         (setq regex
-              (buffer-substring (point)
-                                (- (line-end-position) 1)))))
+              (buffer-substring (point) (- (line-end-position) 1)))))
     (save-excursion
       (setq fname (replace-regexp-in-string "\\[" "" fname))
       (setq fname (replace-regexp-in-string "\\]" "" fname))
@@ -593,7 +592,7 @@ Each element of LIS is compared with the filename STR."
           (find-file-other-window fname))
       (goto-line (string-to-number nline))
       (let ((line (string-to-number nline)))
-        (goto-char (point-min)) (forward-line (1- line)))
+        (traverse-goto-line line))
       (setq case-fold-search t)
       (beginning-of-line)
       (when (re-search-forward regex nil nil)
