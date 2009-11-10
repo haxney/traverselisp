@@ -245,7 +245,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.34")
+(defconst traverse-version "1.1.35")
 
 ;;; Code:
 
@@ -1228,7 +1228,6 @@ Special commands:
   (interactive)
   (traverse-incremental-scroll -1))
 
-
 (defun traverse-read-char-or-event (prompt)
   "Use `read-char' to read keyboard input, if input is not a char use `read-event' instead."
   (let* ((chr (condition-case nil (read-char prompt) (error nil)))
@@ -1253,13 +1252,13 @@ Special commands:
           (setq char (traverse-read-char-or-event
                       (concat prompt traverse-incremental-search-pattern doc)))
           (case char
-            (down ; Next line
+            ((or down ?\C-n) ; Next line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
              (traverse-incremental-next-line)
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Is it needed?
-            (up ; precedent line
+            ((or up ?\C-p) ; precedent line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
              (traverse-incremental-precedent-line)
@@ -1274,18 +1273,6 @@ Special commands:
              (throw 'continue nil))
             (?\C-g ; Quit and restore buffers.
              (setq traverse-incremental-quit-flag t) (throw 'break nil))
-            (?\C-n ; Next line
-             (when traverse-incremental-search-timer
-               (traverse-incremental-cancel-search))
-             (traverse-incremental-next-line)
-             (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil)) ; Is it needed?
-            (?\C-p ; precedent line
-             (when traverse-incremental-search-timer
-               (traverse-incremental-cancel-search))
-             (traverse-incremental-precedent-line)
-             (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil)) ; Is it needed?
             (?\C-z ; persistent action
              (traverse-incremental-jump) (other-window 1))
             (t
@@ -1294,6 +1281,7 @@ Special commands:
              (push (text-char-description char) tmp-list)
              (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) ""))
              (throw 'continue nil))))))))
+
 
 
 (defun traverse-incremental-filter-alist-by-regexp (regexp buffer-name)
