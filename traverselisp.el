@@ -1229,12 +1229,19 @@ Special commands:
   (traverse-incremental-scroll -1))
 
 
+(defun traverse-read-char-or-event (prompt)
+  "Use `read-char' to read keyboard input, if input is not a char use `read-event' instead."
+  (let* ((chr (condition-case nil (read-char prompt) (error nil)))
+         (evt (unless chr (read-event))))
+    (or chr evt)))
+
+
 (defun traverse-incremental-read-search-input (initial-input)
   "Read each keyboard input and add it to `traverse-incremental-search-pattern'."
   (let* ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
+         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")
          (inhibit-quit t)
          (tmp-list     ())
-         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")
          char)
     (unless (string= initial-input "")
       (loop for char across initial-input
@@ -1243,12 +1250,8 @@ Special commands:
     (catch 'break
       (while 1
         (catch 'continue
-          (setq char
-                (let* ((chr (condition-case nil
-                                (read-char (concat prompt traverse-incremental-search-pattern doc))
-                              (error nil)))
-                       (evt (unless chr (read-event))))
-                  (or chr evt)))
+          (setq char (traverse-read-char-or-event
+                      (concat prompt traverse-incremental-search-pattern doc)))
           (case char
             (down ; Next line
              (when traverse-incremental-search-timer
