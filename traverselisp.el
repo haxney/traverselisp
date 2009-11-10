@@ -245,7 +245,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.32")
+(defconst traverse-version "1.1.33")
 
 ;;; Code:
 
@@ -1156,6 +1156,11 @@ Special commands:
   :group 'traversedir
   :type  'string)
 
+(defcustom traverse-incremental-length-line 80
+  "*Length of the line dispalyed in traverse incremental buffer."
+  :group 'traversedir
+  :type 'integer)
+
 ;;; Internal variables
 (defvar traverse-incremental-search-pattern "")
 (defvar traverse-incremental-search-timer nil)
@@ -1281,10 +1286,10 @@ Special commands:
     (if (string= regexp "")
         (progn (erase-buffer) (insert (concat title "\n\n")))
         (erase-buffer) (insert (concat title "\n\n"))
-        (traverse-buffer-process-ext regexp buffer-name)
+        (traverse-buffer-process-ext regexp buffer-name :lline traverse-incremental-length-line)
         (goto-char (point-min)) (forward-line 2)
         (traverse-incremental-occur-color-current-line))))
-
+        
 
 (defun traverse-incremental-start-timer ()
   (setq traverse-incremental-search-timer
@@ -1296,13 +1301,13 @@ Special commands:
               traverse-incremental-current-buffer)))))
 
 ;;;###autoload
-(defun traverse-incremental-occur ()
+(defun traverse-incremental-occur (&optional initial-input)
   "Incremental search of lines in current buffer matching `traverse-incremental-search-pattern'."
-  (interactive)
+  (interactive "P")
   (setq traverse-incremental-current-buffer (buffer-name (current-buffer)))
   (with-current-buffer traverse-incremental-current-buffer
     (jit-lock-fontify-now))
-  (let* ((init-str (if current-prefix-arg (thing-at-point 'symbol) ""))
+  (let* ((init-str (if initial-input (thing-at-point 'symbol) ""))
          (len      (length init-str))
          str-no-prop)
     (set-text-properties 0 len nil init-str)
