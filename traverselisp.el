@@ -247,7 +247,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.36")
+(defconst traverse-version "1.1.37")
 
 ;;; Code:
 
@@ -1262,13 +1262,13 @@ Special commands:
                (traverse-incremental-cancel-search))
              (traverse-incremental-next-line)
              (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil)) ; Is it needed?
+             (throw 'continue nil)) ; Fix me: Is it needed?
             ((or up ?\C-p) ; precedent line
              (when traverse-incremental-search-timer
                (traverse-incremental-cancel-search))
              (traverse-incremental-precedent-line)
              (traverse-incremental-occur-color-current-line)
-             (throw 'continue nil)) ; Is it needed?
+             (throw 'continue nil)) ; Fix me: Is it needed?
             ((or ?\e ?\r) (throw 'break nil))    ; RET or ESC break and exit code.
             (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL
              (unless traverse-incremental-search-timer
@@ -1278,14 +1278,17 @@ Special commands:
              (throw 'continue nil))
             (?\C-g ; Quit and restore buffers.
              (setq traverse-incremental-quit-flag t) (throw 'break nil))
-            (?\C-z ; persistent action
+            ((or right ?\C-z) ; persistent action
              (traverse-incremental-jump) (other-window 1))
             (t
              (unless traverse-incremental-search-timer
                (traverse-incremental-start-timer))
-             (push (text-char-description char) tmp-list)
-             (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) ""))
-             (throw 'continue nil))))))))
+             (condition-case nil ; If keyboard input is an event not listed above we exit.
+                 (progn
+                   (push (text-char-description char) tmp-list)
+                   (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) ""))
+                   (throw 'continue nil))
+               (error (throw 'break nil))))))))))
 
 
 
