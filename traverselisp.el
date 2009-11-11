@@ -247,7 +247,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.38")
+(defconst traverse-version "1.1.39")
 
 ;;; Code:
 
@@ -1128,14 +1128,14 @@ See headers of traverselisp.el for example."
 
 (defvar traverse-incremental-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map [?q] 'traverse-quit)
-    (define-key map [return] 'traverse-incremental-jump-and-quit)
-    (define-key map [S-down] 'traverse-incremental-scroll-down)
-    (define-key map [S-up] 'traverse-incremental-scroll-up)
-    (define-key map [down] 'traverse-incremental-next-line)
-    (define-key map [up] 'traverse-incremental-precedent-line)
-    (define-key map [?\C-n] 'traverse-incremental-next-line)
-    (define-key map [?\C-p] 'traverse-incremental-precedent-line)
+    (define-key map (kbd "q") 'traverse-quit)
+    (define-key map (kbd "RET") 'traverse-incremental-jump-and-quit)
+    (define-key map (kbd "S-<down>") 'traverse-incremental-scroll-down)
+    (define-key map (kbd "S-<up>") 'traverse-incremental-scroll-up)
+    (define-key map (kbd "<down>") 'traverse-incremental-next-line)
+    (define-key map (kbd "<up>") 'traverse-incremental-precedent-line)
+    (define-key map (kbd "C-n") 'traverse-incremental-next-line)
+    (define-key map (kbd "C-p") 'traverse-incremental-precedent-line)
     map)
   "Keymap used for traversedir commands.")
 
