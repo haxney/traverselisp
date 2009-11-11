@@ -247,7 +247,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.37")
+(defconst traverse-version "1.1.38")
 
 ;;; Code:
 
@@ -1270,7 +1270,7 @@ Special commands:
              (traverse-incremental-occur-color-current-line)
              (throw 'continue nil)) ; Fix me: Is it needed?
             ((or ?\e ?\r) (throw 'break nil))    ; RET or ESC break and exit code.
-            (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL
+            (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL.
              (unless traverse-incremental-search-timer
                (traverse-incremental-start-timer))
              (pop tmp-list)         
@@ -1293,7 +1293,7 @@ Special commands:
 
 
 (defun traverse-incremental-filter-alist-by-regexp (regexp buffer-name)
-  "Print all lines matching REGEXP to buffer BUFFER-NAME."
+  "Print all lines matching REGEXP in current buffer to buffer BUFFER-NAME."
   (let ((title (propertize "Traverse Incremental occur" 'face '((:background "Dodgerblue4")))))
     (if (string= regexp "")
         (progn (erase-buffer) (insert (concat title "\n\n")))
@@ -1322,6 +1322,7 @@ Special commands:
     (jit-lock-fontify-now))
   (let* ((init-str (if initial-input (thing-at-point 'symbol) ""))
          (len      (length init-str))
+         (curpos      (point))
          str-no-prop)
     (set-text-properties 0 len nil init-str)
     (setq str-no-prop init-str)
@@ -1341,7 +1342,7 @@ Special commands:
               (switch-to-buffer traverse-incremental-current-buffer)
               (when traverse-occur-overlay
                 (delete-overlay traverse-occur-overlay))
-              (delete-other-windows))
+              (delete-other-windows) (goto-char curpos))
             (traverse-incremental-jump) (other-window 1))
         (setq traverse-incremental-quit-flag nil)))))
 
