@@ -124,6 +124,7 @@
 ;; `traverse-incremental-forward-line'
 ;; `traverse-incremental-jump'
 ;; `traverse-incremental-scroll'
+;; `traverse-read-char-or-event'
 ;; `traverse-incremental-read-search-input'
 ;; `traverse-incremental-filter-alist-by-regexp'
 ;; `traverse-incremental-start-timer'
@@ -171,6 +172,7 @@
 ;; `traverse-avfs-default-directory'
 ;; `traverse-incremental-search-delay'
 ;; `traverse-incremental-search-prompt'
+;; `traverse-incremental-length-line'
 
 ;;  *** END auto-documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -245,7 +247,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.35")
+(defconst traverse-version "1.1.36")
 
 ;;; Code:
 
@@ -1171,6 +1173,7 @@ Special commands:
   (goto-char (point-min)) (forward-line (1- numline)))
 
 (defun traverse-incremental-forward-line (n)
+  "Forward line only if it is not an empty line."
   (let (pos)
     (save-excursion
       (forward-line n) (forward-line 0)
@@ -1179,11 +1182,13 @@ Special commands:
 
 ;;;###autoload
 (defun traverse-incremental-next-line ()
+  "Goto next line if it is not an empty line."
   (interactive)
   (traverse-incremental-forward-line 1))
 
 ;;;###autoload
 (defun traverse-incremental-precedent-line ()
+  "Goto precedent line if it is not an empty line."
   (interactive)
   (traverse-incremental-forward-line -1))
 
@@ -1296,6 +1301,7 @@ Special commands:
         
 
 (defun traverse-incremental-start-timer ()
+  "Start traverse incremental timer and set it to `traverse-incremental-search-timer'."
   (setq traverse-incremental-search-timer
         (run-with-idle-timer
          traverse-incremental-search-delay 'repeat
