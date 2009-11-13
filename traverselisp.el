@@ -1283,6 +1283,10 @@ Special commands:
              (setq traverse-incremental-quit-flag t) (throw 'break (message "Quit")))
             ((or right ?\C-z) ; persistent action
              (traverse-incremental-jump) (other-window 1))
+            (?\C-v ; Scroll down
+             (scroll-other-window 1))
+            (?\M-v ; Scroll up
+             (scroll-other-window -1))
             (t
              (unless traverse-incremental-search-timer
                (traverse-incremental-start-timer))
