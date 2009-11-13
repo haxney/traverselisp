@@ -119,7 +119,6 @@
 ;; `traverse-window-split-h-or-t'
 ;; `traverse-list-directories-in-tree'
 ;; `traverse-list-files-in-tree'
-;; `traverse-auto-document-lisp-buffer'
 ;; `traverse-goto-line'
 ;; `traverse-incremental-forward-line'
 ;; `traverse-incremental-jump'
@@ -135,6 +134,7 @@
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'macro :prefix "traverse")
 ;; `traverse-collect-files-in-tree-if'
 ;; `traverse-collect-files-in-tree-if-not'
+;; `traverse-auto-document-lisp-buffer'
 
 ;;  * Internal variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'internal-variable :prefix "traverse")
@@ -152,6 +152,7 @@
 ;; `traverse-incremental-quit-flag'
 ;; `traverse-incremental-current-buffer'
 ;; `traverse-incremental-occur-overlay'
+;; `traverse-incremental-read-fn'
 ;; `traverse-incremental-face'
 
 ;;  * Faces defined here:
@@ -247,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.39")
+(defconst traverse-version "1.1.41")
 
 ;;; Code:
 
@@ -453,7 +454,7 @@ Each element of LIS is compared with the filename STR."
   (or (member (file-name-extension str t) lis)
       (traverse-comp-str-to-list str lis)))
 
-(defun* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
+(defsubst* traverse-find-readlines (bfile regexp &key (insert-fn 'file))
   "Return an alist of all the (num-line line) of a file or buffer BFILE matching REGEXP."
   (let ((count 0)
         (fn    (case insert-fn
@@ -1029,7 +1030,7 @@ PRED is a function that take one arg."
       :file-fn #'(lambda (x) (unless (funcall ,pred x) (push x flist))))
      flist))
 
-(defun* traverse-auto-document-lisp-buffer (&key type prefix)
+(defmacro* traverse-auto-document-lisp-buffer (&key type prefix)
   "Auto document tool for lisp code.
 TYPE can be one of:
     - command           
@@ -1052,8 +1053,8 @@ Don't forget to add this line at the end of your traverse-auto-documentation:
     ;;  *** END auto-documentation
 
 See headers of traverselisp.el for example."
-  (let* ((boundary-regexp "^;; +\\*+ .*")
-         (regexp          (case type
+  `(let* ((boundary-regexp "^;; +\\*+ .*")
+         (regexp          (case ,type
                             ('command           "^\(def\\(un\\|subst\\)")
                             ('nested-command    "^ +\(def\\(un\\|subst\\)")
                             ('function          "^\(def\\(un\\|subst\\|advice\\)")
@@ -1071,21 +1072,21 @@ See headers of traverselisp.el for example."
                            :insert-fn 'buffer))
          beg end)
     (flet ((maybe-insert-with-prefix (name)
-             (if prefix
-                 (when (string-match prefix name)
+             (if ,prefix
+                 (when (string-match ,prefix name)
                    (insert (concat ";; \`" name "\'\n")))
                  (insert (concat ";; \`" name "\'\n")))))
       (insert "\n") (setq beg (point))
       (save-excursion (when (re-search-forward boundary-regexp)
                         (forward-line -1) (setq end (point))))
       (delete-region beg end)
-      (when (eq type 'anything-source) (setq regexp "\(defvar"))
+      (when (eq ,type 'anything-source) (setq regexp "\(defvar"))
       (dolist (i fn-list)
         (let* ((elm     (cadr i))
                (elm1    (replace-regexp-in-string "\*" "" elm))
                (elm-mod (replace-regexp-in-string regexp "" elm1))
                (elm-fin (replace-regexp-in-string "\(\\|\)" ""(car (split-string elm-mod)))))
-          (case type
+          (case ,type
             ('command
              (when (commandp (intern elm-fin))
                (maybe-insert-with-prefix elm-fin)))
