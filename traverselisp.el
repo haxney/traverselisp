@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.41")
+(defconst traverse-version "1.1.42")
 
 ;;; Code:
 
@@ -1170,6 +1170,7 @@ Special commands:
 (defvar traverse-incremental-occur-overlay nil)
 (defvar traverse-incremental-read-fn
   (if (fboundp 'read-key) 'read-key 'traverse-read-char-or-event))
+(defvar traverse-incremental-exit-and-quit-p nil)
 
 (defun traverse-goto-line (numline)
   "Non--interactive version of `goto-line.'"
@@ -1245,7 +1246,7 @@ Special commands:
 (defun traverse-incremental-read-search-input (initial-input)
   "Read each keyboard input and add it to `traverse-incremental-search-pattern'."
   (let* ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
-         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-n:next-line, C-p:prec-line]")
+         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-j:Jump&quit, C-n/p:next/prec-line]")
          (inhibit-quit t)
          (tmp-list     ())
          char)
@@ -1283,6 +1284,9 @@ Special commands:
              (setq traverse-incremental-quit-flag t) (throw 'break (message "Quit")))
             ((or right ?\C-z) ; persistent action
              (traverse-incremental-jump) (other-window 1))
+            ((or left ?\C-j)
+             (setq traverse-incremental-exit-and-quit-p t)
+             (throw 'break (message "Incremental Search completed")))
             (?\C-v ; Scroll down
              (scroll-other-window 1))
             (?\M-v ; Scroll up
@@ -1321,8 +1325,21 @@ Special commands:
 
 ;;;###autoload
 (defun traverse-incremental-occur (&optional initial-input)
-  "Incremental search of lines in current buffer matching `traverse-incremental-search-pattern'."
+  "Incremental search of lines in current buffer matching `traverse-incremental-search-pattern'.
+With a prefix arg search symbol at point.
+While you are incremental searching, commands provided are:
+C-n or <down>:  next line.
+C-p or <up>:    precedent line.
+C-v and M-v:    scroll up and down.
+C-z or <right>: jump without quitting loop.
+C-j or <left>:  jump and exit search buffer.
+RET or ESC:     exit but don't quit search buffer.
+DEL:            remove last character entered.
+C-g:            quit and restore buffer.
+When you quit incremental search with RET or ESC, see `traverse-incremental-mode'
+for commands provided in the search buffer."
   (interactive "P")
+  (setq traverse-incremental-exit-and-quit-p nil)
   (setq traverse-incremental-current-buffer (buffer-name (current-buffer)))
   (with-current-buffer traverse-incremental-current-buffer
     (jit-lock-fontify-now))
@@ -1349,7 +1366,9 @@ Special commands:
               (when traverse-occur-overlay
                 (delete-overlay traverse-occur-overlay))
               (delete-other-windows) (goto-char curpos))
-            (traverse-incremental-jump) (other-window 1))
+            (if traverse-incremental-exit-and-quit-p
+                (traverse-incremental-jump-and-quit)
+                (traverse-incremental-jump) (other-window 1)))
         (setq traverse-incremental-quit-flag nil)))))
 
 (defun traverse-incremental-cancel-search ()
