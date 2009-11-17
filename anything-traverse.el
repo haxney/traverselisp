@@ -439,7 +439,8 @@ If current-buffer is a dired buffer search is performed on all files."
                   (when (traverse-check-only-lists f anything-traverse-check-only)
                     (traverse-file-process-ext
                      anything-pattern
-                     f))
+                     f
+                     :lline anything-c-traverse-length-line))
                   (unless (or (file-directory-p f)
                               (traverse-check-only-lists f anything-c-traverse-ignore-files)
                               (file-compressed-p f)
@@ -447,7 +448,8 @@ If current-buffer is a dired buffer search is performed on all files."
                               (not (file-regular-p f)))
                     (traverse-file-process-ext
                      anything-pattern
-                     f)))))
+                     f
+                     :lline anything-c-traverse-length-line)))))
           ;; search in current-buffer
           ;; fontify buffer
           (when anything-c-traverse-fontify-buffer

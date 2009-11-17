@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.42")
+(defconst traverse-version "1.1.43")
 
 ;;; Code:
 
@@ -480,10 +480,10 @@ Each element of LIS is compared with the filename STR."
                                  (second i)
                                  (replace-regexp-in-string "\\(^ *\\)" "" (second i)))))
           (and (cond ((eq insert-fn 'file)
-                      (insert-button (format "[%s]" (if full-path
-                                                        fname
-                                                        (file-relative-name fname
-                                                                            default-directory)))
+                      (insert-button (format "[%s]"
+                                             (if full-path
+                                                 fname
+                                                 (file-relative-name fname default-directory)))
                                      'action 'traverse-button-func
                                      'face "hi-green"))
                      ((eq insert-fn 'buffer)
@@ -498,13 +498,14 @@ Each element of LIS is compared with the filename STR."
                                "\n"))))))
     (setq traverse-count-occurences (+ traverse-count-occurences (length matched-lines)))))
 
-(defun traverse-file-process-ext (regex fname &optional insert-fn)
+(defun* traverse-file-process-ext (regex fname &key (lline traverse-length-line))
   "Function to process files in external program like anything."
-  (let ((matched-lines (traverse-find-readlines fname regex :insert-fn (or insert-fn 'file))))
+  (let ((matched-lines (traverse-find-readlines fname regex :insert-fn 'file)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
         (let* ((ltp           (second i))
-               (new-ltp       (replace-regexp-in-string "\\(^ *\\)" "" ltp))
+               (replace-reg   (if (string-match "^\t" ltp) "\\(^\t*\\)" "\\(^ *\\)"))
+               (new-ltp       (replace-regexp-in-string replace-reg "" ltp))
                (line-to-print (if traverse-keep-indent ltp new-ltp)))
           (insert (concat (propertize (file-name-nondirectory fname)
                                       'face 'traverse-path-face
@@ -513,8 +514,8 @@ Each element of LIS is compared with the filename STR."
                           (propertize (int-to-string (+ (first i) 1))
                                       'face 'traverse-match-face)
                           ":"
-                          (if (> (length line-to-print) traverse-length-line)
-                              (substring line-to-print 0 traverse-length-line)
+                          (if (> (length line-to-print) lline)
+                              (substring line-to-print 0 lline)
                               line-to-print)
                           "\n")))))))
 
