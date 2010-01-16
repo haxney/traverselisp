@@ -1311,13 +1311,13 @@ Special commands:
     (if (string= regexp "")
         (progn (erase-buffer) (insert (concat title "\n\n")))
         (erase-buffer)
+        (traverse-buffer-process-ext regexp buffer-name :lline traverse-incremental-length-line)
+        (goto-char (point-min))
         (insert (concat title "\n\n"
                  (propertize (format "Found %s occurences of " traverse-count-occurences)
                              'face 'underline)
                  (propertize regexp 'face 'traverse-incremental-regexp-face)
                  (propertize (format " in %s" buffer-name) 'face 'underline) "\n\n"))
-        (traverse-buffer-process-ext regexp buffer-name :lline traverse-incremental-length-line)
-        (goto-char (point-min)) (forward-line 4)
         (traverse-incremental-occur-color-current-line))))
         
 
