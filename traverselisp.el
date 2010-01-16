@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.45")
+(defconst traverse-version "1.1.46")
 
 ;;; Code:
 
@@ -500,6 +500,7 @@ Each element of LIS is compared with the filename STR."
 
 (defun* traverse-file-process-ext (regex fname &key (lline traverse-length-line))
   "Function to process files in external program like anything."
+  (setq traverse-count-occurences 0)
   (let ((matched-lines (traverse-find-readlines fname regex :insert-fn 'file)))
     (when matched-lines
       (dolist (i matched-lines) ;; each element is of the form '(key value)
@@ -507,6 +508,7 @@ Each element of LIS is compared with the filename STR."
                (replace-reg   (if (string-match "^\t" ltp) "\\(^\t*\\)" "\\(^ *\\)"))
                (new-ltp       (replace-regexp-in-string replace-reg "" ltp))
                (line-to-print (if traverse-keep-indent ltp new-ltp)))
+          (incf traverse-count-occurences)
           (insert (concat (propertize (file-name-nondirectory fname)
                                       'face 'traverse-path-face
                                       'help-echo line-to-print)
@@ -1400,7 +1402,6 @@ for commands provided in the search buffer."
 
 (defvar traverse-incremental-face 'traverse-incremental-overlay-face)
 
-;; TODO Make one generic overlay function for all traverse.
 (defun traverse-incremental-occur-color-current-line ()
   "Highlight and underline current position."
   (if (not traverse-incremental-occur-overlay)
