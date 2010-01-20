@@ -172,7 +172,7 @@ This can SLOW down search when non--nil.")
   "*The name your anything tags files will have.")
 
 (defvar anything-c-traverse-browse-regexp-lisp
-  "\(def\\(un\\|subst\\|macro\\|ine\\|face\\|alias\\|advice\\|struct\\|\
+  "^ *\(def\\(un\\|subst\\|macro\\|ine\\|face\\|alias\\|advice\\|struct\\|\
 type\\|theme\\|var\\|group\\|custom\\|const\\|method\\|class\\)"
   "*Regexp used to parse lisp buffer when browsing code.")
 
