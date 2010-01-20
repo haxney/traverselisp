@@ -1,6 +1,6 @@
 ;;; anything-traverse.el --- Use traverselisp within anything.
 
-;; Copyright (C) 2008, 2009 Thierry Volpiatto, all rights reserved
+;; Copyright (C) 2008, 2009, 2010 Thierry Volpiatto, all rights reserved.
 
 ;; Author: thierry volpiatto
 ;; Maintainer: thierry volpiatto
@@ -27,13 +27,18 @@
 ;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
 ;; Floor, Boston, MA 02110-1301, USA.
 
+;;; Features:
+;;  ========
+;;
+;;  - Find lines matching regexp in current buffer or in marked files in dired buffer.
+;;  - Browse code in current-buffer.
+;;  - Find files recursively in current tree directory.
+;;  - Mark and remember differents positions in any buffers.
+;;
 ;;; Commentary:
 ;;  ==========
 ;;  This is the sources and functions to use traverselisp.el
 ;;  with anything. http://www.emacswiki.org/cgi-bin/wiki/Anything.
-;;
-;;  You will be able to incremental search any regexp in current buffer
-;;  or in all files of current dired buffer.
 ;;
 ;;  NOTE: You don't need this file to use traverselisp.el if you don't use
 ;;  Anything.
@@ -167,7 +172,8 @@ This can SLOW down search when non--nil.")
   "*The name your anything tags files will have.")
 
 (defvar anything-c-traverse-browse-regexp-lisp
-  "\(def\\(un\\|subst\\|macro\\|ine\\|face\\|alias\\|advice\\|struct\\|type\\|theme\\|var\\|group\\|custom\\|const\\)"
+  "\(def\\(un\\|subst\\|macro\\|ine\\|face\\|alias\\|advice\\|struct\\|\
+type\\|theme\\|var\\|group\\|custom\\|const\\|method\\|class\\)"
   "*Regexp used to parse lisp buffer when browsing code.")
 
 (defvar anything-c-traverse-browse-regexp-python

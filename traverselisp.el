@@ -1,6 +1,6 @@
 ;;; traverselisp.el --- walk through directories and perform actions on files.
 
-;; Copyright (C) 2008, 2009 Thierry Volpiatto
+;; Copyright (C) 2008, 2009, 2010 Thierry Volpiatto, all rights reserved.
 ;; Author:     Thierry Volpiatto 
 ;; Maintainer: Thierry Volpiatto
 ;; Keywords:   data, regexp
@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.46")
+(defconst traverse-version "1.1.47")
 
 ;;; Code:
 
