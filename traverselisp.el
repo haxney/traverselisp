@@ -1287,11 +1287,17 @@ Special commands:
                 (scroll-other-window 1) t)
                (?\M-v ; Scroll up
                 (scroll-other-window -1) t)
-               (t
+               (t ; Store character
                 (unless traverse-incremental-search-timer
                   (traverse-incremental-start-timer))
-                (when (characterp char)
-                  (push (string char) tmp-list) t))))
+                (if (characterp char)
+                    (push (string char) tmp-list)
+                    ;; Else, a non--character is entered,
+                    ;; add it as event to `unread-command-events' and exit.
+                    (setq unread-command-events
+                          (nconc (mapcar 'identity (this-single-command-raw-keys))
+                                 unread-command-events))
+                    nil))))
       (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) "")))))
 
 
