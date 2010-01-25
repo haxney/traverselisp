@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.48")
+(defconst traverse-version "1.1.49")
 
 ;;; Code:
 
@@ -1275,8 +1275,7 @@ Special commands:
                (?\d ; Delete last char of `traverse-incremental-search-pattern' with DEL.
                 (unless traverse-incremental-search-timer
                   (traverse-incremental-start-timer))
-                (pop tmp-list)         
-                (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) "")) t)
+                (pop tmp-list))         
                (?\C-g ; Quit and restore buffers.
                 (setq traverse-incremental-quit-flag t) nil)
                ((or right ?\C-z) ; persistent action
@@ -1291,14 +1290,14 @@ Special commands:
                 (unless traverse-incremental-search-timer
                   (traverse-incremental-start-timer))
                 (if (characterp char)
-                    (push (string char) tmp-list)
-                    ;; Else, a non--character is entered,
-                    ;; add it as event to `unread-command-events' and exit.
+                    (push char tmp-list)
+                    ;; Else, a non--character event is entered, not listed above.
+                    ;; add it to `unread-command-events' and exit (nil) .
                     (setq unread-command-events
                           (nconc (mapcar 'identity (this-single-command-raw-keys))
                                  unread-command-events))
                     nil))))
-      (setq traverse-incremental-search-pattern (mapconcat 'identity (reverse tmp-list) "")))))
+      (setq traverse-incremental-search-pattern (apply 'string (reverse tmp-list))))))
 
 
 (defun traverse-incremental-filter-alist-by-regexp (regexp buffer-name)
