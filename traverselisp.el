@@ -251,7 +251,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.52")
+(defconst traverse-version "1.1.53")
 
 ;;; Code:
 
@@ -592,6 +592,7 @@ Each element of LIS is compared with the filename STR."
          (fname     (button-label (button-at (point)))))
     (save-excursion
       (goto-char (point-min))
+      ;; TODO ==>BAD use a variable instead
       (when (re-search-forward "for ")
         (setq regex
               (buffer-substring (point) (- (line-end-position) 1)))))
@@ -602,11 +603,7 @@ Each element of LIS is compared with the filename STR."
           (switch-to-buffer-other-window (get-buffer fname))
           (find-file-other-window fname))
       (traverse-goto-line (string-to-number nline))
-      (setq case-fold-search t)
-      (beginning-of-line)
-      (when (re-search-forward regex nil nil)
-        (goto-char (- (point) (length regex)))
-        (traverse-occur-color-current-line)))))
+      (beginning-of-line) (traverse-occur-color-current-line))))
 
 
 (defun traverse-prepare-buffer ()
