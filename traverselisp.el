@@ -248,7 +248,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.49")
+(defconst traverse-version "1.1.50")
 
 ;;; Code:
 
@@ -1255,8 +1255,7 @@ Special commands:
          (inhibit-quit (unless (eq traverse-incremental-read-fn 'read-key) t))
          (tmp-list     ()))
     (unless (string= initial-input "")
-      (loop for char across initial-input
-         do (push (text-char-description char) tmp-list)))
+      (loop for char across initial-input do (push char tmp-list)))
     (setq traverse-incremental-search-pattern initial-input)
     (while (let ((char (funcall traverse-incremental-read-fn
                                 (concat prompt traverse-incremental-search-pattern doc))))
