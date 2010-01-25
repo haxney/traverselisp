@@ -119,6 +119,7 @@
 ;; `traverse-window-split-h-or-t'
 ;; `traverse-list-directories-in-tree'
 ;; `traverse-list-files-in-tree'
+;; `traverse-auto-document-default-prefix'
 ;; `traverse-goto-line'
 ;; `traverse-incremental-forward-line'
 ;; `traverse-incremental-jump'
@@ -153,6 +154,7 @@
 ;; `traverse-incremental-current-buffer'
 ;; `traverse-incremental-occur-overlay'
 ;; `traverse-incremental-read-fn'
+;; `traverse-incremental-exit-and-quit-p'
 ;; `traverse-incremental-face'
 
 ;;  * Faces defined here:
@@ -162,6 +164,8 @@
 ;; `traverse-path-face'
 ;; `traverse-overlay-face'
 ;; `traverse-incremental-overlay-face'
+;; `traverse-incremental-title-face'
+;; `traverse-incremental-regexp-face'
 
 ;;  * User variables defined here:
 ;; [EVAL] (traverse-auto-document-lisp-buffer :type 'user-variable :prefix "^traverse")
@@ -177,7 +181,6 @@
 
 ;;  *** END auto-documentation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 ;; Usage:
 ;; =====
 ;;
@@ -248,7 +251,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.50")
+(defconst traverse-version "1.1.51")
 
 ;;; Code:
 
@@ -1035,6 +1038,8 @@ PRED is a function that take one arg."
       :file-fn #'(lambda (x) (unless (funcall ,pred x) (push x flist))))
      flist))
 
+;;; Traverselisp auto documentation
+
 (defmacro* traverse-auto-document-lisp-buffer (&key type prefix)
   "Auto document tool for lisp code.
 TYPE can be one of:
@@ -1112,14 +1117,22 @@ See headers of traverselisp.el for example."
 
 ;;;###autoload
 (defun traverse-auto-update-documentation ()
+  "Eval all traverse auto document headers found."
   (interactive)
   (goto-char (point-min))
   (while (re-search-forward "^;; +\\[EVAL\\]" nil t)
     (end-of-line) (eval-last-sexp t)
     (while (not (bolp)) (delete-char -1))))
 
+
+(defun traverse-auto-document-default-prefix ()
+  "Return file name without extension as default prefix"
+  (file-name-nondirectory (file-name-sans-extension (buffer-file-name (current-buffer)))))
+
 ;;;###autoload
 (defun traverse-auto-documentation-insert-header (title &optional nstar)
+  "Insert an auto documentation line of commented code to eval.
+See headers of `traverselisp.el' for example."
   (interactive "sTitle: \np")
   (let ((ttype (completing-read "Type: " '("command " "nested-command "
                                            "function " "nested-function "
@@ -1127,7 +1140,11 @@ See headers of traverselisp.el for example."
                                            "nested-variable " "faces "
                                            "anything-source ") nil t)))
     (insert (concat ";;  " (make-string nstar ?*) " " title "\n"
-                    ";; [EVAL] (traverse-auto-document-lisp-buffer :type \'" ttype ":prefix \"\")"))))
+                    ";; [EVAL] (traverse-auto-document-lisp-buffer :type \'"
+                    ttype
+                    ":prefix " "\"" (traverse-auto-document-default-prefix) "\")")
+            (if (save-excursion (re-search-forward "^;; +\\*+ .*" nil t))
+                "" "\n\n\n;;  *** END auto-documentation"))))
 
 
 ;;; Incremental occur
