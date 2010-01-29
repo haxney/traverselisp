@@ -251,7 +251,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Version:
-(defconst traverse-version "1.1.53")
+(defconst traverse-version "1.1.54")
 
 ;;; Code:
 
@@ -1265,7 +1265,7 @@ Special commands:
 (defun traverse-incremental-read-search-input (initial-input)
   "Read each keyboard input and add it to `traverse-incremental-search-pattern'."
   (let* ((prompt       (propertize traverse-incremental-search-prompt 'face '((:foreground "cyan"))))
-         (doc          "     [RET:exit, C-g:quit, C-z:Jump, C-j:Jump&quit, C-n/p:next/prec-line]")
+         (doc          "     [RET:exit, C-g:quit, C-k:kill, C-z:Jump, C-j:Jump&quit, C-n/p:next/prec-line]")
          (inhibit-quit (unless (eq traverse-incremental-read-fn 'read-key) t))
          (tmp-list     ()))
     (unless (string= initial-input "")
@@ -1293,10 +1293,13 @@ Special commands:
                 (setq traverse-incremental-quit-flag t) nil)
                ((or right ?\C-z) ; persistent action
                 (traverse-incremental-jump) (other-window 1) t)
-               ((left ?\C-j)
+               ((left ?\C-j) ; Jump to candidate and kill search buffer.
                 (setq traverse-incremental-exit-and-quit-p t) nil)
                (?\C-v ; Scroll down
                 (scroll-other-window 1) t)
+               (?\C-k ; Kill input
+                (kill-new traverse-incremental-search-pattern) 
+                (setq tmp-list ()) t)
                (?\M-v ; Scroll up
                 (scroll-other-window -1) t)
                (t ; Store character
